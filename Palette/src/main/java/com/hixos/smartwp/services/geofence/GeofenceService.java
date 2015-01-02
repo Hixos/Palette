@@ -545,6 +545,7 @@ public class GeofenceService{
             Logger.fileW(mContext, LOGTAG, "Removed by intent");
         }*/
 
+        //
         private PendingIntent getTransitionPendingIntent() {
             Intent intent = new Intent(ACTION_GEOFENCE_RECEIVED);
             return PendingIntent.getBroadcast(
