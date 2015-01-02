@@ -28,7 +28,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationClient;
+//import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -483,7 +483,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
             GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
         OnLocationChangedListener mListener;
 
-        LocationClient mLocationClient;
+        //LocationClient mLocationClient;
         private boolean mGotoLocation = true;
 
         private Context mContext;
@@ -496,22 +496,22 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
         @Override
         public void activate(LocationSource.OnLocationChangedListener onLocationChangedListener) {
-            if(mLocationClient == null){
+         /*   if(mLocationClient == null){
                 mLocationClient = new LocationClient(mContext, this, this);
             }
-            mLocationClient.connect();
+            mLocationClient.connect();*/
             mListener = onLocationChangedListener;
         }
 
         @Override
         public void deactivate() {
-            mLocationClient.disconnect();
+            //mLocationClient.disconnect();
             mListener = null;
         }
 
         @Override
         public void onConnected(Bundle bundle) {
-            mLocation = mLocationClient.getLastLocation();
+            //mLocation = mLocationClient.getLastLocation();
             //Log.w(LOGTAG, "Getting last location " + (mLocation != null ? "Ok" : "Null"));
             if(mListener != null && mLocation != null)
                 mListener.onLocationChanged(mLocation);
@@ -526,7 +526,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
         @Override
         public void onDisconnected() {
-            mLocationClient = null;
+            //mLocationClient = null;
         }
 
         @Override

@@ -840,29 +840,24 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 .build();
 
         public PlayLocationSource() {
-            mLocationClient = new LocationClient(getActivity(), this, this);
-            mLocationClient.connect();
+            //mLocationClient = new LocationClient(getActivity(), this, this);
+            //mLocationClient.connect();
         }
 
         public void disconnect(){
-            mLocationClient.unregisterConnectionCallbacks(this);
-            mLocationClient.unregisterConnectionFailedListener(this);
-            mLocationClient.disconnect();
+            //mLocationClient.unregisterConnectionCallbacks(this);
+            //mLocationClient.unregisterConnectionFailedListener(this);
+           // mLocationClient.disconnect();
         }
 
         @Override
         public void onConnected(Bundle bundle) {
-            onLocationConnected(mLocationClient.getLastLocation());
+            //onLocationConnected(mLocationClient.getLastLocation());
         }
 
         @Override
         public void onConnectionSuspended(int i) {
 
-        }
-
-        @Override
-        public void onDisconnected() {
-            mLocationClient = null;
         }
 
         @Override

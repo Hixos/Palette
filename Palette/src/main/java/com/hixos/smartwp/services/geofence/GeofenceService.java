@@ -18,7 +18,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
+//import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationStatusCodes;
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
@@ -261,7 +261,7 @@ public class GeofenceService{
         public void onReceive(Context context, Intent intent) {
             GeofenceDatabase database = new GeofenceDatabase(context);
 
-            if (LocationClient.hasError(intent)) {
+          /*  if (LocationClient.hasError(intent)) {
                 int errorCode = LocationClient.getErrorCode(intent);
                 Logger.e("ReceiveTransitionsIntentService",
                         "Location Services error: " +
@@ -284,7 +284,7 @@ public class GeofenceService{
                 }
 
                 setWallpaper(context);
-            }
+            }*/
         }
     }
 
@@ -419,9 +419,10 @@ public class GeofenceService{
     }
 
     public static class GeofenceManager implements GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationClient.OnAddGeofencesResultListener,
-        LocationClient.OnRemoveGeofencesResultListener{
+        GooglePlayServicesClient.OnConnectionFailedListener
+        //LocationClient.OnAddGeofencesResultListener,
+       // LocationClient.OnRemoveGeofencesResultListener{
+    {
 
         private final static String LOGTAG = "GeofenceManager";
 
@@ -432,7 +433,7 @@ public class GeofenceService{
 
         private Context mContext;
 
-        private LocationClient mLocationClient;
+       // private LocationClient mLocationClient;
         private int mRequest = 0;
         private List<String> mRequestUids = new ArrayList<String>();
 
@@ -449,8 +450,8 @@ public class GeofenceService{
 
         public void sendRequest(int request, List<String> requestUids){
             if(mRequest == 0){
-                mLocationClient = new LocationClient(mContext, this, this);
-                mLocationClient.connect();
+               // mLocationClient = new LocationClient(mContext, this, this);
+                //mLocationClient.connect();
                 mRequest = request;
                 mRequestUids = requestUids == null ? new ArrayList<String>() : requestUids;
             }else{
@@ -471,12 +472,12 @@ public class GeofenceService{
                     for(GeofenceData data : datas){
                         geofences.add(data.toGeofence());
                     }
-                    mLocationClient.addGeofences(geofences, transition, this);
+                    ///mLocationClient.addGeofences(geofences, transition, this);
                     Logger.fileW(mContext, LOGTAG, "Adding all");
                     break;
                 }
                 case REQUEST_REMOVE_ALL: {
-                    mLocationClient.removeGeofences(getTransitionPendingIntent(), this);
+                    //mLocationClient.removeGeofences(getTransitionPendingIntent(), this);
                     Logger.fileW(mContext, LOGTAG, "Removing all");
                     break;
                 }
@@ -492,7 +493,7 @@ public class GeofenceService{
                         }
                     }
 
-                    mLocationClient.addGeofences(geofences, transition, this);
+                    //mLocationClient.addGeofences(geofences, transition, this);
                     Logger.fileW(mContext, LOGTAG, "Add one");
                     break;
                 }
@@ -501,7 +502,7 @@ public class GeofenceService{
                     for(String uid : mRequestUids){
                         requestUids.add(uid);
                     }
-                    mLocationClient.removeGeofences(requestUids, this);
+                    //mLocationClient.removeGeofences(requestUids, this);
                     Logger.fileW(mContext, LOGTAG, "Remove one");
                     if(mCallback != null) {
                         mCallback.setWallpaper(mContext);
@@ -513,36 +514,36 @@ public class GeofenceService{
 
         @Override
         public void onDisconnected() {
-            mLocationClient = null;
+            //mLocationClient = null;
         }
 
-        @Override
+      /*  @Override
         public void onAddGeofencesResult(int statusCode, String[] ids) {
             if(statusCode != LocationStatusCodes.SUCCESS){
                 Logger.e(LOGTAG, "Error adding geofence(s): " + statusCode);
             }
             mRequest = 0;
-            mLocationClient.disconnect();
-        }
+            //mLocationClient.disconnect();
+        }*/
 
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
             Logger.e(LOGTAG, "Error connecting to locationclient");
         }
 
-        @Override
+   /*     @Override
         public void onRemoveGeofencesByRequestIdsResult(int i, String[] strings) {
             Logger.fileW(mContext, LOGTAG, "Removed by ID");
             mRequest = 0;
-            mLocationClient.disconnect();
-        }
+            //mLocationClient.disconnect();
+        }*/
 
-        @Override
+       /* @Override
         public void onRemoveGeofencesByPendingIntentResult(int i, PendingIntent pendingIntent) {
             mRequest = 0;
-            mLocationClient.disconnect();
+           // mLocationClient.disconnect();
             Logger.fileW(mContext, LOGTAG, "Removed by intent");
-        }
+        }*/
 
         private PendingIntent getTransitionPendingIntent() {
             Intent intent = new Intent(ACTION_GEOFENCE_RECEIVED);
