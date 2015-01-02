@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FontTextView">
+        <attr name="textFont" format="string"/>
+    </declare-styleable>
+
+    <declare-styleable name="AsyncImageView">
+        <attr name="ratio" format="float"/>
+    </declare-styleable>
+
+    <declare-styleable name="AnimatedGridView">
+        <attr name="draggable" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="CircleView">
+        <attr name="circleRadius" format="float" />
+        <attr name="circleColor" format="color"/>
+        <attr name="circleAlpha" format="float"/>
+        <attr name="innerDrawable" format="integer"/>
+        <attr name="innerDrawableFixedRadius" format="float"/>
+        <attr name="maxWidth" format="dimension"/>
+        <attr name="maxHeight" format="dimension"/>
+        <attr name="foreground" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="FloatingActionButton">
+        <attr name="selector" format="integer" />
+        <attr name="image" format="integer" />
+    </declare-styleable>
+</resources>

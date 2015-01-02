@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="default_jpeg_quality">70</integer>
+    <integer name="thumbnail_quality">50</integer>
+
+    <integer name="grid_columns_slideshow">2</integer>
+    <integer name="grid_columns_geofence">1</integer>
+
+    <integer name="empty_state_animation_time">700</integer>
+    <!--INTERVAL PICKER-->
+    <integer name="picker_vibration_step">75</integer>
+
+    <!--UNDOBAR-->
+    <integer name="undobar_hide_delay">5000</integer>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_slideshow_interval" translatable="false">slideshow_interval</string>
+    <string name="preference_slideshow_current_wallpaper" translatable="false">slideshow_current_wallpaper</string>
+    <string name="preference_slideshow_last_set_time" translatable="false">slideshow_last_set_time</string>
+    <string name="preference_slideshow_last_set" translatable="false">slideshow_last_set</string>
+    <string name="preference_slideshow_shuffle" translatable="false">shuffle_slideshow</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name_geofence">Posizione</string>
+
+    <string name="hint_search">Indirizzo, città, nazione</string>
+
+
+    <string name="action_sat_imagery">Satellite</string>
+
+    <!-- ERRORS -->
+    <string name="error_network_location">Geolocalizzazione non disponibile</string>
+    <string name="error_network_location_desc">Attiva servizi di localizzazione</string>
+    <string name="error_network_location_solution">Attiva</string>
+    <string name="error_wifi_disabled">Wifi disattivato</string>
+    <string name="error_wifi_disabled_desc">Mantieni il wifi attivo per un miglior posizionamento</string>
+    <string name="error_wifi_disabled_solution">Attiva</string>
+
+    <string name="error_search_location_not_found">Mi spiace, non conosco questo posto!</string>
+    <string name="error_geofence_too_small">L\'area è troppo piccola, ingradiscila un pochino!</string>
+    <string name="error_cant_load_map">Impossibile caricare la mappa</string>
+
+
+    <!-- EMPTY STATE-->
+    <string name="empty_state_geofence">Ancora nessun sfondo.\nAggiungine uno ora!</string>
+    <string name="empty_state_geofence_default_title">Scegli uno sfondo predefinito</string>
+    <string name="empty_state_geofence_default_desc">Sarà visualizzato quando nessun sfondo è attivo</string>
+</resources>

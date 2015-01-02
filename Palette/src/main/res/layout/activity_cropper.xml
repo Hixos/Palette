@@ -1,0 +1,35 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/palette_primary_opaque"
+    tools:context="com.hixos.smartwp.CropperActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/root">
+        <view
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            class="com.hixos.smartwp.widget.CropView"
+            android:id="@+id/cropView"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:background="@color/cropper_dim_area"
+        android:id="@+id/progressLayout"
+        android:visibility="gone">
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_gravity="center" />
+    </FrameLayout>
+</FrameLayout>

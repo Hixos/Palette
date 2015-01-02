@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item>
+        <shape android:shape="oval">
+
+            <solid android:color="@color/picker_cursor_pressed_background"/>
+
+        </shape>
+    </item>
+
+    <item android:bottom="@dimen/picker_cursor_outer_circle_thickness"
+        android:top="@dimen/picker_cursor_outer_circle_thickness"
+        android:left="@dimen/picker_cursor_outer_circle_thickness"
+        android:right="@dimen/picker_cursor_outer_circle_thickness">
+
+        <shape android:shape="oval">
+            <solid android:color="@color/picker_cursor_accent"/>
+        </shape>
+    </item>
+
+</layer-list>

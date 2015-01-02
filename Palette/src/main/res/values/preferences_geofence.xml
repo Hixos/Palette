@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_geofence_last_location_stored" translatable="false">geofence_location_stored</string>
+    <string name="preference_geofence_last_location_lat" translatable="false">geofence_last_location_lat</string>
+    <string name="preference_geofence_last_location_lon" translatable="false">geofence_last_location_lon</string>
+
+    <string name="preference_show_provider_error" translatable="false">show_provider_error</string>
+    <string name="preference_map_type" translatable="false">map_type</string>
+</resources>

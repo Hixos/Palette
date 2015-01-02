@@ -1,0 +1,140 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:divider="?android:dividerHorizontal"
+    android:showDividers="middle"
+    android:dividerPadding="16dp"
+    android:background="@color/palette_primary_opaque"
+    tools:context="com.hixos.smartwp.services.geofence.ProviderFixActivity">
+
+    <RelativeLayout
+        android:id="@+id/layout_wifi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="@drawable/clickable_background_masked">
+
+        <ImageView
+            android:id="@+id/imageview_wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_wifi_fix"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toRightOf="@id/imageview_wifi"
+            android:layout_toEndOf="@id/imageview_wifi"
+            android:layout_centerVertical="true"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <view
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                class="com.hixos.smartwp.widget.FontTextView"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                custom:textFont="RobotoCondensed-Regular"
+                style="@style/ClickableText"
+                android:text="@string/wifi_fix_title"
+                android:id="@+id/textview_wifi"
+                android:layout_gravity="top|start"
+                android:gravity="center_vertical|start" />
+            <view
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                class="com.hixos.smartwp.widget.FontTextView"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                custom:textFont="RobotoCondensed-Regular"
+                style="@style/LightNeutralText"
+                android:text="@string/wifi_fix_desc"
+                android:id="@+id/textview_wifi_desc"
+                android:layout_gravity="top|start"
+                android:gravity="center_vertical|start" />
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/layout_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="@drawable/clickable_background_masked">
+
+        <ImageView
+            android:id="@+id/imageview_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_location_fix"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toRightOf="@id/imageview_location"
+            android:layout_toEndOf="@id/imageview_location"
+            android:layout_centerVertical="true"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <view
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                class="com.hixos.smartwp.widget.FontTextView"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                custom:textFont="RobotoCondensed-Regular"
+                style="@style/ClickableText"
+                android:text="@string/location_fix_title"
+                android:id="@+id/textview_location"
+                android:layout_gravity="top|start"
+                android:gravity="center_vertical|start" />
+            <view
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                class="com.hixos.smartwp.widget.FontTextView"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                custom:textFont="RobotoCondensed-Regular"
+                style="@style/LightNeutralText"
+                android:text="@string/location_fix_desc"
+                android:id="@+id/textview_location_desc"
+                android:layout_gravity="top|start"
+                android:gravity="center_vertical|start" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <CheckBox
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/donot_show_again"
+        android:id="@+id/checkbox_dontshowagain"
+        android:layout_gravity="start|center_vertical" />
+</LinearLayout>

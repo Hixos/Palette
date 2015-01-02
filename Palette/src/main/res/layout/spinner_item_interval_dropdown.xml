@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <view class="com.hixos.smartwp.widget.FontTextView"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        custom:textFont="RobotoCondensed-Regular"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        style="@style/NeutralText"
+        android:textColor="@color/clickable_text"
+        android:textSize="@dimen/text_medium"
+        android:text="Example"
+        android:gravity="center"
+        android:id="@+id/spinner_item_text" />
+</LinearLayout>

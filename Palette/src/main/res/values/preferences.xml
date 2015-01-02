@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_auto_crop" translatable="false">auto_crop</string>
+    <string name="preference_crop_mode" translatable="false">crop_mode</string>
+    <string name="preference_active_service" translatable="false">active_service</string>
+    <string name="preference_imperial_system" translatable="false">imperial_system</string>
+    <string name="preference_version" translatable="false">version</string>
+    <string name="preference_contact_me" translatable="false">contact_me</string>
+    <string name="preference_wallpaper_crossfade_duration" translatable="false">wallpaper_crossfade_duration</string>
+    <string name="preference_disable_wallpaper_not_set_bubble" translatable="false">disable_wallpaper_not_set_bubble</string>
+</resources>

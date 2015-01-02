@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        style="?android:actionButtonStyle"
+        android:id="@+id/button_done"
+        android:clickable="true"
+        android:layout_marginLeft="0dp"
+        android:paddingLeft="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@drawable/clickable_background">
+
+        <TextView style="?android:actionBarTabTextStyle"
+            android:layout_width="wrap_content"
+            android:textColor="#FFFF"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingRight="0dp"
+            android:drawableLeft="@drawable/ic_action_done"
+            android:gravity="center_vertical" />
+    </FrameLayout>
+
+    <view
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="com.hixos.smartwp.widget.SearchBox"
+        android:id="@+id/search_box"
+        android:layout_gravity="right|center_vertical"
+        android:clickable="true"/>
+</LinearLayout>

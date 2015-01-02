@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="geofence_colors">
+        <item>@color/accent_red</item>
+        <item>@color/accent_orange</item>
+        <item>@color/accent_yellow</item>
+        <item>@color/accent_green</item>
+        <item>@color/accent_blue</item>
+        <item>@color/accent_purple</item>
+    </array>
+
+    <string-array name="pref_crossfade_duration_entries">
+        <item>Immediate</item>
+        <item>0.5 seconds</item>
+        <item>1 second</item>
+        <item>2 seconds</item>
+        <item>3 seconds</item>
+        <item>4 seconds</item>
+        <item>5 seconds</item>
+    </string-array>
+
+    <string-array name="pref_crossfade_duration_entry_values"  translatable="false">
+        <item>0</item>
+        <item>500</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>3000</item>
+        <item>4000</item>
+        <item>5000</item>
+    </string-array>
+    <string name="pref_crossfade_duration_default_value" translatable="false">2000</string>
+</resources>

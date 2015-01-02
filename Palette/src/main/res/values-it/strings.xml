@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Impostazioni</string>
+
+    <!-- WORDS -->
+    <string name="done">Fine</string>
+    <string name="restore">Annulla</string>
+
+    <!-- ACTIONS -->
+    <string name="action_add_wallpaper">Aggiungi sfondo</string>
+    <string name="action_auto_crop_short">Ritaglia autom.</string>
+    <string name="action_shuffle">Casuale</string>
+    <string name="action_change_wallpaper">Cambia sfondo</string>
+
+    <!-- ERRORS -->
+    <string name="error_picture_pick_fail">Mi spiace, non riesco a caricare l\'immagine selezionata :(</string>
+    <string name="title_activity_cropper">Ritaglia immagine</string>
+
+    <!--TOASTS-->
+    <string name="toast_live_wallpaper_chooser">Scegli "Palette Live Wallpaper" dalla lista</string>
+
+    <!-- CROPPER -->
+    <string name="crop_full">Intero</string>
+    <string name="crop_gel">Sinistra</string>
+    <string name="crop_port">Verticale</string>
+    <string name="crop_land">Orizzontale</string>
+
+    <!-- PLURALS -->
+    <plurals name="second">
+        <item quantity="one">Secondo</item>
+        <item quantity="other">Secondi</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">Minuto</item>
+        <item quantity="other">Minuti</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">Ora</item>
+        <item quantity="other">Ore</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">Giorno</item>
+        <item quantity="other">Giorni</item>
+    </plurals>
+    <plurals name="kilometer">
+        <item quantity="one">Kilometro</item>
+        <item quantity="other">Kilometri</item>
+    </plurals>
+    <plurals name="meter">
+        <item quantity="one">Metro</item>
+        <item quantity="other">Metri</item>
+    </plurals>
+    <plurals name="mile">
+        <item quantity="one">Miglio</item>
+        <item quantity="other">Miglia</item>
+    </plurals>
+    <plurals name="yard">
+        <item quantity="one">Iarda</item>
+        <item quantity="other">Iarde</item>
+    </plurals>
+    <plurals name="wallpaper_deleted">
+        <item quantity="one">%d sfondo cancellato</item>
+        <item quantity="other">%d sfondi cancellati</item>
+    </plurals>
+
+    <string name="title_activity_geofence_picker">Scegli posizione</string>
+    <string name="title_activity_set_wallpaper">Imposta sfondo</string>
+    <string name="action_auto_crop_full">Ritaglia automaticamente</string>
+    <string name="donot_show_again">Non mostrare più</string>
+    <string name="pref_group_debug">Opzioni sviluppatore</string>
+    <string name="pref_title_disable_wallpaper_bubble">Disattiva controllo live wallpaper</string>
+    <string name="title_activity_receive_wallpaper">Aggiungi sfondo</string>
+    <string name="toast_add_slideshow_wallpaper_success">Sfondo aggiunto con successo</string>
+    <string name="toast_add_wallpaper_failed">Impossibile aggiungere questo sfondo</string>
+    <string name="location_fix_desc">Gli sfondi basati sulla posizione non funzioneranno correttamente senza la localizzazione di rete. Clicca qui per abilitarla.</string>
+    <string name="location_fix_notif_bigtext">@string/location_fix_desc</string>
+    <string name="location_fix_notif_text">Clicca qui per ulteriori informazioni</string>
+    <string name="location_fix_notif_title">Migliora la posizione</string>
+    <string name="location_fix_title">Localizzazione di rete disattivata</string>
+    <string name="services_fix_notif_bigtext">Gli sfondi basati sulla posizione hanno bisogno di conoscere dove ti trovi per funzionare correttamente.\nClicca qui per abilitarla.</string>
+    <string name="services_fix_notif_text">Clicca qui per ulteriori informazioni</string>
+    <string name="services_fix_notif_title">Migliora la posizione</string>
+    <string name="title_activity_wallpaper_settings">Impostazioni Sfondo Animato</string>
+    <string name="wifi_fix_desc">Gli sfondi basati sulla posizione utilizzano il wifi per funzionare correttamente.\nNon c\'è bisogno che tu sia connesso ad una rete.\nClicca qui per attivare il wifi.</string>
+    <string name="wifi_fix_notif_bigtext">@string/wifi_fix_desc</string>
+    <string name="wifi_fix_notif_text">Clicca qui per ulteriori informazioni</string>
+    <string name="wifi_fix_notif_title">Migliora posizione</string>
+    <string name="wifi_fix_title">Il wifi è disattivato</string>
+    <string name="action_crop_mode">Modalità Ritaglio</string>
+    <string name="action_search">Cerca luogo</string>
+    <string name="toast_add_geofence_wallpaper_success">@string/toast_add_slideshow_wallpaper_success</string>
+</resources>

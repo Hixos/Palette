@@ -1,0 +1,62 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PickLocationActivity">
+
+    <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
+        tools:ignore="MissingPrefix"
+        android:id="@+id/map_frame"
+        class="com.google.android.gms.maps.MapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        map:uiCompass="true"
+        map:uiRotateGestures="true"
+        map:uiScrollGestures="true"
+        map:uiTiltGestures="false"
+        map:uiZoomControls="true"
+        map:uiZoomGestures="true"
+        />
+
+    <FrameLayout
+        android:id="@+id/statusbar_background"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_horizontal|top"
+        android:background="@color/palette_primary"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:id="@+id/layout_pointer">
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/map_pointer"
+                android:layout_gravity="bottom|center_horizontal"
+                android:src="@drawable/ic_map_pointer"
+                android:layout_weight="1"
+                android:cropToPadding="false"
+                android:baselineAlignBottom="false"
+                android:clickable="false" />
+        </FrameLayout>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+</FrameLayout>
+
+
+

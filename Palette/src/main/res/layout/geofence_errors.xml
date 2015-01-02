@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/errorsLayout"
+    android:divider="?android:dividerHorizontal"
+    android:showDividers="beginning|middle"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/error_frame_height"
+        android:divider="?android:dividerVertical"
+        android:showDividers="middle"
+        android:dividerPadding="16dp"
+        android:background="@color/palette_primary"
+        android:id="@+id/error_frame_wifi"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/error_text_padding"
+            android:paddingRight="4dp"
+            android:layout_gravity="center_vertical|left">
+
+            <view class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/error_wifi_disabled"
+                app:textFont="RobotoCondensed-Italic"
+                android:textSize="@dimen/text_small"
+                android:textColor="@color/neutral_text"
+                android:layout_gravity="center_vertical|left"/>
+
+            <view class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/error_wifi_disabled_desc"
+                app:textFont="RobotoCondensed-Light"
+                android:textSize="@dimen/text_xsmall"
+                android:textColor="@color/neutral_text_light"
+                android:layout_gravity="center_vertical|left"/>
+        </LinearLayout>
+
+        <view class="com.hixos.smartwp.widget.FontTextView"
+            android:layout_width="96dp"
+            android:layout_height="match_parent"
+            android:padding="4dp"
+            android:background="@drawable/clickable_background"
+            android:text="@string/error_wifi_disabled_solution"
+            app:textFont="RobotoCondensed-Regular"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/neutral_text"
+            android:layout_gravity="center"
+            android:gravity="center_vertical|center_horizontal"
+            android:clickable="true"
+            android:id="@+id/button_error_wifi"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/error_frame_height"
+        android:divider="?android:dividerVertical"
+        android:showDividers="middle"
+        android:dividerPadding="16dp"
+        android:background="@color/palette_primary"
+        android:id="@+id/error_frame_network_location"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/error_text_padding"
+            android:paddingRight="4dp"
+            android:layout_gravity="center_vertical|left">
+
+            <view class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/error_network_location"
+                app:textFont="RobotoCondensed-Italic"
+                android:textSize="@dimen/text_small"
+                android:textColor="@color/neutral_text"
+                android:layout_gravity="center_vertical|left"/>
+
+            <view class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/error_network_location_desc"
+                app:textFont="RobotoCondensed-Light"
+                android:textSize="@dimen/text_xsmall"
+                android:textColor="@color/neutral_text_light"
+                android:layout_gravity="center_vertical|left"/>
+        </LinearLayout>
+
+        <view class="com.hixos.smartwp.widget.FontTextView"
+            android:layout_width="96dp"
+            android:layout_height="match_parent"
+            android:padding="4dp"
+            android:background="@drawable/clickable_background"
+            android:text="@string/error_network_location_solution"
+            app:textFont="RobotoCondensed-Regular"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/neutral_text"
+            android:layout_gravity="center"
+            android:gravity="center_vertical|center_horizontal"
+            android:clickable="true"
+            android:id="@+id/button_error_network_location"/>
+    </LinearLayout>
+</LinearLayout>

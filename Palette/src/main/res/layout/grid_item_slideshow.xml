@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <view class="com.hixos.smartwp.widget.AsyncImageView"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        custom:ratio="@dimen/item_ratio_slideshow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/image_thumbnail"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        />
+</FrameLayout>

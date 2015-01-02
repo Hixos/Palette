@@ -1,0 +1,2 @@
+CMD
+@pause

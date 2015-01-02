@@ -1,0 +1,14 @@
+<resources>
+    <dimen name="picker_max_width">320dp</dimen>
+
+    <!--GRID-->
+    <item name="item_ratio_slideshow" format="float" type="dimen">1.25</item>
+    <item name="item_ratio_geofence" format="float" type="dimen">1.2</item>
+    <item name="item_ratio_geofence_def" format="float" type="dimen">1.9416408</item>
+    <item name="item_weight_geofence" format="float" type="dimen">1.6180339</item>
+
+    <!--END GRID-->
+
+    <!--GEOFENCE PICKER-->
+    <dimen name="geofence_pointer_margin">48dp</dimen>
+</resources>

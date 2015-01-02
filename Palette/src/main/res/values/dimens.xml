@@ -1,0 +1,74 @@
+<resources>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!--TEXT-->
+
+    <dimen name="text_xsmall">16sp</dimen>
+    <dimen name="text_small">20sp</dimen>
+    <dimen name="text_medium">22sp</dimen>
+    <dimen name="text_large">28sp</dimen>
+    <dimen name="text_xlarge">34sp</dimen>
+    <dimen name="text_xxlarge">42sp</dimen>
+    <dimen name="text_super_xxlarge">56sp</dimen>
+
+    <dimen name="clickable_text">@dimen/text_small</dimen>
+    <!--END TEXT-->
+
+    <!--GRID-->
+    <dimen name="grid_horizontal_padding">5dp</dimen>
+    <dimen name="grid_vertical_padding">14dp</dimen>
+
+    <dimen name="item_vertical_spacing">5dp</dimen>
+    <dimen name="item_horizontal_spacing">5dp</dimen>
+
+    <item name="item_ratio_slideshow" format="float" type="dimen">1.0</item>
+    <item name="item_ratio_geofence" format="float" type="dimen">1.0</item>
+    <item name="item_ratio_geofence_def" format="float" type="dimen">1.6180339</item>
+    <item name="item_weight_geofence" format="float" type="dimen">1.6180339</item>
+
+    <!--END GRID-->
+
+    <dimen name="dialog_crop_progress">150dp</dimen>
+
+    <!--CROPPER-->
+    <dimen name="cropper_primary_stroke_width">2dp</dimen>
+    <dimen name="cropper_secondary_stroke_width">1dp</dimen>
+
+    <dimen name="cropper_handle_touch_radius">24dp</dimen>
+
+    <!--INTERVAL PICKER-->
+    <dimen name="picker_outer_margin">4dp</dimen>
+    <dimen name="picker_touchable_area_width">48dp</dimen>
+    <dimen name="picker_text_size">24dp</dimen>
+    <dimen name="picker_cursor_outer_circle_thickness">12dp</dimen>
+    <dimen name="picker_max_width">280dp</dimen>
+
+    <!--EMPTY STATE-->
+    <dimen name="empty_state_line_width">2dp</dimen>
+    <dimen name="empty_state_arrow_lenght">15dp</dimen>
+    <dimen name="empty_state_arrow_height">20dp</dimen>
+
+    <!--GEOFENCE PICKER-->
+    <dimen name="search_box_padding_right">8dp</dimen>
+    <dimen name="geofence_border_width">2dp</dimen>
+    <dimen name="geofence_current_border_width">3dp</dimen>
+    <dimen name="geofence_snapshot_border_width">6dp</dimen>
+    <dimen name="geofence_pointer_margin">48dp</dimen>
+
+    <!--BUBBLE-->
+    <dimen name="bubble_max_width">200dp</dimen>
+    <dimen name="bubble_max_height">200dp</dimen>
+    <dimen name="bubble_padding">4dp</dimen>
+    <dimen name="bubble_text">@dimen/text_medium</dimen>
+
+    <!--ERROR LAYOUT-->
+    <dimen name="error_frame_height">64dp</dimen>
+    <dimen name="error_text_padding">12dp</dimen>
+
+    <!--THUMBS-->
+    <item type="dimen" name="thumbnail_geofence_default_factor">1.5</item>
+    <item type="dimen" name="thumbnail_geofence_factor">2.0</item>
+    <item type="dimen" name="thumbnail_slideshow_factor">3.0</item>
+    <item type="dimen" name="thumbnail_snapshot_factor">3.8</item>
+</resources>

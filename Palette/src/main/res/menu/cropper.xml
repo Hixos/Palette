@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.hixos.smartwp.CropperActivity">
+
+    <item
+        android:id="@+id/action_crop_mode"
+        android:icon="@drawable/ic_launcher"
+        android:title="@string/action_crop_mode"
+        app:actionViewClass="android.widget.Spinner"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_cancel"
+        app:showAsAction="never"
+        android:title="@android:string/cancel"/>
+</menu>

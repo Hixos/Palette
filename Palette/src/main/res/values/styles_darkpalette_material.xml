@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.DarkPalette.Material" parent="Theme.AppCompat">
+        <item name="colorPrimaryDark">@color/palette_primary_opaque</item>
+        <item name="colorPrimary">@color/palette_primary_opaque</item>
+        <item name="android:actionBarStyle">@style/ActionBar.DarkPalette.Material</item>
+        <item name="actionBarStyle">@style/ActionBar.DarkPalette.Material</item>
+
+        <item name="android:spinnerStyle">@style/MaterialSpinner</item>
+        <item name="spinnerStyle">@style/MaterialSpinner</item>
+
+        <item name="windowActionBarOverlay">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="Theme.DarkPalette.Material.Translucent" parent="Theme.DarkPalette.Material"/>
+
+    <style name="Theme.DarkPalette.Material.Translucent.NoShadow" parent="Theme.DarkPalette.Material.Translucent">
+        <item name="actionBarStyle">@style/ActionBar.DarkPalette.Material.NoShadow</item>
+        <item name="android:actionBarStyle">@style/ActionBar.DarkPalette.Material.NoShadow</item>
+    </style>
+
+    <style name="Theme.DarkPalette.Material.Translucent.Ultra" parent="Theme.DarkPalette.Material.Translucent">
+        <item name="android:actionBarStyle">@style/ActionBar.DarkPalette.Material.UltraTranslucent</item>
+
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/ActionBar.DarkPalette.Material.UltraTranslucent</item>
+    </style>
+
+    <style name="Theme.DarkPalette.Material.Dialog" parent="Theme.AppCompat.Dialog"/>
+
+    <style name="Theme.DarkPalette.Material.Dialog.NoActionBar" parent="Theme.DarkPalette.Material.Dialog">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.DarkPalette.Material.Translucent.TranslucentWindow"
+        parent="Theme.DarkPalette.Material.Translucent">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="ActionBar.DarkPalette.Material" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/palette_primary</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <!-- Support library compatibility -->
+        <item name="background">@color/palette_primary</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="ActionBar.DarkPalette.Material.NoShadow" parent="ActionBar.DarkPalette.Material">
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="ActionBar.DarkPalette.Material.UltraTranslucent" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/palette_primary_ultra_translucent</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:spinnerStyle">@style/MaterialSpinner</item>
+        <!-- Support library compatibility -->
+        <item name="background">@color/palette_primary</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="Theme.DarkPalette.Material.Settings" parent="@style/Theme.DarkPalette.Material">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="MaterialSpinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@drawable/spinner_material_popup_background</item>
+    </style>
+</resources>

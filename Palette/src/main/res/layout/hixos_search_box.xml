@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <FrameLayout
+        android:id="@+id/frame_search_cancel"
+        android:paddingRight="0dp"
+        android:paddingLeft="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:clickable="true">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:id="@+id/imageview_search_cancel"
+            android:src="@drawable/ic_action_search"
+            android:layout_gravity="center"/>
+
+        <ProgressBar android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:id="@+id/progress"
+            android:layout_gravity="center"
+            style="?android:attr/indeterminateProgressStyle"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/frame_search_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:layout_toLeftOf="@+id/frame_search_cancel"
+        android:visibility="invisible">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_search"
+            android:id="@+id/imageView"
+            android:layout_gravity="center" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edittext_search_box"
+            android:singleLine="true"
+            android:hint="@string/hint_search"
+            android:ellipsize="end"
+            android:imeOptions="actionSearch"
+            android:textColor="#FFFF"
+            android:textColorHint="#8FFF"
+            android:background="@drawable/kitkat_edit_text_holo_light" />
+    </LinearLayout>
+</RelativeLayout>

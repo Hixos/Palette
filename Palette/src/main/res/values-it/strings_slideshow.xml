@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name_slideshow">Slideshow</string>
+
+    <!--INTERVAl PICKER-->
+    <string name="set_interval">Imposta intervallo</string>
+
+    <!--ACTIONS-->
+    <string name="action_pick_interval">Scegli intervallo</string>
+
+    <!-- EMPTY STATE-->
+    <string name="empty_state_text_slideshow">Ancora nessuno sfondo.\nAggiungine uno ora!</string>
+</resources>

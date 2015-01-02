@@ -1,0 +1,19 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+    <string name="contact_me">Contact me</string>
+    <string name="pref_group_info">Info</string>
+    <string name="pref_title_contact">Contact me!</string>
+    <string name="pref_desc_contact" translatable="false">lucaerbetta105@gmail.com</string>
+    <string name="pref_desc_version" translatable="false">Copyright &#169; 2014&#8211;2015 Luca Erbetta</string>
+
+    <string name="pref_group_geowalls">Location</string>
+    <string name="pref_title_show_notif">Show location error notifications</string>
+    <string name="pref_desc_show_notif">Show notification when wifi and/or network location is disabled</string>
+
+    <string name="pref_group_general">General</string>
+    <string name="pref_title_crossfade_duration">Crossfade duration</string>
+    <string name="pref_desc_crossfade_duration">Duration of the transition between two wallpapers</string>
+
+    <string name="pref_group_debug">Developer Options</string>
+    <string name="pref_title_disable_wallpaper_bubble">Disable live wallpaper check</string>
+</resources>

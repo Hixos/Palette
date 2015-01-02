@@ -1,0 +1,14 @@
+<resources>
+    <string name="title_activity_settings">Impostazioni</string>
+    <string name="contact_me">Contattami</string>
+    <string name="pref_group_info">Info</string>
+    <string name="pref_title_contact">Contattami!</string>
+
+    <string name="pref_group_geowalls">Posizione</string>
+    <string name="pref_title_show_notif">Visualizza notifica errore di localizzazione</string>
+    <string name="pref_desc_show_notif">Visualizza una notifica quando il wifi o il posizionamento di rete sono disattivati</string>
+
+    <string name="pref_group_general">Generali</string>
+    <string name="pref_title_crossfade_duration">Durata transizione</string>
+    <string name="pref_desc_crossfade_duration">Durata dell\'animazione di transizione tra due sfondi</string>
+</resources>

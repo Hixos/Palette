@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name_geofence">Location</string>
+
+    <string name="action_search">Search location</string>
+    <string name="hint_search">Address, city, country</string>
+
+
+    <string name="action_sat_imagery">Satellite</string>
+
+    <!-- ERRORS -->
+    <string name="error_network_location">Location unavailable</string>
+    <string name="error_network_location_desc">Enable location services</string>
+    <string name="error_network_location_solution">Enable</string>
+    <string name="error_wifi_disabled">Wifi is off</string>
+    <string name="error_wifi_disabled_desc">Keep wifi on for more accurate location</string>
+    <string name="error_wifi_disabled_solution">Turn on</string>
+
+    <string name="error_search_location_not_found">Sorry, I cannot find that place!</string>
+    <string name="error_geofence_too_small">The area is too small, zoom out a little bit</string>
+    <string name="error_cant_load_map">Unable to load the map</string>
+
+
+    <!-- EMPTY STATE-->
+    <string name="empty_state_geofence">No wallpapers yet.\nAdd one now!</string>
+    <string name="empty_state_geofence_default_title">Choose a default wallpaper</string>
+    <string name="empty_state_geofence_default_desc">It\'ll be displayed when no wallpaper is active</string>
+</resources>

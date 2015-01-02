@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_new_wallpaper"
+        android:icon="@drawable/ic_action_new_wallpaper"
+        android:title="@string/action_add_wallpaper"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_pick_interval"
+        android:icon="@drawable/ic_action_interval"
+        android:title="@string/action_pick_interval"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_shuffle"
+        android:title="@string/action_shuffle"
+        app:showAsAction="never"
+        android:checkable="true"/>
+
+    <item android:id="@+id/action_auto_crop"
+        android:title="@string/action_auto_crop_short"
+        app:showAsAction="never"
+        android:checkable="true"/>
+
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Palette</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- WORDS -->
+    <string name="done">Done</string>
+    <string name="restore">Restore</string>
+
+    <!-- ACTIONS -->
+    <string name="action_add_wallpaper">Add wallpaper</string>
+    <string name="action_auto_crop_short">Auto crop</string>
+    <string name="action_auto_crop_full">Auto crop</string>
+    <string name="action_shuffle">Shuffle</string>
+    <string name="action_change_wallpaper">Change wallpaper</string>
+    <string name="action_crop_mode">Crop mode</string>
+
+    <!-- ERRORS -->
+    <string name="error_picture_pick_fail">I\'m sorry, I can\'t load the selected picture :(</string>
+    <string name="title_activity_cropper">Crop picture</string>
+    <string name="hello_world" translatable="false">Hello world!</string>
+
+    <!-- TOASTS -->
+    <string name="toast_live_wallpaper_chooser">Choose "Palette Live Wallpaper" from the list</string>
+    <string name="toast_add_slideshow_wallpaper_success">Wallpaper added successfully</string>
+    <string name="toast_add_geofence_wallpaper_success">Wallpaper added successfully</string>
+    <string name="toast_add_wallpaper_failed">Could not add this wallpaper</string>
+
+    <!-- CROPPER -->
+    <string name="crop_full">Full</string>
+    <string name="crop_gel">Left</string>
+    <string name="crop_port">Portrait</string>
+    <string name="crop_land">Landscape</string>
+
+    <!-- PROVIDER FIX -->
+    <string name="wifi_fix_title">Wifi is disabled</string>
+    <string name="wifi_fix_desc">Location-based wallpapers need wifi to work correctly. It works even if you\'re not connected to a network.\nClick here to turn it on.</string>
+    <string name="wifi_fix_notif_title">Improve location</string>
+    <string name="wifi_fix_notif_bigtext">@string/wifi_fix_desc</string>
+    <string name="wifi_fix_notif_text">Click here for more information</string>
+    <string name="location_fix_title">Network location is disabled</string>
+    <string name="location_fix_desc">Location-based wallpapers can\'t work if network location is disabled.\nClick here to turn it on.</string>
+    <string name="location_fix_notif_title">Improve location</string>
+    <string name="location_fix_notif_bigtext">@string/location_fix_desc</string>
+    <string name="location_fix_notif_text">Click here for more information</string>
+    <string name="services_fix_notif_title">Improve location</string>
+    <string name="services_fix_notif_bigtext">Location-based wallpapers need to know your location to work correctly.\nClick here for more information.</string>
+    <string name="services_fix_notif_text">Click here for more information</string>
+    <string name="donot_show_again">Don\'t show this again</string>
+
+
+    <!-- PLURALS -->
+    <plurals name="second">
+        <item quantity="one">Second</item>
+        <item quantity="other">Seconds</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">Minute</item>
+        <item quantity="other">Minutes</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">Hour</item>
+        <item quantity="other">Hours</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">Day</item>
+        <item quantity="other">Days</item>
+    </plurals>
+    <plurals name="kilometer">
+        <item quantity="one">Kilometer</item>
+        <item quantity="other">Kilometers</item>
+    </plurals>
+    <plurals name="meter">
+        <item quantity="one">Meter</item>
+        <item quantity="other">Meters</item>
+    </plurals>
+    <plurals name="mile">
+        <item quantity="one">Mile</item>
+        <item quantity="other">Miles</item>
+    </plurals>
+    <plurals name="yard">
+        <item quantity="one">Yard</item>
+        <item quantity="other">Yards</item>
+    </plurals>
+    <plurals name="wallpaper_deleted">
+        <item quantity="one">%d wallpaper deleted</item>
+        <item quantity="other">%d wallpapers deleted</item>
+    </plurals>
+
+    <string name="title_activity_geofence_picker">Choose location</string>
+    <string name="title_activity_set_wallpaper">Set wallpaper</string>
+    <string name="title_activity_provider_fix" translatable="false">Provider Fix</string>
+    <string name="title_activity_wallpaper_settings">Live Wallpaper Settings</string>
+    <string name="title_activity_receive_wallpaper">Add wallpaper</string>
+
+</resources>

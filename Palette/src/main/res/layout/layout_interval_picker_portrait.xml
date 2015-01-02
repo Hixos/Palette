@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:id="@+id/dialog_interval_picker"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/palette_primary_opaque">
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="80dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/NeutralText"
+                android:textSize="@dimen/text_super_xxlarge"
+                android:textColor="@color/clickable_text"
+                android:text="2"
+                android:id="@+id/textview_interval_value"
+                android:layout_gravity="center"
+                android:singleLine="true" />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinner_unit"
+                android:layout_gravity="center"
+                android:layout_marginLeft="4dp"
+                style="@style/MaterialSpinner"/>
+        </LinearLayout>
+    </FrameLayout>
+
+
+    <view
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        class="com.hixos.smartwp.widget.IntervalPicker"
+        android:id="@+id/interval_picker"
+        android:layout_gravity="center" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/picker_background">
+
+        <LinearLayout
+            android:id="@+id/set"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:background="@drawable/clickable_background"
+            android:gravity="center">
+
+            <view class="com.hixos.smartwp.widget.FontTextView"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                custom:textFont="RobotoCondensed-Regular"
+                style="@style/ClickableText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/set_interval"
+                android:id="@+id/card_button_text"
+                android:focusable="false"
+                android:gravity="center_vertical|center_horizontal" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+
+</LinearLayout>

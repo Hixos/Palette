@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--INTERVAL PICKER-->
+    <dimen name="picker_max_width">500dp</dimen>
+
+    <!--GEOFENCE PICKER-->
+    <dimen name="geofence_pointer_margin">0dp</dimen>
+</resources>

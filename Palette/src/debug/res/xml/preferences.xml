@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:persistent="false" android:title="@string/pref_group_general">
+        <ListPreference
+            android:key="@string/preference_wallpaper_crossfade_duration"
+            android:title="@string/pref_title_crossfade_duration"
+            android:summary="@string/pref_desc_crossfade_duration"
+            android:dialogTitle="@string/pref_title_crossfade_duration"
+            android:entries="@array/pref_crossfade_duration_entries"
+            android:entryValues="@array/pref_crossfade_duration_entry_values"
+            android:defaultValue="@string/pref_crossfade_duration_default_value" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:persistent="false" android:title="@string/pref_group_geowalls">
+        <CheckBoxPreference android:key="@string/preference_show_provider_error"
+            android:title="@string/pref_title_show_notif"
+            android:summary="@string/pref_desc_show_notif"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:persistent="false" android:title="@string/pref_group_info">
+        <Preference android:persistent="false" android:key="@string/preference_version" android:summary="@string/pref_desc_version" />
+        <Preference android:persistent="false" android:title="@string/pref_title_contact" android:key="@string/preference_contact_me" android:summary="@string/pref_desc_contact" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:persistent="false" android:title="@string/pref_group_debug">
+        <CheckBoxPreference android:key="@string/preference_disable_wallpaper_not_set_bubble"
+            android:title="@string/pref_title_disable_wallpaper_bubble"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
+</PreferenceScreen>

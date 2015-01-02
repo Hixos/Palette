@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="NeutralText">
+        <item name="android:textColor">@color/neutral_text</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="LightNeutralText" parent="NeutralText">
+        <item name="android:textColor">@color/neutral_text_light</item>
+    </style>
+
+    <style name="ClickableText">
+        <item name="android:textColor">@color/clickable_text</item>
+        <item name="android:textSize">@dimen/clickable_text</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="EmptyStateTextLarge">
+        <item name="textFont">RobotoCondensed-LightItalic</item>
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="android:textColor">@color/empty_state_text</item>
+    </style>
+
+    <style name="EmptyStateTextMedium">
+        <item name="textFont">RobotoCondensed-LightItalic</item>
+        <item name="android:textSize">@dimen/text_medium</item>
+        <item name="android:textColor">@color/empty_state_text</item>
+    </style>
+</resources>

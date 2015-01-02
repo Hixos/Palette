@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <FrameLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:id="@+id/frame_thumbnail">
+
+        <view class="com.hixos.smartwp.widget.AsyncImageView"
+            xmlns:custom="http://schemas.android.com/apk/res-auto"
+            custom:ratio="@dimen/item_ratio_geofence_def"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/image_thumbnail"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_overflow"
+            android:layout_gravity="end|top"
+            android:background="@drawable/clickable_background_masked"
+            android:src="@drawable/ic_card_overflow"
+            android:padding="4dp"
+            android:clickable="true"
+            android:layout_margin="4dp"/>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:id="@+id/emptyState"
+        android:clickable="true"
+        android:background="@drawable/clickable_background_gray"
+        android:visibility="gone">
+        <view
+            class="com.hixos.smartwp.widget.FontTextView"
+            style="@style/EmptyStateTextLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="@string/empty_state_geofence_default_title"
+            android:id="@+id/emptyStateTextTitle"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|bottom" />
+        <view
+            class="com.hixos.smartwp.widget.FontTextView"
+            style="@style/EmptyStateTextMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="@string/empty_state_geofence_default_desc"
+            android:id="@+id/emptyStateTextDesc"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|top" />
+    </LinearLayout>
+</FrameLayout>
