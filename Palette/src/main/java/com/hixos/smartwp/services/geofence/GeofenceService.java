@@ -15,15 +15,12 @@ import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
-//import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationStatusCodes;
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.ImageManager;
@@ -33,11 +30,9 @@ import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.wallpaper.OnWallpaperChangedCallback;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by Luca on 17/04/2014.
- */
 public class GeofenceService{
     private final static String LOGTAG = "GeofenceService";
 
@@ -52,6 +47,7 @@ public class GeofenceService{
     public static final int NOTIFICATION_WIFI = 1;
     public static final int NOTIFICATION_LOCATION = 2;
     public static final int NOTIFICATION_BOTH = 3;
+    public static final int NOTIFICATION_PLAY_ERROR = 4;
 
     private static GeofenceService sIstance;
 
@@ -174,7 +170,7 @@ public class GeofenceService{
                 contentPIntent);
     }
 
-    private void showNotification(Context context, int id, int smallIcon, String title, String text,
+    private static void showNotification(Context context, int id, int smallIcon, String title, String text,
                                   String bigText, PendingIntent contentPIntent){
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
@@ -358,11 +354,7 @@ public class GeofenceService{
             String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
 
             if(uids.length > 0){
-                List<String> requestUids = new ArrayList<String>();
-                requestUids.clear();
-                for(String s : uids){
-                    requestUids.add(s);
-                }
+                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
                 mManager.addGeofences(requestUids);
             }
         }
@@ -374,11 +366,7 @@ public class GeofenceService{
             String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
 
             if(uids.length > 0){
-                List<String> requestUids = new ArrayList<String>();
-                requestUids.clear();
-                for(String l : uids){
-                    requestUids.add(l);
-                }
+                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
                 mManager.removeGeofence(requestUids);
             }
         }
@@ -486,7 +474,13 @@ public class GeofenceService{
 
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
-            //Todo: Show notification to fix the problem
+            if (connectionResult.hasResolution()) {
+                PendingIntent pendingIntent = connectionResult.getResolution();
+                showNotification(mContext, NOTIFICATION_PLAY_ERROR, R.drawable.ic_action_done,
+                        "Titolo",
+                        "Mex corto", "Mex molto ma molto ma molto ma molto non troppo lunghissimo",
+                        pendingIntent);
+            }
         }
 
         private void request(int requestCode, List<String> requestData){
@@ -535,7 +529,7 @@ public class GeofenceService{
         public void addGeofences(List<String> geofenceUids){
             if(mGoogleClient.isConnected()) {
                 PendingIntent transition = getTransitionPendingIntent();
-                List<Geofence> geofences = new ArrayList<Geofence>();
+                List<Geofence> geofences = new ArrayList<>();
                 GeofenceDatabase database = new GeofenceDatabase(mContext);
 
                 for (String uid : geofenceUids) {
