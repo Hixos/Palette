@@ -45,7 +45,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
         mDatabase.setDatabaseObserver(this);
 
-        mData = new ArrayList<GeofenceData>();
+        mData = new ArrayList<>();
         reloadData();
     }
 
@@ -149,18 +149,6 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
         reloadData();
     }
 
-    public void reloadData(){
-        mData.clear();
-
-        mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
-            @Override
-            public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
-                mData = wallpapers;
-                notifyDataSetChanged();
-            }
-        });
-    }
-
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         switch (getItemViewType(i)){
@@ -225,6 +213,17 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
                 return v;
             }
         }
+    }
+
+    public void reloadData(){
+        mData.clear();
+        mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
+            @Override
+            public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
+                mData = wallpapers;
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override

@@ -17,8 +17,12 @@ import android.support.v4.app.NotificationCompat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 //import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.GeofencingEvent;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationStatusCodes;
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
@@ -83,7 +87,7 @@ public class GeofenceService{
             sIstance.stop();
         }else if(sIstance == null){
             GeofenceManager manager = new GeofenceManager(context, null);
-            manager.sendRequest(GeofenceManager.REQUEST_REMOVE_ALL);
+            manager.removeAllGeofences();
         }
     }
 
@@ -210,6 +214,7 @@ public class GeofenceService{
         mCallback = callback;
         mContext = context;
         mManager = new GeofenceManager(mContext, this);
+
         if(servicesConnected(context)){
             mReceiver = new GeofenceReceiver();
             mReloadReceiver = new ReloadWallpaperReceiver();
@@ -227,7 +232,7 @@ public class GeofenceService{
             
             mRunning = MiscUtils.Location.networkLocationProviderEnabled(context);
             if(mRunning){
-                mManager.sendRequest(GeofenceManager.REQUEST_ADD_ALL);
+                mManager.addAllGeofences();
             }
         }else {
             mStopped = true;
@@ -249,7 +254,7 @@ public class GeofenceService{
         GeofenceDatabase database = new GeofenceDatabase(mContext);
         database.clearActiveGeofences();
 
-        mManager.sendRequest(GeofenceManager.REQUEST_REMOVE_ALL);
+        mManager.removeAllGeofences();
     }
 
     private boolean isStopped(){
@@ -260,18 +265,18 @@ public class GeofenceService{
         @Override
         public void onReceive(Context context, Intent intent) {
             GeofenceDatabase database = new GeofenceDatabase(context);
+            GeofencingEvent geoEvent = GeofencingEvent.fromIntent(intent);
 
-          /*  if (LocationClient.hasError(intent)) {
-                int errorCode = LocationClient.getErrorCode(intent);
+            if (geoEvent.hasError()) {
+                int errorCode = geoEvent.getErrorCode();
                 Logger.e("ReceiveTransitionsIntentService",
                         "Location Services error: " +
                                 Integer.toString(errorCode));
                 database.clearActiveGeofences();
                 setWallpaper(context);
             } else {
-                int transitionType = LocationClient.getGeofenceTransition(intent);
-                List <Geofence> triggerList = LocationClient.getTriggeringGeofences(intent);
-
+                int transitionType = geoEvent.getGeofenceTransition();
+                List <Geofence> triggerList = geoEvent.getTriggeringGeofences();
 
                 if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
                     for(Geofence geofence : triggerList){
@@ -284,7 +289,7 @@ public class GeofenceService{
                 }
 
                 setWallpaper(context);
-            }*/
+            }
         }
     }
 
@@ -358,7 +363,7 @@ public class GeofenceService{
                 for(String s : uids){
                     requestUids.add(s);
                 }
-                mManager.sendRequest(GeofenceManager.REQUEST_ADD, requestUids);
+                mManager.addGeofences(requestUids);
             }
         }
     }
@@ -374,7 +379,7 @@ public class GeofenceService{
                 for(String l : uids){
                     requestUids.add(l);
                 }
-                mManager.sendRequest(GeofenceManager.REQUEST_REMOVE, requestUids);
+                mManager.removeGeofence(requestUids);
             }
         }
     }
@@ -405,7 +410,7 @@ public class GeofenceService{
             boolean networkLocationEnabled
                     = MiscUtils.Location.networkLocationProviderEnabled(context);
             if(!mRunning && networkLocationEnabled){
-                mManager.sendRequest(GeofenceManager.REQUEST_ADD_ALL);
+                mManager.addAllGeofences();
             }
             if(Preferences.getBoolean(context, R.string.preference_show_provider_error, true)) {
                 if (!networkLocationEnabled) {
@@ -418,134 +423,154 @@ public class GeofenceService{
         }
     }
 
-    public static class GeofenceManager implements GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener
-        //LocationClient.OnAddGeofencesResultListener,
-       // LocationClient.OnRemoveGeofencesResultListener{
-    {
-
+    public static class GeofenceManager implements GoogleApiClient.ConnectionCallbacks,
+            GoogleApiClient.OnConnectionFailedListener {
         private final static String LOGTAG = "GeofenceManager";
 
-        public final static int REQUEST_ADD_ALL = 1;
-        public final static int REQUEST_REMOVE_ALL = 2;
-        public final static int REQUEST_ADD = 3;
-        public final static int REQUEST_REMOVE = 4;
+        //In order of importance
+        private final static int REQUEST_NOPE = 0;
+        private final static int REQUEST_ADD = 1;
+        private final static int REQUEST_REMOVE = 2;
+        private final static int REQUEST_ADD_ALL = 3;
+        private final static int REQUEST_REMOVE_ALL = 4;
 
         private Context mContext;
-
-       // private LocationClient mLocationClient;
-        private int mRequest = 0;
-        private List<String> mRequestUids = new ArrayList<String>();
-
+        private GoogleApiClient mGoogleClient;
         private GeofenceService mCallback;
 
-        private GeofenceManager(Context context, GeofenceService callback) {
+        private int mRequest = REQUEST_ADD_ALL;
+        private List<String> mRequestData;
+
+        private GeofenceManager(Context context, GeofenceService callback)  {
             mContext = context;
             mCallback = callback;
+            initGoogleClient();
         }
 
-        public void sendRequest(int request){
-            sendRequest(request, null);
-        }
-
-        public void sendRequest(int request, List<String> requestUids){
-            if(mRequest == 0){
-               // mLocationClient = new LocationClient(mContext, this, this);
-                //mLocationClient.connect();
-                mRequest = request;
-                mRequestUids = requestUids == null ? new ArrayList<String>() : requestUids;
-            }else{
-                Logger.fileW(mContext, LOGTAG, "LocationClient Busy");
-                Logger.e(LOGTAG, "LocationClient busy");
-            }
+        private void initGoogleClient(){
+            mGoogleClient = null;
+            mGoogleClient = new GoogleApiClient.Builder(mContext)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .build();
+            mGoogleClient.connect();
         }
 
         @Override
         public void onConnected(Bundle bundle) {
-            switch (mRequest){
-                case REQUEST_ADD_ALL: {
-                    PendingIntent transition = getTransitionPendingIntent();
-                    List<Geofence> geofences = new ArrayList<Geofence>();
-                    GeofenceDatabase database = new GeofenceDatabase(mContext);
-                    List<GeofenceData> datas = database.getGeofencesByDistance();
-                    if(datas.size() <= 0) break;
-                    for(GeofenceData data : datas){
-                        geofences.add(data.toGeofence());
-                    }
-                    ///mLocationClient.addGeofences(geofences, transition, this);
-                    Logger.fileW(mContext, LOGTAG, "Adding all");
+            switch (mRequest) {
+                case REQUEST_ADD_ALL:
+                    addAllGeofences();
                     break;
-                }
-                case REQUEST_REMOVE_ALL: {
-                    //mLocationClient.removeGeofences(getTransitionPendingIntent(), this);
-                    Logger.fileW(mContext, LOGTAG, "Removing all");
+                case REQUEST_ADD:
+                    if (mRequestData != null)
+                        addGeofences(mRequestData);
                     break;
-                }
-                case REQUEST_ADD: {
-                    PendingIntent transition = getTransitionPendingIntent();
-                    List<Geofence> geofences = new ArrayList<Geofence>();
-                    GeofenceDatabase database = new GeofenceDatabase(mContext);
-
-                    for(String uid : mRequestUids){
-                        GeofenceData data = database.getGeofenceData(uid);
-                        if(data != null){
-                            geofences.add(data.toGeofence());
-                        }
-                    }
-
-                    //mLocationClient.addGeofences(geofences, transition, this);
-                    Logger.fileW(mContext, LOGTAG, "Add one");
+                case REQUEST_REMOVE_ALL:
+                    removeAllGeofences();
                     break;
-                }
-                case REQUEST_REMOVE: {
-                    List<String> requestUids = new ArrayList<String>();
-                    for(String uid : mRequestUids){
-                        requestUids.add(uid);
-                    }
-                    //mLocationClient.removeGeofences(requestUids, this);
-                    Logger.fileW(mContext, LOGTAG, "Remove one");
-                    if(mCallback != null) {
-                        mCallback.setWallpaper(mContext);
-                    }
+                case REQUEST_REMOVE:
+                    if (mRequestData != null)
+                        removeGeofence(mRequestData);
                     break;
-                }
             }
+            mRequest = REQUEST_NOPE;
+            mRequestData = null;
         }
+
 
         @Override
-        public void onDisconnected() {
-            //mLocationClient = null;
+        public void onConnectionSuspended(int i) {
+            Logger.e(LOGTAG, "Connection suspended");
         }
-
-      /*  @Override
-        public void onAddGeofencesResult(int statusCode, String[] ids) {
-            if(statusCode != LocationStatusCodes.SUCCESS){
-                Logger.e(LOGTAG, "Error adding geofence(s): " + statusCode);
-            }
-            mRequest = 0;
-            //mLocationClient.disconnect();
-        }*/
 
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
-            Logger.e(LOGTAG, "Error connecting to locationclient");
+            //Todo: Show notification to fix the problem
         }
 
-   /*     @Override
-        public void onRemoveGeofencesByRequestIdsResult(int i, String[] strings) {
-            Logger.fileW(mContext, LOGTAG, "Removed by ID");
-            mRequest = 0;
-            //mLocationClient.disconnect();
-        }*/
+        private void request(int requestCode, List<String> requestData){
+            if(requestCode > mRequest){
+                mRequest = requestCode;
+                mRequestData = requestData;
+            }
+        }
 
-       /* @Override
-        public void onRemoveGeofencesByPendingIntentResult(int i, PendingIntent pendingIntent) {
-            mRequest = 0;
-           // mLocationClient.disconnect();
-            Logger.fileW(mContext, LOGTAG, "Removed by intent");
-        }*/
+        public void addAllGeofences() {
+            if(mGoogleClient.isConnected()) {
+                PendingIntent transition = getTransitionPendingIntent();
+                List<Geofence> geofences = new ArrayList<>();
+                GeofenceDatabase database = new GeofenceDatabase(mContext);
+                List<GeofenceData> datas = database.getGeofencesByDistance();
+                if (datas.size() > 0) {
+                    for (GeofenceData data : datas) {
+                        geofences.add(data.toGeofence());
+                    }
+                    GeofencingRequest geoRequest = new GeofencingRequest.Builder()
+                            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                            .addGeofences(geofences)
+                            .build();
+                    LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
+                }
+            }else{
+                request(REQUEST_ADD_ALL, null);
+                if(!mGoogleClient.isConnecting()){
+                    initGoogleClient();
+                }
+            }
+        }
 
-        //
+        public void removeAllGeofences() {
+            if(mGoogleClient.isConnected()){
+                LocationServices.GeofencingApi.removeGeofences(mGoogleClient,
+                        getTransitionPendingIntent());
+            }else{
+                request(REQUEST_REMOVE_ALL, null);
+                if(!mGoogleClient.isConnecting()){
+                    initGoogleClient();
+                }
+            }
+        }
+
+        public void addGeofences(List<String> geofenceUids){
+            if(mGoogleClient.isConnected()) {
+                PendingIntent transition = getTransitionPendingIntent();
+                List<Geofence> geofences = new ArrayList<Geofence>();
+                GeofenceDatabase database = new GeofenceDatabase(mContext);
+
+                for (String uid : geofenceUids) {
+                    GeofenceData data = database.getGeofenceData(uid);
+                    if (data != null) {
+                        geofences.add(data.toGeofence());
+                    }
+                }
+                GeofencingRequest geoRequest = new GeofencingRequest.Builder()
+                        .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                        .addGeofences(geofences)
+                        .build();
+                LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
+            }else{
+                request(REQUEST_ADD, geofenceUids);
+                if(!mGoogleClient.isConnecting()){
+                    initGoogleClient();
+                }
+            }
+        }
+
+        public void removeGeofence(List<String> geofenceUids) {
+            if(mGoogleClient.isConnected()) {
+                LocationServices.GeofencingApi.removeGeofences(mGoogleClient, geofenceUids);
+                if (mCallback != null) {
+                    mCallback.setWallpaper(mContext);
+                }
+            }else{
+                request(REQUEST_REMOVE, geofenceUids);
+                if(!mGoogleClient.isConnecting()){
+                    initGoogleClient();
+                }
+            }
+        }
+
         private PendingIntent getTransitionPendingIntent() {
             Intent intent = new Intent(ACTION_GEOFENCE_RECEIVED);
             return PendingIntent.getBroadcast(

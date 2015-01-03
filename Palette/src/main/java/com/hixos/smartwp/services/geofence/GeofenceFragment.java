@@ -61,7 +61,8 @@ import java.util.List;
  */
 public class GeofenceFragment extends Fragment implements UndoBarController.UndoListener,
         GeofenceDatabase.OnElementRemovedListener, GeofenceDatabaseAdapter.OnEmptyStateClickListener,
-        GeofenceDatabaseAdapter.OnCardOverflowClickListener, PopupMenu.OnMenuItemClickListener, View.OnClickListener {
+        GeofenceDatabaseAdapter.OnCardOverflowClickListener, PopupMenu.OnMenuItemClickListener,
+        View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
 
@@ -85,9 +86,10 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     private View mErrorFrameNetwork;
     private int mDefaultPaddingTop;
 
-    private PlayLocationSource mLocationSource;
+    private GoogleApiClient mGoogleClient;
 
     private boolean mSetWallpaperActivityVisible = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +100,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         mDatabase.clearDeletedGeofences();
         mDatabase.setOnElementRemovedListener(this);
         mDatabase.clearDeletedGeofencesAsync();
-
         mEditor = new GeofenceEditor();
     }
 
@@ -107,6 +108,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         View view = inflater.inflate(R.layout.fragment_geofence, container, false);
 
         mGridView = (AnimatedGridView)view.findViewById(R.id.gridView);
+        setAdapter();
 
         mErrorsLayout = view.findViewById(R.id.errorsLayout);
         mErrorFrameWifi = view.findViewById(R.id.error_frame_wifi);
@@ -218,11 +220,13 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onStart() {
         super.onStart();
-        if(checkPlayServices()){
-            mLocationSource = new PlayLocationSource();
-        }else {
-            setAdapter();
-        }
+        mGoogleClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        mGoogleClient.connect();
+
     }
 
     @Override
@@ -233,6 +237,49 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)){
             checkLiveWallpaper();
         }
+        if(mGoogleClient.isConnected()){
+            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
+            if(lastLocation != null){
+                mDatabase.setLastLocation(lastLocation);
+            }
+            ((GeofenceDatabaseAdapter)mGridView.getAdapter()).reloadData();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
+        if(lastLocation != null){
+            mDatabase.setLastLocation(lastLocation);
+        }
+        ((GeofenceDatabaseAdapter)mGridView.getAdapter()).reloadData();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                connectionResult.startResolutionForResult(
+                        getActivity(),
+                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            showErrorDialog(connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mGoogleClient.disconnect();
+        mGoogleClient = null;
     }
 
     private void showErrorFrames(){
@@ -318,23 +365,12 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 mSetWallpaperActivityVisible = false;
                 break;
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
-                if(resultCode == Activity.RESULT_OK){
-                    checkPlayServices();
-                }else{
-                    getActivity().finish();
+                if(resultCode != Activity.RESULT_OK){
+                    Toast.makeText(getActivity(), R.string.error_location_not_found, Toast.LENGTH_LONG);
                 }
                 break;
             default:
                 mEditor.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if(mLocationSource != null){
-            mLocationSource.disconnect();
-            mLocationSource = null;
         }
     }
 
@@ -796,19 +832,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         }
     }
 
-    private boolean checkPlayServices() {
-        int errorCode = GooglePlayServicesUtil.
-                isGooglePlayServicesAvailable(getActivity());
-        if (ConnectionResult.SUCCESS == errorCode) {
-            Log.d("Location Updates",
-                    "Google Play services is available.");
-            return true;
-        } else {
-            showErrorDialog(errorCode);
-            return false;
-        }
-    }
-
     private void showErrorDialog(int errorCode){
         Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(
                 errorCode,
@@ -826,54 +849,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             });
             errorFragment.show(getFragmentManager(), "services_error");
 
-        }
-    }
-
-    private class PlayLocationSource implements
-            GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
-
-        GoogleApiClient client = new GoogleApiClient.Builder(getActivity().getApplicationContext())
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-        public PlayLocationSource() {
-            //mLocationClient = new LocationClient(getActivity(), this, this);
-            //mLocationClient.connect();
-        }
-
-        public void disconnect(){
-            //mLocationClient.unregisterConnectionCallbacks(this);
-            //mLocationClient.unregisterConnectionFailedListener(this);
-           // mLocationClient.disconnect();
-        }
-
-        @Override
-        public void onConnected(Bundle bundle) {
-            //onLocationConnected(mLocationClient.getLastLocation());
-        }
-
-        @Override
-        public void onConnectionSuspended(int i) {
-
-        }
-
-        @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
-            onLocationConnected(null);
-            if (connectionResult.hasResolution()) {
-                try {
-                    connectionResult.startResolutionForResult(
-                            getActivity(),
-                            CONNECTION_FAILURE_RESOLUTION_REQUEST);
-                } catch (IntentSender.SendIntentException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                showErrorDialog(connectionResult.getErrorCode());
-            }
         }
     }
 }

@@ -497,7 +497,7 @@ public class GeofenceDatabase extends DatabaseManager {
     }
 
     /**
-     * Updates the distance of all geowallpapers
+     * Updates the distance of all geowallpapers from the current location
      */
     private void updateDistances(Location location) {
         SQLiteDatabase database = openDatabase();

@@ -29,7 +29,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 //import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -74,7 +77,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
     private SearchBox mSearchBox;
     private GoogleMap mMap;
-    private static PlayLocationSource mLocationSource;
+    private PlayLocationSource mLocationSource;
 
     private String uid;
     private Intent mReturnIntent;
@@ -90,7 +93,6 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     private Marker mSearchMarker;
 
     private int mColor;
-
     private boolean mPositioned = false;
 
 
@@ -120,7 +122,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         }
 
 
-        mOtherGeofences = new ArrayList<Circle>();
+        mOtherGeofences = new ArrayList<>();
         if(!checkPlayServices()) {
             setResult(Activity.RESULT_CANCELED);
             finish();
@@ -252,9 +254,8 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
             mMap.setMyLocationEnabled(true);
 
             if(mLocationSource == null){
-                mLocationSource = new PlayLocationSource(this, !mPositioned);
+                mLocationSource = new PlayLocationSource(!mPositioned);
             }
-
             mMap.setLocationSource(mLocationSource);
         }
 
@@ -292,6 +293,17 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     @Override
     protected void onResume() {
         super.onResume();
+        if(mLocationSource != null){
+            mLocationSource.activateRequests();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if(mLocationSource != null){
+            mLocationSource.deactivateRequests();
+        }
+        super.onPause();
     }
 
     @Override
@@ -479,66 +491,80 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     }
 
 
-    public class PlayLocationSource implements LocationSource, GooglePlayServicesClient.ConnectionCallbacks,
-            GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
-        OnLocationChangedListener mListener;
+    public class PlayLocationSource implements LocationSource, GoogleApiClient.OnConnectionFailedListener,
+            GoogleApiClient.ConnectionCallbacks, LocationListener {
 
-        //LocationClient mLocationClient;
-        private boolean mGotoLocation = true;
+        private GoogleApiClient mGoogleClient;
+        private OnLocationChangedListener mListener;
+        private LocationRequest mLocationRequest;
 
-        private Context mContext;
+        private boolean mGotoLocation;
 
-        public PlayLocationSource(Context c, boolean gotoLocation)
-        {
-            mContext = c;
+        public PlayLocationSource(boolean gotoLocation){
+            mLocationRequest = LocationRequest.create();
+            mLocationRequest.setInterval(5000);
+            mLocationRequest.setFastestInterval(1000);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
             mGotoLocation = gotoLocation;
         }
 
         @Override
-        public void activate(LocationSource.OnLocationChangedListener onLocationChangedListener) {
-         /*   if(mLocationClient == null){
-                mLocationClient = new LocationClient(mContext, this, this);
-            }
-            mLocationClient.connect();*/
-            mListener = onLocationChangedListener;
-        }
-
-        @Override
-        public void deactivate() {
-            //mLocationClient.disconnect();
-            mListener = null;
-        }
-
-        @Override
         public void onConnected(Bundle bundle) {
-            //mLocation = mLocationClient.getLastLocation();
-            //Log.w(LOGTAG, "Getting last location " + (mLocation != null ? "Ok" : "Null"));
-            if(mListener != null && mLocation != null)
-                mListener.onLocationChanged(mLocation);
-
-            if(mGotoLocation && mLocation != null)
-            {
+            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
+            mListener.onLocationChanged(mLocation);
+            activateRequests();
+            if(mGotoLocation && mLocation != null) {
                 LatLng coord = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 18f));
             }
-            //mLocationClient.disconnect();
         }
 
         @Override
-        public void onDisconnected() {
-            //mLocationClient = null;
-        }
-
-        @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
+        public void onConnectionSuspended(int i) {
 
         }
 
         @Override
         public void onLocationChanged(Location location) {
-            if(mListener != null  && location != null)
-                mListener.onLocationChanged(location);
             mLocation = location;
+            mListener.onLocationChanged(location);
+        }
+
+        @Override
+        public void activate(OnLocationChangedListener onLocationChangedListener) {
+            mGoogleClient = null;
+            mGoogleClient = new GoogleApiClient.Builder(GeofencePickerActivity.this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+            mGoogleClient.connect();
+            mListener = onLocationChangedListener;
+        }
+
+        @Override
+        public void deactivate() {
+            deactivateRequests();
+            mGoogleClient.disconnect();
+        }
+
+        public void activateRequests() {
+            if(mGoogleClient.isConnected()) {
+                LocationServices.FusedLocationApi
+                        .requestLocationUpdates(mGoogleClient, mLocationRequest, this);
+            }
+        }
+
+        public void deactivateRequests(){
+            if(mGoogleClient.isConnected()) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleClient, this);
+            }
+        }
+
+        @Override
+        public void onConnectionFailed(ConnectionResult connectionResult) {
+
         }
     }
 
