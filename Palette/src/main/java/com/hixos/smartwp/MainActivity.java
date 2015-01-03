@@ -38,17 +38,17 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawable(null);
 
-        LinearLayout root = (LinearLayout)findViewById(R.id.root);
+        LinearLayout root = (LinearLayout) findViewById(R.id.root);
 
         int top, bottom = 0;
         top = MiscUtils.UI.getActionBarHeight(this);
 
-        if(getResources().getBoolean(R.bool.has_translucent_navbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
 
             bottom += MiscUtils.UI.getNavBarHeight(this);
         }
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             top += MiscUtils.UI.getStatusBarHeight(this);
         }
 
@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
 
         mInitialActiveService = ServiceUtils.getActiveService(this);
 
-        switch (mInitialActiveService){
+        switch (mInitialActiveService) {
             case ServiceUtils.SERVICE_SLIDESHOW:
                 mBubbleSlideshow.activate(false);
                 break;
@@ -93,7 +93,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(ServiceUtils.getActiveService(this) != mInitialActiveService){
+        if (ServiceUtils.getActiveService(this) != mInitialActiveService) {
             ServiceUtils.broadcastServiceActivated(this);
         }
     }
@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
@@ -116,20 +116,20 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    private void onBubbleClick(int id){
-        switch (id){
+    private void onBubbleClick(int id) {
+        switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
-                if(mBubbleSlideshow.isExpanded()){
+                if (mBubbleSlideshow.isExpanded()) {
                     onSettingsClick(id);
-                }else{
+                } else {
                     mBubbleGeofence.deactivate();
                     ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_SLIDESHOW);
                 }
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                if(mBubbleGeofence.isExpanded()){
+                if (mBubbleGeofence.isExpanded()) {
                     onSettingsClick(id);
-                }else {
+                } else {
                     mBubbleSlideshow.deactivate();
                     ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_GEOFENCE);
                 }
@@ -137,12 +137,12 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private void onSettingsClick(int id){
+    private void onSettingsClick(int id) {
         Intent intent = new Intent(this, ServicesActivity.class);
         intent.putExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK,
                 getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false));
 
-        switch (id){
+        switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
                 intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
                         ServiceUtils.SERVICE_SLIDESHOW);
@@ -157,16 +157,16 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private void onBubbleExpanded(int id){
-        switch (id){
+    private void onBubbleExpanded(int id) {
+        switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
                 SlideshowDatabase sdatabase = new SlideshowDatabase(this);
-                if(sdatabase.getWallpaperCount() == 0){
+                if (sdatabase.getWallpaperCount() == 0) {
                     onSettingsClick(ServiceUtils.SERVICE_SLIDESHOW);
                 }
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                if(!GeofenceDatabase.hasDefaultWallpaper()){
+                if (!GeofenceDatabase.hasDefaultWallpaper()) {
                     onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
                 }
                 break;
@@ -184,73 +184,69 @@ public class MainActivity extends ActionBarActivity {
 
         private CircleView mCircle;
         private TextView mTextName;
+        private boolean mActive = false;
+        private boolean mExpanded = false;
+        private AnimatorSet mAnimatorSet;
+
+        public ServiceBubble(View bubbleView, int id) {
+            mCircle = (CircleView) bubbleView.findViewById(R.id.circleView);
+            mTextName = (TextView) bubbleView.findViewById(R.id.textview_name);
+            mID = id;
+            init();
+        }
 
         public boolean isActive() {
             return mActive;
         }
 
-        private boolean mActive = false;
-
         public boolean isExpanded() {
             return mExpanded;
         }
 
-        private boolean mExpanded = false;
-
-        private AnimatorSet mAnimatorSet;
-
-
-        public ServiceBubble(View bubbleView, int id){
-            mCircle = (CircleView)bubbleView.findViewById(R.id.circleView);
-            mTextName = (TextView)bubbleView.findViewById(R.id.textview_name);
-            mID = id;
-            init();
-        }
-
-        private void init(){
+        private void init() {
             mCircle.setRadiusPerc(MIN_RADIUS);
             mCircle.setAlpha(MIN_ALPHA);
             mTextName.setAlpha(MIN_ALPHA);
             mCircle.setOnClickListener(this);
         }
 
-        public ServiceBubble setColor(int color){
+        public ServiceBubble setColor(int color) {
             mCircle.setColor(color);
             mTextName.setTextColor(color);
             return this;
         }
 
-        public ServiceBubble setText(CharSequence text){
+        public ServiceBubble setText(CharSequence text) {
             mTextName.setText(text);
             return this;
         }
 
-        public ServiceBubble setInnerDrawable(Drawable innerDrawable){
-            mCircle.setInnerDrawable((BitmapDrawable)innerDrawable);
+        public ServiceBubble setInnerDrawable(Drawable innerDrawable) {
+            mCircle.setInnerDrawable((BitmapDrawable) innerDrawable);
             return this;
         }
 
-        public ServiceBubble setForeground(Drawable foreground){
+        public ServiceBubble setForeground(Drawable foreground) {
             mCircle.setForeground(foreground);
             return this;
         }
 
-        public void activate(){
+        public void activate() {
             activate(true);
         }
 
-        public void deactivate(){
+        public void deactivate() {
             deactivate(true);
         }
 
-        public void activate(boolean animate){
-            if(mActive) return;
+        public void activate(boolean animate) {
+            if (mActive) return;
             mActive = true;
-            if(mAnimatorSet != null){
+            if (mAnimatorSet != null) {
                 mAnimatorSet.cancel();
             }
 
-            if(animate){
+            if (animate) {
                 ObjectAnimator circleRadiusAnimator = ObjectAnimator.ofFloat(mCircle,
                         "radiusPerc", mCircle.getRadiusPerc(), MAX_RADIUS);
                 ObjectAnimator circleAlphaAnimator = ObjectAnimator.ofFloat(mCircle,
@@ -277,7 +273,7 @@ public class MainActivity extends ActionBarActivity {
                 });
 
                 mAnimatorSet.start();
-            }else {
+            } else {
                 mTextName.setAlpha(1.0f);
                 mCircle.setAlpha(1.0f);
                 mCircle.setRadiusPerc(MAX_RADIUS);
@@ -286,14 +282,14 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
-        public void deactivate(boolean animate){
-            if(!mActive) return;
+        public void deactivate(boolean animate) {
+            if (!mActive) return;
             mActive = false;
-            if(mAnimatorSet != null){
+            if (mAnimatorSet != null) {
                 mAnimatorSet.cancel();
             }
 
-            if(animate){
+            if (animate) {
                 ObjectAnimator circleRadiusAnimator = ObjectAnimator.ofFloat(mCircle,
                         "radiusPerc", mCircle.getRadiusPerc(), MIN_RADIUS);
                 ObjectAnimator circleAlphaAnimator = ObjectAnimator.ofFloat(mCircle,
@@ -317,7 +313,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
                 mAnimatorSet.start();
-            }else{
+            } else {
                 mTextName.setAlpha(MIN_ALPHA);
                 mCircle.setAlpha(MIN_ALPHA);
                 mCircle.setRadiusPerc(MIN_RADIUS);
@@ -327,7 +323,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onClick(View view) {
-            switch (view.getId()){
+            switch (view.getId()) {
                 case R.id.circleView:
                     activate();
                     onBubbleClick(mID);

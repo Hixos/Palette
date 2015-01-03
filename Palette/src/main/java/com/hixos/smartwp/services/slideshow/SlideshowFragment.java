@@ -37,25 +37,17 @@ import com.hixos.smartwp.widget.ArrowView;
 import com.hixos.smartwp.widget.ProgressDialogFragment;
 import com.hixos.smartwp.widget.UndoBarController;
 
-/**
- * Created by Luca on 26/02/14.
- */
-public class SlideshowFragment extends Fragment implements UndoBarController.UndoListener, SlideshowDatabase.OnElementRemovedListener{
+public class SlideshowFragment extends Fragment implements UndoBarController.UndoListener, SlideshowDatabase.OnElementRemovedListener {
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
-
+    Handler handler = new Handler();
     private SlideshowDatabase mDatabase;
     private SlideshowEditor mEditor;
-
     private UndoBarController mUndoBarController;
-
     private long mUndobarShownTimestamp = -1;
-
     private View mEmptyState;
     private ArrowView mArrowView;
     private boolean mEmptyStateAnimated = false;
-
     private AnimatedGridView mGridView;
-
     private boolean mSetWallpaperActivityVisible = false;
 
     @Override
@@ -70,9 +62,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         mEditor = new SlideshowEditor();
     }
 
-    Handler handler = new Handler();
-    private void initEmptyState(View view){
-        if(mDatabase.getWallpaperCount() != 0){
+    private void initEmptyState(View view) {
+        if (mDatabase.getWallpaperCount() != 0) {
             mArrowView = null;
             mEmptyState = null;
             return;
@@ -81,8 +72,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         mEmptyState = view.findViewById(R.id.emptyState);
         mEmptyState.setVisibility(View.VISIBLE);
 
-        mArrowView = (ArrowView)view.findViewById(R.id.emptyStateArrow);
-        final TextView textView = (TextView)view.findViewById(R.id.emptyStateText);
+        mArrowView = (ArrowView) view.findViewById(R.id.emptyStateArrow);
+        final TextView textView = (TextView) view.findViewById(R.id.emptyStateText);
 
         final ViewTreeObserver viewTreeObserver = getActivity().getWindow().getDecorView().getViewTreeObserver();
         if (viewTreeObserver != null) {
@@ -92,10 +83,10 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                     View menuButton = getActivity().findViewById(R.id.action_new_wallpaper);
 
                     if (menuButton != null) {
-                        if(viewTreeObserver.isAlive()){
-                            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+                        if (viewTreeObserver.isAlive()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                                 viewTreeObserver.removeOnGlobalLayoutListener(this);
-                            }else{
+                            } else {
                                 viewTreeObserver.removeGlobalOnLayoutListener(this);
                             }
                         }
@@ -108,11 +99,11 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                         final Point start = new Point(textLocation[0] + textView.getWidth() / 2,
                                 textLocation[1]);
                         final Point end = new Point(actionLocation[0] + menuButton.getWidth() / 2,
-                                actionLocation[1] + (int)(menuButton.getHeight() * 1.5f));
+                                actionLocation[1] + (int) (menuButton.getHeight() * 1.5f));
 
-                        if(mEmptyStateAnimated){
+                        if (mEmptyStateAnimated) {
                             mArrowView.setPoints(start, end, false);
-                        }else{
+                        } else {
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -127,8 +118,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         }
     }
 
-    private void hideEmptyState(){
-        if(mEmptyState != null){
+    private void hideEmptyState() {
+        if (mEmptyState != null) {
             mEmptyState.setVisibility(View.GONE);
         }
     }
@@ -137,15 +128,15 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_slideshow, container, false);
 
-        mGridView = (AnimatedGridView)view.findViewById(R.id.gridView);
+        mGridView = (AnimatedGridView) view.findViewById(R.id.gridView);
         setAdapter();
 
         int paddingTop = MiscUtils.UI.getActionBarHeight(getActivity());
         int paddingBottom = 0;
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)) {
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             paddingTop += MiscUtils.UI.getStatusBarHeight(getActivity());
         }
-        if(getResources().getBoolean(R.bool.has_translucent_navbar)) {
+        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
             paddingBottom += MiscUtils.UI.getNavBarHeight(getActivity());
         }
 
@@ -154,7 +145,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                 mGridView.getPaddingRight(),
                 mGridView.getPaddingBottom() + paddingBottom);
 
-        LinearLayout undoBar = (LinearLayout)view.findViewById(R.id.undobar);
+        LinearLayout undoBar = (LinearLayout) view.findViewById(R.id.undobar);
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) undoBar.getLayoutParams();
         params.setMargins(params.leftMargin, params.topMargin, params.rightMargin,
                 params.bottomMargin + paddingBottom);
@@ -172,13 +163,13 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     @Override
     public void onResume() {
         super.onResume();
-        if(!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)){
+        if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
             checkLiveWallpaper();
         }
     }
 
-    private void checkLiveWallpaper(){
-        if(!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
+    private void checkLiveWallpaper() {
+        if (!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
                 && mDatabase.getWallpaperCount() > 0
                 && !mSetWallpaperActivityVisible) {
             startActivityForResult(new Intent(getActivity(), SetWallpaperActivity.class),
@@ -187,7 +178,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         }
     }
 
-    public void setAdapter(){
+    public void setAdapter() {
         SlideshowDatabaseAdapter adapter = new SlideshowDatabaseAdapter(mDatabase, getActivity());
         mGridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
@@ -240,9 +231,9 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
             case REQUEST_SET_LIVE_WALLPAPER:
-                if(resultCode != Activity.RESULT_OK){
+                if (resultCode != Activity.RESULT_OK) {
                     getActivity().finish();
                 }
                 mSetWallpaperActivityVisible = false;
@@ -254,7 +245,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
     @Override
     public void onUndo(long token) {
-        if(mDatabase != null){
+        if (mDatabase != null) {
             mDatabase.restoreWallpapersAsync();
         }
         mUndobarShownTimestamp = -1;
@@ -263,7 +254,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     @Override
     public void onHide(long token) {
         mUndobarShownTimestamp = -1;
-        if(mDatabase != null){
+        if (mDatabase != null) {
             mDatabase.clearDeletedWallpapersAsync();
         }
     }
@@ -277,16 +268,16 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
             }
         });
         LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-        if(cache != null){
+        if (cache != null) {
             cache.remove(uid);
         }
     }
 
-    private void showUndobar(){
+    private void showUndobar() {
         showUndobar(0);
     }
 
-    private void showUndobar(int elapsed){
+    private void showUndobar(int elapsed) {
         mUndobarShownTimestamp = System.currentTimeMillis();
         int quantity = mDatabase.getDeletedWallpaperCount();
 
@@ -294,8 +285,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         mUndoBarController.showUndoBar(message, 0, elapsed);
     }
 
-    private void restoreUndobar(){
-        if(mUndobarShownTimestamp > 0){
+    private void restoreUndobar() {
+        if (mUndobarShownTimestamp > 0) {
             int elapsed = ((int) (System.currentTimeMillis() - mUndobarShownTimestamp));
             showUndobar(elapsed);
         }
@@ -311,22 +302,22 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         private String mCurrentUid;
         private int mAutoCropRequest;
 
-        private void  onActivityResult(int requestCode, int resultCode, Intent data){
-            switch (requestCode){
+        private void onActivityResult(int requestCode, int resultCode, Intent data) {
+            switch (requestCode) {
                 case REQUEST_PICK_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         continuePickWallpaper(data);
                     else
                         isPicking = false;
                     break;
                 case REQUEST_PICK_CROP_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         finishPickWallpaper();
                     else
                         isPicking = false;
                     break;
                 case REQUEST_PICK_INTERVAL:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         finishPickInterval(data);
                     else
                         isPicking = false;
@@ -336,7 +327,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         /**
          * Displays interval picker activity
          */
-        private void pickInterval(){
+        private void pickInterval() {
             isPicking = true;
             Intent i = new Intent(getActivity(), IntervalPickerActivty.class);
             i.putExtra(IntervalPickerActivty.EXTRA_INTERVAL, mDatabase.getIntervalMs());
@@ -345,11 +336,12 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
         /**
          * Updates the interval in the database
+         *
          * @param data
          */
-        private void finishPickInterval(Intent data){
+        private void finishPickInterval(Intent data) {
             isPicking = false;
-            if(data == null){
+            if (data == null) {
                 return;
             }
             mDatabase.setIntervalMs(data.getLongExtra(IntervalPickerActivty.RESULT_INTERVAL, 10 * 60 * 1000));
@@ -359,10 +351,11 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         /**
          * Begins the procedure to pick a new wallpaper
          * Shows the gallery picker
+         *
          * @param uid
          */
         private void beginPickWallpaper(String uid) {
-            if(isPicking) return;
+            if (isPicking) return;
 
             isPicking = true;
             mCurrentUid = uid;
@@ -374,25 +367,26 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         /**
          * First part of the procedure to pick a new wallpaper
          * Determines how to crop the wallpaper
+         *
          * @param data intent passed in onActivityResult
          */
         private void continuePickWallpaper(Intent data) {
-            if(data == null || data.getData() == null){
+            if (data == null || data.getData() == null) {
                 Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
                 isPicking = false;
                 return;
             }
             Uri image = data.getData();
 
-            if(!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
-                    getResources().getBoolean(R.bool.auto_crop_default_val))){
+            if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
+                    getResources().getBoolean(R.bool.auto_crop_default_val))) {
                 //Manual cropping
                 Intent i = new Intent(getActivity(), CropperActivity.class);
                 i.putExtra(CropperActivity.EXTRA_IMAGE, image);
                 i.putExtra(CropperActivity.EXTRA_OUTPUT,
                         ImageManager.getInstance().getPictureUri(mCurrentUid));
                 startActivityForResult(i, REQUEST_PICK_CROP_WALLPAPER);
-            }else{
+            } else {
                 //Automatic cropping
                 DialogFragment f = new ProgressDialogFragment();
                 f.show(getFragmentManager(), "crop_progress");
@@ -416,11 +410,11 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
         @Override
         public void onImageCropped(Uri wallpaper) {
-            DialogFragment f = (DialogFragment)getFragmentManager().findFragmentByTag("crop_progress");
-            if(f != null){
+            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
+            if (f != null) {
                 f.dismiss();
             }
-            switch (mAutoCropRequest){
+            switch (mAutoCropRequest) {
                 case REQUEST_PICK_CROP_WALLPAPER:
                     finishPickWallpaper();
                     break;
@@ -429,11 +423,11 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
         @Override
         public void onImageCropFailed() {
-            DialogFragment f = (DialogFragment)getFragmentManager().findFragmentByTag("crop_progress");
-            if(f != null){
+            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
+            if (f != null) {
                 f.dismiss();
             }
-            switch (mAutoCropRequest){
+            switch (mAutoCropRequest) {
                 case REQUEST_PICK_CROP_WALLPAPER:
                     setAdapter();
                     break;

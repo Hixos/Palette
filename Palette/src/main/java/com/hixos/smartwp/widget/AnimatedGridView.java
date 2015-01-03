@@ -30,9 +30,6 @@ import com.hixos.smartwp.R;
 import java.util.HashMap;
 import java.util.Set;
 
-/**
- * Created by Luca on 05/03/14.
- */
 public class AnimatedGridView extends GridView {
     private static final int SCROLL_MIN_SPEED = 15; //Min speed
     private static final int SCROLL_MAX_SPEED = 50; //Max speed
@@ -67,13 +64,35 @@ public class AnimatedGridView extends GridView {
 
     //Swipe
     private boolean mSwipeEnabled = true;
+    private OnScrollListener mScrollListener = new OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+            if (mScrolling && mDragging) {
+                int deltaTime = (int) (System.currentTimeMillis() - mScrollBeginTime);
+                float percent = Math.min((float) deltaTime / (float) SCROLL_FULL_SPEED_TIME, 1);
+
+                int deltaAmount = mScrollMaxAmount - mScrollMinAmount;
+                mScrollAmount = (int) (mScrollMinAmount + deltaAmount * percent);
+                handleScroll(mBitmapCellCurrentBounds);
+                handleSwap();
+            }
+            mSwipeEnabled = scrollState == OnScrollListener.SCROLL_STATE_IDLE;
+        }
+
+        @Override
+        public void onScroll(AbsListView absListView, int i, int i2, int i3) {
+        }
+    };
     private boolean mSwiping = false;
-
+    private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
+            new AdapterView.OnItemLongClickListener() {
+                public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position, long id) {
+                    return !(mSwiping || mAnimating) && startDrag(position);
+                }
+            };
     private String mSwipeCellId;
-
     private VelocityTracker mVelocityTracker;
     private int mMinFlingVelocity;
-
     private int mDismissTime = 300; //Ms
 
     public AnimatedGridView(Context context) {
@@ -83,7 +102,7 @@ public class AnimatedGridView extends GridView {
 
     public AnimatedGridView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if(attrs != null){
+        if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.AnimatedGridView,
@@ -95,7 +114,7 @@ public class AnimatedGridView extends GridView {
 
     public AnimatedGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        if(attrs != null){
+        if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.AnimatedGridView,
@@ -105,17 +124,17 @@ public class AnimatedGridView extends GridView {
         init(context);
     }
 
-    private void init(Context context){
-       // mListeners = new ArrayList<GridViewActionListener>();
-        if(mDraggable)
+    private void init(Context context) {
+        // mListeners = new ArrayList<GridViewActionListener>();
+        if (mDraggable)
             setOnItemLongClickListener(mOnItemLongClickListener);
 
         setOnScrollListener(mScrollListener);
 
         //Drag & Drop
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        mScrollMinAmount = (int)(SCROLL_MIN_SPEED / metrics.density);
-        mScrollMaxAmount = (int)(SCROLL_MAX_SPEED / metrics.density);
+        mScrollMinAmount = (int) (SCROLL_MIN_SPEED / metrics.density);
+        mScrollMaxAmount = (int) (SCROLL_MAX_SPEED / metrics.density);
         mScrollAmount = mScrollMinAmount;
 
         //Swipe to dismiss
@@ -124,28 +143,20 @@ public class AnimatedGridView extends GridView {
         mMinFlingVelocity = vc.getScaledMinimumFlingVelocity() * 6;
     }
 
-    public void setAdapter(ListAdapter listadapter)
-    {
-        if ((listadapter instanceof AnimatedListAdapter) || listadapter == null){
+    public AnimatedListAdapter getAdapter() {
+        return mAdapter;
+    }
+
+    public void setAdapter(ListAdapter listadapter) {
+        if ((listadapter instanceof AnimatedListAdapter) || listadapter == null) {
             super.setAdapter(listadapter);
-            mAdapter = (AnimatedListAdapter)listadapter;
-        }else{
+            mAdapter = (AnimatedListAdapter) listadapter;
+        } else {
             throw new IllegalArgumentException("Adapter must be a child of AnimatedListAdapter");
         }
     }
 
-    public AnimatedListAdapter getAdapter(){
-        return mAdapter;
-    }
-
-    private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
-            new AdapterView.OnItemLongClickListener() {
-                public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position, long id) {
-                    return !(mSwiping || mAnimating) && startDrag(position);
-                }
-            };
-
-    private boolean startDrag(int position){
+    private boolean startDrag(int position) {
         int itemNum = position - getFirstVisiblePosition();
 
         mSwapCellId = getAdapter().getItemUid(position);
@@ -165,7 +176,7 @@ public class AnimatedGridView extends GridView {
 
     }
 
-    private void drag(int deltaX, int deltaY){
+    private void drag(int deltaX, int deltaY) {
         mBitmapCellCurrentBounds.offsetTo(mBitmapCellOriginalBounds.left + deltaX,
                 mBitmapCellOriginalBounds.top + deltaY);
         mBitmapCell.setBounds(mBitmapCellCurrentBounds);
@@ -174,11 +185,11 @@ public class AnimatedGridView extends GridView {
         mScrolling = handleScroll(mBitmapCellCurrentBounds);
     }
 
-    private void handleSwap(){
+    private void handleSwap() {
         String swapCell = getAdapter().getItemUid(pointToPosition(mLastEventX, mLastEventY));
-        if(swapCell.isEmpty()){
+        if (swapCell.isEmpty()) {
             mSwapCellId = "";
-        }else if(!swapCell.equals(mSwapCellId)){
+        } else if (!swapCell.equals(mSwapCellId)) {
             mSwapCellId = swapCell;
             int firstPosition = getFirstVisiblePosition();
             int hoverPosition = getAdapter().getItemPosition(mDragCellId)
@@ -186,16 +197,19 @@ public class AnimatedGridView extends GridView {
             int swapPosition = getAdapter().getItemPosition(mSwapCellId)
                     - firstPosition;
 
-            final HashMap<String, Point> oldLocations = new HashMap<String, Point>();
+            final HashMap<String, Point> oldLocations = new HashMap<>();
             int start = Math.min(hoverPosition, swapPosition);
             int end = Math.max(hoverPosition, swapPosition);
 
-            if(start == hoverPosition) { start +=1; }
-            else { end -= 1; }
+            if (start == hoverPosition) {
+                start += 1;
+            } else {
+                end -= 1;
+            }
 
-            for(int i = start; i <= end; i++){
+            for (int i = start; i <= end; i++) {
                 View v = getChildAt(i);
-                if(v != null){
+                if (v != null) {
                     Point p = new Point(v.getLeft(), v.getTop());
                     String id = getAdapter().getItemUid(i + firstPosition);
                     oldLocations.put(id, p);
@@ -208,8 +222,12 @@ public class AnimatedGridView extends GridView {
             View hover = getChildAt(hoverPosition);
             View swap = getChildAt(swapPosition);
 
-            if (hover != null) { hover.setVisibility(VISIBLE); }
-            if (swap != null) { swap.setVisibility(INVISIBLE); }
+            if (hover != null) {
+                hover.setVisibility(VISIBLE);
+            }
+            if (swap != null) {
+                swap.setVisibility(INVISIBLE);
+            }
             final ViewTreeObserver observer = getViewTreeObserver();
             if (observer != null) {
                 observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -218,11 +236,11 @@ public class AnimatedGridView extends GridView {
                         observer.removeOnPreDrawListener(this);
                         //Log.w("GRID", "Predraw");
                         Set<String> keys = oldLocations.keySet();
-                        for(String key : keys){
+                        for (String key : keys) {
                             Point oldPos = oldLocations.get(key);
                             View swapView = getViewFromID(key);
 
-                            if(swapView == null) continue;
+                            if (swapView == null) continue;
 
                             float deltaX = oldPos.x - swapView.getX();
                             float deltaY = oldPos.y - swapView.getY();
@@ -248,25 +266,6 @@ public class AnimatedGridView extends GridView {
         }
     }
 
-    private OnScrollListener mScrollListener = new OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-            if(mScrolling && mDragging){
-                int deltaTime =  (int)(System.currentTimeMillis() - mScrollBeginTime);
-                float percent = Math.min((float)deltaTime / (float)SCROLL_FULL_SPEED_TIME, 1);
-
-                int deltaAmount = mScrollMaxAmount - mScrollMinAmount;
-                mScrollAmount = (int)(mScrollMinAmount + deltaAmount * percent);
-                handleScroll(mBitmapCellCurrentBounds);
-                handleSwap();
-            }
-            mSwipeEnabled = scrollState == OnScrollListener.SCROLL_STATE_IDLE;
-        }
-
-        @Override
-        public void onScroll(AbsListView absListView, int i, int i2, int i3) { }
-    };
-
     private boolean handleScroll(Rect hoverRect) {
         int offset = computeVerticalScrollOffset();
         int height = getHeight();
@@ -275,15 +274,15 @@ public class AnimatedGridView extends GridView {
         int hoverViewTop = hoverRect.top;
         int hoverHeight = hoverRect.height();
 
-        if (hoverViewTop <= 0 && offset > 0){
-            if(!mScrolling)
+        if (hoverViewTop <= 0 && offset > 0) {
+            if (!mScrolling)
                 mScrollBeginTime = System.currentTimeMillis();
             smoothScrollBy(-mScrollAmount, 0);
             return true;
         }
 
         if (hoverViewTop + hoverHeight >= height && (offset + extent) < range) {
-            if(!mScrolling)
+            if (!mScrolling)
                 mScrollBeginTime = System.currentTimeMillis();
             smoothScrollBy(mScrollAmount, 0);
             return true;
@@ -291,7 +290,7 @@ public class AnimatedGridView extends GridView {
         return false;
     }
 
-    private void endDrag(){
+    private void endDrag() {
         getAdapter().dragEndend(mDragCellId);
 
         final View hoverCell = getViewFromID(mDragCellId);
@@ -299,7 +298,7 @@ public class AnimatedGridView extends GridView {
         mDragCellId = "";
         mSwapCellId = "";
 
-        if(hoverCell != null){
+        if (hoverCell != null) {
             mAnimating = true;
             final int startX = mBitmapCellCurrentBounds.left;
             final int endX = hoverCell.getLeft();
@@ -316,10 +315,10 @@ public class AnimatedGridView extends GridView {
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    float value = (Float)valueAnimator.getAnimatedValue();
-                    int x = (int)interpolate(startX, endX, value);
-                    int y = (int)interpolate(startY, endY, value);
-                    int alpha = (int)interpolate(startAlpha, endAlpha, value);
+                    float value = (Float) valueAnimator.getAnimatedValue();
+                    int x = (int) interpolate(startX, endX, value);
+                    int y = (int) interpolate(startY, endY, value);
+                    int alpha = (int) interpolate(startAlpha, endAlpha, value);
                     mBitmapCellCurrentBounds.offsetTo(x, y);
                     mBitmapCell.setBounds(mBitmapCellCurrentBounds);
                     mBitmapCell.setAlpha(alpha);
@@ -339,19 +338,19 @@ public class AnimatedGridView extends GridView {
         }
     }
 
-    private boolean startSwipe(){
+    private boolean startSwipe() {
         View swipeView = getViewFromID(mSwipeCellId);
-        if(swipeView != null){
+        if (swipeView != null) {
             mSwiping = true;
             swipeView.setVisibility(INVISIBLE);
             mBitmapCell = getViewBitmapDrawable(swipeView, 255);
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
-    private void swipe(int deltaX){
+    private void swipe(int deltaX) {
         //if(mBitmapCell == null) return;
 
         mBitmapCellCurrentBounds.offsetTo(mBitmapCellOriginalBounds.left + deltaX,
@@ -361,11 +360,11 @@ public class AnimatedGridView extends GridView {
         int totalTranslation = getSwipeTranslationX(
                 mBitmapCellOriginalBounds.width(), deltaX > 0);
         float perc = Math.max(0, 1 - (float) deltaX / totalTranslation);
-        mBitmapCell.setAlpha((int)(255 * perc));
+        mBitmapCell.setAlpha((int) (255 * perc));
         invalidate();
     }
 
-    private void endSwipe(float deltaX, float velocityX, float velocityY){
+    private void endSwipe(float deltaX, float velocityX, float velocityY) {
         mSwiping = false;
         mAnimating = true;
 
@@ -374,11 +373,11 @@ public class AnimatedGridView extends GridView {
 
         boolean dismiss = false, dismissRight = false;
         int width = mBitmapCellOriginalBounds.width();
-        float dismissDelta = (float)width / 2;
+        float dismissDelta = (float) width / 2;
         if (mMinFlingVelocity <= Math.abs(velocityX) && Math.abs(velocityY) < Math.abs(velocityX)) {
             dismiss = deltaX * velocityX >= 0;
             dismissRight = velocityX > 0;
-        }else if (Math.abs(deltaX) > dismissDelta) {
+        } else if (Math.abs(deltaX) > dismissDelta) {
             dismiss = deltaX * velocityX >= 0;
             dismissRight = deltaX > 0;
         }
@@ -396,11 +395,11 @@ public class AnimatedGridView extends GridView {
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                Float value = (Float)valueAnimator.getAnimatedValue();
-                int x = (int)interpolate(startX, endX, value);
+                Float value = (Float) valueAnimator.getAnimatedValue();
+                int x = (int) interpolate(startX, endX, value);
                 mBitmapCellCurrentBounds.offsetTo(x, mBitmapCellCurrentBounds.top);
                 mBitmapCell.setBounds(mBitmapCellCurrentBounds);
-                int alpha = (int)interpolate(startAlpha, endAlpha, value);
+                int alpha = (int) interpolate(startAlpha, endAlpha, value);
                 mBitmapCell.setAlpha(alpha);
                 invalidate();
             }
@@ -414,20 +413,20 @@ public class AnimatedGridView extends GridView {
                 swipeView.setVisibility(VISIBLE);
                 mBitmapCell = null;
                 mAnimating = false;
-                if(fDismiss) dismissItem(id);
+                if (fDismiss) dismissItem(id);
             }
         });
         animator.start();
     }
 
-    private void dismissItem(String dismissId){
-        final HashMap<String, Point> oldPositions = new HashMap<String, Point>();
+    private void dismissItem(String dismissId) {
+        final HashMap<String, Point> oldPositions = new HashMap<>();
         int firstPosition = getFirstVisiblePosition();
         int dismissPos = getAdapter().getItemPosition(dismissId) - firstPosition;
-        for(int i = dismissPos; i <= getLastVisiblePosition() - firstPosition; i++){
+        for (int i = dismissPos; i <= getLastVisiblePosition() - firstPosition; i++) {
             String id = getAdapter().getItemUid(i + firstPosition);
             View v = getChildAt(i);
-            if(v != null){
+            if (v != null) {
                 oldPositions.put(id, new Point(v.getLeft(), v.getTop()));
             }
         }
@@ -441,9 +440,9 @@ public class AnimatedGridView extends GridView {
                 public boolean onPreDraw() {
                     observer.removeOnPreDrawListener(this);
                     Set<String> keys = oldPositions.keySet();
-                    for(String key : keys){
+                    for (String key : keys) {
                         View dismisssView = getViewFromID(key);
-                        if(dismisssView != null){
+                        if (dismisssView != null) {
                             int deltaX = oldPositions.get(key).x - dismisssView.getLeft();
                             int deltaY = oldPositions.get(key).y - dismisssView.getTop();
                             dismisssView.setTranslationX(deltaX);
@@ -472,30 +471,30 @@ public class AnimatedGridView extends GridView {
         }
     }
 
-    public void removeItemAnimated(String itemID){
+    public void removeItemAnimated(String itemID) {
         mSwipeCellId = itemID;
-        if(!mAnimating && startSwipe()){
+        if (!mAnimating && startSwipe()) {
             endSwipe(1, mMinFlingVelocity * 2, 1);
-        }else{
+        } else {
             getAdapter().remove(itemID);
         }
     }
 
     @Override
-    public boolean onTouchEvent (MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                mDownX = (int)event.getX();
-                mDownY = (int)event.getY();
+                mDownX = (int) event.getX();
+                mDownY = (int) event.getY();
                 int swipeCell = pointToPosition(mDownX, mDownY);
-                if(swipeCell != INVALID_POSITION && !mSwiping && !mAnimating) {
+                if (swipeCell != INVALID_POSITION && !mSwiping && !mAnimating) {
                     mSwipeCellId = getAdapter().getItemUid(swipeCell);
                     mVelocityTracker = VelocityTracker.obtain();
                     mVelocityTracker.addMovement(event);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if(mAnimating) //Don't scroll or anything
+                if (mAnimating) //Don't scroll or anything
                     return true;
 
                 mLastEventY = (int) event.getY();
@@ -504,13 +503,13 @@ public class AnimatedGridView extends GridView {
                 int deltaX = mLastEventX - mDownX;
                 int deltaY = mLastEventY - mDownY;
 
-                if(mDragging){
+                if (mDragging) {
                     drag(deltaX, deltaY);
                     return true;
-                }else if(Math.abs(deltaX) > mSlop
+                } else if (Math.abs(deltaX) > mSlop
                         && Math.abs(deltaX) > (Math.abs(deltaY) * 1.75f)
                         && mSwipeEnabled && !mSwiping
-                        && pointToPosition((int)event.getX(), (int)event.getY()) != INVALID_POSITION) {
+                        && pointToPosition((int) event.getX(), (int) event.getY()) != INVALID_POSITION) {
 
                     startSwipe();
                     //Cancel other touch events (removes highlight from item)
@@ -520,15 +519,17 @@ public class AnimatedGridView extends GridView {
                                     << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
                     onTouchEvent(cancelEvent);
                 }
-                if(mSwiping && mSwipeEnabled){
+                if (mSwiping && mSwipeEnabled) {
                     mVelocityTracker.addMovement(event);
                     swipe(deltaX);
                     return true;
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if(mDragging) { endDrag(); }
-                if(mSwiping) {
+                if (mDragging) {
+                    endDrag();
+                }
+                if (mSwiping) {
                     float dX = event.getX() - mDownX;
                     mVelocityTracker.addMovement(event);
                     mVelocityTracker.computeCurrentVelocity(1000);
@@ -553,12 +554,12 @@ public class AnimatedGridView extends GridView {
         }
     }
 
-    private int getSwipeTranslationX(int cellWidth, boolean right){
-        int t = getNumColumns() == 1 ? (int)((float)cellWidth / 4 * 3) : cellWidth;
+    private int getSwipeTranslationX(int cellWidth, boolean right) {
+        int t = getNumColumns() == 1 ? (int) ((float) cellWidth / 4 * 3) : cellWidth;
         return right ? t : -t;
     }
 
-    private View getViewFromID (String itemID) {
+    private View getViewFromID(String itemID) {
         int firstPosition = getFirstVisiblePosition();
         AnimatedListAdapter adapter = getAdapter();
         int position = adapter.getItemPosition(itemID) - firstPosition;
@@ -570,13 +571,13 @@ public class AnimatedGridView extends GridView {
         int pos = super.pointToPosition(x, y);
         View v = getChildAt(pos - getFirstVisiblePosition());
         //Don't detect views that are being translated
-        if(v != null && (v.getTranslationX() != 0 || v.getTranslationY() != 0)){
+        if (v != null && (v.getTranslationX() != 0 || v.getTranslationY() != 0)) {
             return INVALID_POSITION;
         }
         return pos;
     }
 
-    private AlphaBitmapDrawable getViewBitmapDrawable(View view, int alpha){
+    private AlphaBitmapDrawable getViewBitmapDrawable(View view, int alpha) {
         int w = view.getWidth();
         int h = view.getHeight();
         int top = view.getTop();
@@ -597,7 +598,7 @@ public class AnimatedGridView extends GridView {
         return bitmap;
     }
 
-    private float interpolate(float start, float end, float f){
+    private float interpolate(float start, float end, float f) {
         return start + f * (end - start);
     }
 }

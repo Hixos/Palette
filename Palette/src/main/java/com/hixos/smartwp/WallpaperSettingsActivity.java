@@ -16,9 +16,9 @@ public class WallpaperSettingsActivity extends Activity {
         Intent intent = new Intent(this, ServicesActivity.class);
         intent.putExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, true);
         int active = ServiceUtils.getActiveService(this);
-        if(active != 0) {
+        if (active != 0) {
             intent.putExtra(ServicesActivity.EXTRA_SERVIVE, active);
-        }else{
+        } else {
             intent = new Intent(this, MainActivity.class);
         }
         startActivity(intent);

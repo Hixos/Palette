@@ -33,22 +33,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GeofenceService{
-    private final static String LOGTAG = "GeofenceService";
-
-    private final static String ACTION_GEOFENCE_RECEIVED = "com.hixos.smartwp.geofence.ACTION_GEOFENCE_RECEIVED";
-
-    private final static String ACTION_ADD_GEOFENCE = "com.hixos.smartwp.geofence.ACTION_ADD_GEOFENCE";
-    private final static String ACTION_REMOVE_GEOFENCE = "com.hixos.smartwp.geofence.ACTION_REMOVE_GEOFENCE";
-    private final static String ACTION_RELOAD_WALLPAPER = "com.hixos.smartwp.geofence.ACTION_RELOAD_WALLPAPER";
-
-    private final static String EXTRA_UIDS = "com.hixos.smartwp.geofence.EXTRA_UIDS";
-
+public class GeofenceService {
     public static final int NOTIFICATION_WIFI = 1;
     public static final int NOTIFICATION_LOCATION = 2;
     public static final int NOTIFICATION_BOTH = 3;
     public static final int NOTIFICATION_PLAY_ERROR = 4;
-
+    private final static String LOGTAG = "GeofenceService";
+    private final static String ACTION_GEOFENCE_RECEIVED = "com.hixos.smartwp.geofence.ACTION_GEOFENCE_RECEIVED";
+    private final static String ACTION_ADD_GEOFENCE = "com.hixos.smartwp.geofence.ACTION_ADD_GEOFENCE";
+    private final static String ACTION_REMOVE_GEOFENCE = "com.hixos.smartwp.geofence.ACTION_REMOVE_GEOFENCE";
+    private final static String ACTION_RELOAD_WALLPAPER = "com.hixos.smartwp.geofence.ACTION_RELOAD_WALLPAPER";
+    private final static String EXTRA_UIDS = "com.hixos.smartwp.geofence.EXTRA_UIDS";
     private static GeofenceService sIstance;
 
     private Context mContext;
@@ -68,31 +63,60 @@ public class GeofenceService{
 
     private boolean mRunning = false;
 
-    public static void startListener(OnWallpaperChangedCallback callback, Context context){
-        if(context == null || callback == null){
+    private GeofenceService(OnWallpaperChangedCallback callback, Context context) {
+        mCallback = callback;
+        mContext = context;
+        mManager = new GeofenceManager(mContext, this);
+
+        if (servicesConnected(context)) {
+            mReceiver = new GeofenceReceiver();
+            mReloadReceiver = new ReloadWallpaperReceiver();
+            mAddReceiver = new AddGeofenceReceiver();
+            mRemoveReceiver = new RemoveGeofenceReceiver();
+            mProviderReceiver = new ProviderChangedReceiver();
+            mWifiReceiver = new WifiStateChangedReceiver();
+
+            context.registerReceiver(mReceiver, new IntentFilter(ACTION_GEOFENCE_RECEIVED));
+            context.registerReceiver(mReloadReceiver, new IntentFilter(ACTION_RELOAD_WALLPAPER));
+            context.registerReceiver(mAddReceiver, new IntentFilter(ACTION_ADD_GEOFENCE));
+            context.registerReceiver(mRemoveReceiver, new IntentFilter(ACTION_REMOVE_GEOFENCE));
+            context.registerReceiver(mProviderReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+            context.registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+
+            mRunning = MiscUtils.Location.networkLocationProviderEnabled(context);
+            if (mRunning) {
+                mManager.addAllGeofences();
+            }
+        } else {
+            mStopped = true;
+        }
+    }
+
+    public static void startListener(OnWallpaperChangedCallback callback, Context context) {
+        if (context == null || callback == null) {
             throw new IllegalArgumentException();
         }
-        if(sIstance != null && !sIstance.isStopped()){
+        if (sIstance != null && !sIstance.isStopped()) {
             sIstance.stop();
         }
         sIstance = new GeofenceService(callback, context);
     }
 
-    public static void stopListener(Context context){
-        if(sIstance != null && !sIstance.isStopped()) {
+    public static void stopListener(Context context) {
+        if (sIstance != null && !sIstance.isStopped()) {
             sIstance.stop();
-        }else if(sIstance == null){
+        } else if (sIstance == null) {
             GeofenceManager manager = new GeofenceManager(context, null);
             manager.removeAllGeofences();
         }
     }
 
-    public static void broadcastAddGeofence(Context context, List<String> uids){
-        if(uids.size() == 0) return;
+    public static void broadcastAddGeofence(Context context, List<String> uids) {
+        if (uids.size() == 0) return;
 
         Intent intent = new Intent(ACTION_ADD_GEOFENCE);
         String[] requestUids = new String[uids.size()];
-        for(int i = 0; i < uids.size(); i++){
+        for (int i = 0; i < uids.size(); i++) {
             requestUids[i] = uids.get(i);
         }
         intent.putExtra(EXTRA_UIDS, requestUids);
@@ -100,11 +124,11 @@ public class GeofenceService{
     }
 
     public static void broadcastRemoveGeofence(Context context, List<String> uids) {
-        if(uids.size() == 0) return;
+        if (uids.size() == 0) return;
 
         Intent intent = new Intent(ACTION_REMOVE_GEOFENCE);
         String[] requestUids = new String[uids.size()];
-        for(int i = 0; i < uids.size(); i++){
+        for (int i = 0; i < uids.size(); i++) {
             requestUids[i] = uids.get(i);
         }
         intent.putExtra(EXTRA_UIDS, requestUids);
@@ -116,62 +140,8 @@ public class GeofenceService{
         context.sendBroadcast(intent);
     }
 
-    private void showWifiNotification(Context context){
-        if(!MiscUtils.Location.networkLocationProviderEnabled(context)) {
-            showBothNotification(context);
-            return;
-        }
-
-        Intent contentIntent;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-            contentIntent = new Intent(new Intent(Settings.ACTION_WIFI_SETTINGS));
-        }else{
-            contentIntent = new Intent(context,ProviderFixActivity.class);
-        }
-        PendingIntent contentPIntent = PendingIntent.getActivity(context,0, contentIntent, 0);
-        showNotification(context, NOTIFICATION_WIFI, R.drawable.ic_action_logo,
-                context.getString(R.string.wifi_fix_notif_title),
-                context.getString(R.string.wifi_fix_notif_text),
-                context.getString(R.string.wifi_fix_notif_bigtext),
-                contentPIntent);
-    }
-
-    private void showNetworkNotification(Context context) {
-        if(!MiscUtils.Location.wifiLocationEnabled(context)) {
-            showBothNotification(context);
-            return;
-        }
-        Intent contentIntent;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-            contentIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        }else{
-            contentIntent = new Intent(context,ProviderFixActivity.class);
-        }
-        PendingIntent contentPIntent = PendingIntent.getActivity(context,0, contentIntent, 0);
-        showNotification(context, NOTIFICATION_LOCATION, R.drawable.ic_action_logo,
-                context.getString(R.string.location_fix_notif_title),
-                context.getString(R.string.location_fix_notif_text),
-                context.getString(R.string.location_fix_notif_bigtext),
-                contentPIntent);
-    }
-
-    private void showBothNotification(Context context){
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancelAll();
-
-        Intent contentIntent;
-        contentIntent = new Intent(context,ProviderFixActivity.class);
-        PendingIntent contentPIntent = PendingIntent.getActivity(context, 0, contentIntent, 0);
-        showNotification(context, NOTIFICATION_BOTH, R.drawable.ic_action_logo,
-                context.getString(R.string.services_fix_notif_title),
-                context.getString(R.string.services_fix_notif_text),
-                context.getString(R.string.services_fix_notif_bigtext),
-                contentPIntent);
-    }
-
     private static void showNotification(Context context, int id, int smallIcon, String title, String text,
-                                  String bigText, PendingIntent contentPIntent){
+                                         String bigText, PendingIntent contentPIntent) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
         Intent actionIntent = new Intent(context, NotificationReceiver.class);
@@ -183,7 +153,7 @@ public class GeofenceService{
                 .setContentIntent(contentPIntent)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
             style.setBigContentTitle(title).bigText(bigText);
             builder.setStyle(style);
@@ -198,7 +168,75 @@ public class GeofenceService{
         notificationManager.notify(id, builder.build());
     }
 
-    private void hideNotification(Context context){
+    public static Uri getBestWallpaperUri(Context context) {
+        Uri uri = ImageManager.getInstance()
+                .getPictureUri(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
+
+        if (FileUtils.fileExistance(uri)) return uri;
+        return Uri.parse("android.resource://" + context.getPackageName() + "/"
+                + R.raw.wallpaper);
+    }
+
+    private static boolean servicesConnected(Context context) {
+        return GooglePlayServicesUtil.isGooglePlayServicesAvailable(context)
+                == ConnectionResult.SUCCESS;
+    }
+
+    private void showWifiNotification(Context context) {
+        if (!MiscUtils.Location.networkLocationProviderEnabled(context)) {
+            showBothNotification(context);
+            return;
+        }
+
+        Intent contentIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            contentIntent = new Intent(new Intent(Settings.ACTION_WIFI_SETTINGS));
+        } else {
+            contentIntent = new Intent(context, ProviderFixActivity.class);
+        }
+        PendingIntent contentPIntent = PendingIntent.getActivity(context, 0, contentIntent, 0);
+        showNotification(context, NOTIFICATION_WIFI, R.drawable.ic_action_logo,
+                context.getString(R.string.wifi_fix_notif_title),
+                context.getString(R.string.wifi_fix_notif_text),
+                context.getString(R.string.wifi_fix_notif_bigtext),
+                contentPIntent);
+    }
+
+    private void showNetworkNotification(Context context) {
+        if (!MiscUtils.Location.wifiLocationEnabled(context)) {
+            showBothNotification(context);
+            return;
+        }
+        Intent contentIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            contentIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        } else {
+            contentIntent = new Intent(context, ProviderFixActivity.class);
+        }
+        PendingIntent contentPIntent = PendingIntent.getActivity(context, 0, contentIntent, 0);
+        showNotification(context, NOTIFICATION_LOCATION, R.drawable.ic_action_logo,
+                context.getString(R.string.notif_title_location_fix),
+                context.getString(R.string.notif_text_location_fix),
+                context.getString(R.string.notif_bigtext_location_fix),
+                contentPIntent);
+    }
+
+    private void showBothNotification(Context context) {
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+
+        Intent contentIntent;
+        contentIntent = new Intent(context, ProviderFixActivity.class);
+        PendingIntent contentPIntent = PendingIntent.getActivity(context, 0, contentIntent, 0);
+        showNotification(context, NOTIFICATION_BOTH, R.drawable.ic_action_logo,
+                context.getString(R.string.notif_title_services_fix),
+                context.getString(R.string.notif_text_services_fix),
+                context.getString(R.string.notif_bigtext_services_fix),
+                contentPIntent);
+    }
+
+    private void hideNotification(Context context) {
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_BOTH);
@@ -206,37 +244,8 @@ public class GeofenceService{
         notificationManager.cancel(NOTIFICATION_LOCATION);
     }
 
-    private GeofenceService(OnWallpaperChangedCallback callback, Context context){
-        mCallback = callback;
-        mContext = context;
-        mManager = new GeofenceManager(mContext, this);
-
-        if(servicesConnected(context)){
-            mReceiver = new GeofenceReceiver();
-            mReloadReceiver = new ReloadWallpaperReceiver();
-            mAddReceiver = new AddGeofenceReceiver();
-            mRemoveReceiver = new RemoveGeofenceReceiver();
-            mProviderReceiver = new ProviderChangedReceiver();
-            mWifiReceiver = new WifiStateChangedReceiver();
-
-            context.registerReceiver(mReceiver, new IntentFilter(ACTION_GEOFENCE_RECEIVED));
-            context.registerReceiver(mReloadReceiver, new IntentFilter(ACTION_RELOAD_WALLPAPER));
-            context.registerReceiver(mAddReceiver, new IntentFilter(ACTION_ADD_GEOFENCE));
-            context.registerReceiver(mRemoveReceiver, new IntentFilter(ACTION_REMOVE_GEOFENCE));
-            context.registerReceiver(mProviderReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
-            context.registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
-            
-            mRunning = MiscUtils.Location.networkLocationProviderEnabled(context);
-            if(mRunning){
-                mManager.addAllGeofences();
-            }
-        }else {
-            mStopped = true;
-        }
-    }
-
-    private void stop(){
-        if(mStopped) return;
+    private void stop() {
+        if (mStopped) return;
 
         mStopped = true;
 
@@ -253,162 +262,53 @@ public class GeofenceService{
         mManager.removeAllGeofences();
     }
 
-    private boolean isStopped(){
+    private boolean isStopped() {
         return mStopped;
     }
 
-    private class GeofenceReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            GeofenceDatabase database = new GeofenceDatabase(context);
-            GeofencingEvent geoEvent = GeofencingEvent.fromIntent(intent);
-
-            if (geoEvent.hasError()) {
-                int errorCode = geoEvent.getErrorCode();
-                Logger.e("ReceiveTransitionsIntentService",
-                        "Location Services error: " +
-                                Integer.toString(errorCode));
-                database.clearActiveGeofences();
-                setWallpaper(context);
-            } else {
-                int transitionType = geoEvent.getGeofenceTransition();
-                List <Geofence> triggerList = geoEvent.getTriggeringGeofences();
-
-                if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                    for(Geofence geofence : triggerList){
-                        database.addActiveGeowallpaper(geofence.getRequestId());
-                    }
-                }else if(transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
-                    for(Geofence geofence : triggerList){
-                        database.removeActiveGeowallpaper(geofence.getRequestId());
-                    }
-                }
-
-                setWallpaper(context);
-            }
-        }
-    }
-
-    private void setWallpaper(Context context){
+    private void setWallpaper(Context context) {
         GeofenceDatabase database = new GeofenceDatabase(context);
 
         List<GeofenceData> datas = database.getActiveGeowallpapers();
 
-        if(datas.size() > 0){
+        if (datas.size() > 0) {
             do {
                 int min = 0;
-                for(int i = 1; i < datas.size(); i++){
-                    if(datas.get(i).getRadius() < datas.get(min).getRadius()){
+                for (int i = 1; i < datas.size(); i++) {
+                    if (datas.get(i).getRadius() < datas.get(min).getRadius()) {
                         min = i;
                     }
                 }
                 Uri wpUri = ImageManager.getInstance().getPictureUri(datas.get(min).getUid());
-                if(FileUtils.fileExistance(wpUri)){
+                if (FileUtils.fileExistance(wpUri)) {
                     setWallpaper(wpUri);
                     return;
                 }
                 datas.remove(min);
-            }while (datas.size() > 0);
+            } while (datas.size() > 0);
 
             Uri defaultUri = ImageManager.getInstance()
                     .getPictureUri(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
-            if(FileUtils.fileExistance(defaultUri)) {
+            if (FileUtils.fileExistance(defaultUri)) {
                 setWallpaper(defaultUri);
-            }else{
+            } else {
                 Uri wallpaper = Uri.parse("android.resource://" + context.getPackageName() + "/"
                         + R.raw.wallpaper);
                 setWallpaper(wallpaper);
             }
-        }else {
-            if(mCallback != null) {
+        } else {
+            if (mCallback != null) {
                 setWallpaper(getBestWallpaperUri(context));
             }
         }
     }
 
-    private boolean setWallpaper(Uri wallpaperUri){
-        if(wallpaperUri != null && mCallback != null){
+    private boolean setWallpaper(Uri wallpaperUri) {
+        if (wallpaperUri != null && mCallback != null) {
             mCallback.onWallpaperChanged(wallpaperUri);
             return true;
         }
         return false;
-    }
-
-    public static Uri getBestWallpaperUri(Context context){
-        Uri uri = ImageManager.getInstance()
-                .getPictureUri(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
-
-        if(FileUtils.fileExistance(uri)) return uri;
-        return Uri.parse("android.resource://" + context.getPackageName() + "/"
-                    + R.raw.wallpaper);
-    }
-
-    private static boolean servicesConnected(Context context) {
-        return GooglePlayServicesUtil.isGooglePlayServicesAvailable(context)
-                == ConnectionResult.SUCCESS;
-    }
-
-    private class AddGeofenceReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
-
-            if(uids.length > 0){
-                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
-                mManager.addGeofences(requestUids);
-            }
-        }
-    }
-
-    private class RemoveGeofenceReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
-
-            if(uids.length > 0){
-                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
-                mManager.removeGeofence(requestUids);
-            }
-        }
-    }
-
-    private class ReloadWallpaperReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            setWallpaper(context);
-        }
-    }
-
-    private class WifiStateChangedReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(Preferences.getBoolean(context, R.string.preference_show_provider_error, true)){
-                if(!MiscUtils.Location.wifiLocationEnabled(context)){
-                    showWifiNotification(context);
-                }else{
-                    hideNotification(context);
-                }
-            }
-        }
-    }
-
-    private class ProviderChangedReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean networkLocationEnabled
-                    = MiscUtils.Location.networkLocationProviderEnabled(context);
-            if(!mRunning && networkLocationEnabled){
-                mManager.addAllGeofences();
-            }
-            if(Preferences.getBoolean(context, R.string.preference_show_provider_error, true)) {
-                if (!networkLocationEnabled) {
-                    showNetworkNotification(context);
-                } else {
-                    hideNotification(context);
-                }
-            }
-            mRunning = networkLocationEnabled;
-        }
     }
 
     public static class GeofenceManager implements GoogleApiClient.ConnectionCallbacks,
@@ -429,13 +329,13 @@ public class GeofenceService{
         private int mRequest = REQUEST_ADD_ALL;
         private List<String> mRequestData;
 
-        private GeofenceManager(Context context, GeofenceService callback)  {
+        private GeofenceManager(Context context, GeofenceService callback) {
             mContext = context;
             mCallback = callback;
             initGoogleClient();
         }
 
-        private void initGoogleClient(){
+        private void initGoogleClient() {
             mGoogleClient = null;
             mGoogleClient = new GoogleApiClient.Builder(mContext)
                     .addApi(LocationServices.API)
@@ -476,91 +376,100 @@ public class GeofenceService{
         public void onConnectionFailed(ConnectionResult connectionResult) {
             if (connectionResult.hasResolution()) {
                 PendingIntent pendingIntent = connectionResult.getResolution();
-                showNotification(mContext, NOTIFICATION_PLAY_ERROR, R.drawable.ic_action_done,
-                        "Titolo",
-                        "Mex corto", "Mex molto ma molto ma molto ma molto non troppo lunghissimo",
+                showNotification(mContext, NOTIFICATION_PLAY_ERROR, R.drawable.ic_location_fix,
+                        mContext.getString(R.string.notif_title_play_services_fix),
+                        mContext.getString(R.string.notif_text_play_services_fix),
+                        mContext.getString(R.string.notif_bigtext_play_services_fix),
                         pendingIntent);
             }
         }
 
-        private void request(int requestCode, List<String> requestData){
-            if(requestCode > mRequest){
+        private void request(int requestCode, List<String> requestData) {
+            if (requestCode > mRequest) {
                 mRequest = requestCode;
                 mRequestData = requestData;
             }
         }
 
         public void addAllGeofences() {
-            if(mGoogleClient.isConnected()) {
-                PendingIntent transition = getTransitionPendingIntent();
-                List<Geofence> geofences = new ArrayList<>();
-                GeofenceDatabase database = new GeofenceDatabase(mContext);
-                List<GeofenceData> datas = database.getGeofencesByDistance();
-                if (datas.size() > 0) {
-                    for (GeofenceData data : datas) {
-                        geofences.add(data.toGeofence());
+            if (mGoogleClient != null) {
+                if (mGoogleClient.isConnected()) {
+                    PendingIntent transition = getTransitionPendingIntent();
+                    List<Geofence> geofences = new ArrayList<>();
+                    GeofenceDatabase database = new GeofenceDatabase(mContext);
+                    List<GeofenceData> datas = database.getGeofencesByDistance();
+                    if (datas.size() > 0) {
+                        for (GeofenceData data : datas) {
+                            geofences.add(data.toGeofence());
+                        }
+                        GeofencingRequest geoRequest = new GeofencingRequest.Builder()
+                                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                                .addGeofences(geofences)
+                                .build();
+                        LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
+                    }
+                } else {
+                    request(REQUEST_ADD_ALL, null);
+                    if (!mGoogleClient.isConnecting()) {
+                        initGoogleClient();
+                    }
+                }
+            }
+        }
+
+        public void removeAllGeofences() {
+            if (mGoogleClient != null) {
+                if (mGoogleClient.isConnected()) {
+                    LocationServices.GeofencingApi.removeGeofences(mGoogleClient,
+                            getTransitionPendingIntent());
+                } else {
+                    request(REQUEST_REMOVE_ALL, null);
+                    if (!mGoogleClient.isConnecting()) {
+                        initGoogleClient();
+                    }
+                }
+            }
+        }
+
+        public void addGeofences(List<String> geofenceUids) {
+            if (mGoogleClient != null) {
+                if (mGoogleClient.isConnected()) {
+                    PendingIntent transition = getTransitionPendingIntent();
+                    List<Geofence> geofences = new ArrayList<>();
+                    GeofenceDatabase database = new GeofenceDatabase(mContext);
+
+                    for (String uid : geofenceUids) {
+                        GeofenceData data = database.getGeofenceData(uid);
+                        if (data != null) {
+                            geofences.add(data.toGeofence());
+                        }
                     }
                     GeofencingRequest geoRequest = new GeofencingRequest.Builder()
                             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                             .addGeofences(geofences)
                             .build();
                     LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
-                }
-            }else{
-                request(REQUEST_ADD_ALL, null);
-                if(!mGoogleClient.isConnecting()){
-                    initGoogleClient();
-                }
-            }
-        }
-
-        public void removeAllGeofences() {
-            if(mGoogleClient.isConnected()){
-                LocationServices.GeofencingApi.removeGeofences(mGoogleClient,
-                        getTransitionPendingIntent());
-            }else{
-                request(REQUEST_REMOVE_ALL, null);
-                if(!mGoogleClient.isConnecting()){
-                    initGoogleClient();
-                }
-            }
-        }
-
-        public void addGeofences(List<String> geofenceUids){
-            if(mGoogleClient.isConnected()) {
-                PendingIntent transition = getTransitionPendingIntent();
-                List<Geofence> geofences = new ArrayList<>();
-                GeofenceDatabase database = new GeofenceDatabase(mContext);
-
-                for (String uid : geofenceUids) {
-                    GeofenceData data = database.getGeofenceData(uid);
-                    if (data != null) {
-                        geofences.add(data.toGeofence());
+                } else {
+                    request(REQUEST_ADD, geofenceUids);
+                    if (!mGoogleClient.isConnecting()) {
+                        initGoogleClient();
                     }
-                }
-                GeofencingRequest geoRequest = new GeofencingRequest.Builder()
-                        .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                        .addGeofences(geofences)
-                        .build();
-                LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
-            }else{
-                request(REQUEST_ADD, geofenceUids);
-                if(!mGoogleClient.isConnecting()){
-                    initGoogleClient();
                 }
             }
         }
 
         public void removeGeofence(List<String> geofenceUids) {
-            if(mGoogleClient.isConnected()) {
-                LocationServices.GeofencingApi.removeGeofences(mGoogleClient, geofenceUids);
-                if (mCallback != null) {
-                    mCallback.setWallpaper(mContext);
-                }
-            }else{
-                request(REQUEST_REMOVE, geofenceUids);
-                if(!mGoogleClient.isConnecting()){
-                    initGoogleClient();
+            if (mGoogleClient != null) {
+                if (mGoogleClient.isConnected()) {
+                    LocationServices.GeofencingApi.removeGeofences(mGoogleClient, geofenceUids);
+                    if (mCallback != null) {
+                        mCallback.setWallpaper(mContext);
+                    }
+                } else {
+                    request(REQUEST_REMOVE, geofenceUids);
+                    if (!mGoogleClient.isConnecting()) {
+                        initGoogleClient();
+                    }
                 }
             }
         }
@@ -572,6 +481,101 @@ public class GeofenceService{
                     0,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+    }
+
+    private class GeofenceReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            GeofenceDatabase database = new GeofenceDatabase(context);
+            GeofencingEvent geoEvent = GeofencingEvent.fromIntent(intent);
+
+            if (geoEvent.hasError()) {
+                int errorCode = geoEvent.getErrorCode();
+                Logger.e("ReceiveTransitionsIntentService",
+                        "Location Services error: " +
+                                Integer.toString(errorCode));
+                database.clearActiveGeofences();
+                setWallpaper(context);
+            } else {
+                int transitionType = geoEvent.getGeofenceTransition();
+                List<Geofence> triggerList = geoEvent.getTriggeringGeofences();
+
+                if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
+                    for (Geofence geofence : triggerList) {
+                        database.addActiveGeowallpaper(geofence.getRequestId());
+                    }
+                } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                    for (Geofence geofence : triggerList) {
+                        database.removeActiveGeowallpaper(geofence.getRequestId());
+                    }
+                }
+
+                setWallpaper(context);
+            }
+        }
+    }
+
+    private class AddGeofenceReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
+
+            if (uids.length > 0) {
+                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
+                mManager.addGeofences(requestUids);
+            }
+        }
+    }
+
+    private class RemoveGeofenceReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String[] uids = intent.getStringArrayExtra(EXTRA_UIDS);
+
+            if (uids.length > 0) {
+                List<String> requestUids = new ArrayList<>(Arrays.asList(uids));
+                mManager.removeGeofence(requestUids);
+            }
+        }
+    }
+
+    private class ReloadWallpaperReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            setWallpaper(context);
+        }
+    }
+
+    private class WifiStateChangedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Preferences.getBoolean(context, R.string.preference_show_provider_error, true)) {
+                if (!MiscUtils.Location.wifiLocationEnabled(context)) {
+                    showWifiNotification(context);
+                } else {
+                    hideNotification(context);
+                }
+            }
+        }
+    }
+
+    private class ProviderChangedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean networkLocationEnabled
+                    = MiscUtils.Location.networkLocationProviderEnabled(context);
+            if (!mRunning && networkLocationEnabled) {
+                mManager.addAllGeofences();
+            }
+            if (Preferences.getBoolean(context, R.string.preference_show_provider_error, true)) {
+                if (!networkLocationEnabled) {
+                    showNetworkNotification(context);
+                } else {
+                    hideNotification(context);
+                }
+            }
+            mRunning = networkLocationEnabled;
         }
     }
 }

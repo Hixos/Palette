@@ -6,9 +6,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 
-/**
- * Created by Luca on 01/03/14.
- */
 public class ImageLoadTask extends AsyncTask<Uri, Void, Bitmap> {
     private String mUid;
     private int mWidth, mHeight;
@@ -34,7 +31,7 @@ public class ImageLoadTask extends AsyncTask<Uri, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap bitmap) {
         super.onPostExecute(bitmap);
-        if(mListener != null){
+        if (mListener != null) {
             mListener.onImageLoaded(bitmap, mUid);
         }
         mListener = null;
@@ -42,7 +39,7 @@ public class ImageLoadTask extends AsyncTask<Uri, Void, Bitmap> {
 
     @Override
     protected void onCancelled(Bitmap bitmap) {
-        if(bitmap != null){
+        if (bitmap != null) {
             ImageManager.getInstance().getRecycleBin().put(bitmap);
         }
         mListener = null;

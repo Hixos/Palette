@@ -10,21 +10,19 @@ import android.os.AsyncTask;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.wallpaper.WallpaperUtils;
 
-/**
- * Created by Luca on 28/01/14.
- */
-public class WallpaperCropper{
+public class WallpaperCropper {
 
     /**
      * Crops the given wallpaper and stores it in the given uri.
      * Asynchronous task.
-     * @param inUri The wallpaper uri
-     * @param outUri cropped wallpape uri
+     *
+     * @param inUri    The wallpaper uri
+     * @param outUri   cropped wallpape uri
      * @param callback called when the cropping has finished.
      */
     public static void autoCropWallpaper(final Context context, final Uri inUri, final Uri outUri,
-                                         final BitmapIO.OnImageCroppedCallback callback){
-        AsyncTask <Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+                                         final BitmapIO.OnImageCroppedCallback callback) {
+        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             Rect size;
 
             @Override
@@ -36,9 +34,9 @@ public class WallpaperCropper{
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 super.onPostExecute(aBoolean);
-                if(aBoolean){
+                if (aBoolean) {
                     callback.onImageCropped(outUri);
-                }else{
+                } else {
                     callback.onImageCropFailed();
                 }
             }
@@ -46,7 +44,7 @@ public class WallpaperCropper{
         task.execute();
     }
 
-    private static boolean autoCropWallpaper(final Context context, Uri inUri, Uri outUri, Rect imageSize){
+    private static boolean autoCropWallpaper(final Context context, Uri inUri, Uri outUri, Rect imageSize) {
         Point screenSize;
         Rect crop;
 
@@ -59,13 +57,13 @@ public class WallpaperCropper{
 
         crop = RectUtils.getCropArea(cropRatio, imageSize);
 
-        if(kk){
+        if (kk) {
             float maxRatio = WallpaperUtils.getKitkatMaxCropRatio(screenSize.x, screenSize.y, context);
             crop.right = Math.min(Math.round(crop.left + crop.height() * maxRatio), imageSize.right);
         }
 
         int outHeight = Math.max(screenSize.x, screenSize.y);
-        int outWidth = Math.round(outHeight * ((float)crop.width() / (float)crop.height()));
+        int outWidth = Math.round(outHeight * ((float) crop.width() / (float) crop.height()));
 
         return BitmapIO.cropImageToFile(context, inUri, outUri, crop, outWidth, outHeight);
     }
@@ -74,9 +72,10 @@ public class WallpaperCropper{
     public static void cropWallpaper(final Uri inUri, final Uri outUri, final RectF relativeCrop,
                                      final int outHeight,
                                      final BitmapIO.OnImageCroppedCallback callback,
-                                     final Context context){
+                                     final Context context) {
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             Rect size;
+
             @Override
             protected Boolean doInBackground(Void... voids) {
                 size = BitmapIO.getImageSize(context.getApplicationContext(), inUri);
@@ -87,9 +86,9 @@ public class WallpaperCropper{
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 super.onPostExecute(aBoolean);
-                if(aBoolean){
+                if (aBoolean) {
                     callback.onImageCropped(outUri);
-                }else{
+                } else {
                     callback.onImageCropFailed();
                 }
             }
@@ -98,11 +97,11 @@ public class WallpaperCropper{
     }
 
     private static boolean cropWallpaper(Context context, Uri inUri, Uri outUri, RectF relativeCrop,
-                                      Rect imageSize, int outHeight){
+                                         Rect imageSize, int outHeight) {
         Rect fullCrop;
         fullCrop = RectUtils.getFullRect(relativeCrop, imageSize);
 
-        int outWidth = (int)(outHeight * ((float)fullCrop.width() / (float)fullCrop.height()));
+        int outWidth = (int) (outHeight * ((float) fullCrop.width() / (float) fullCrop.height()));
         return BitmapIO.cropImageToFile(context, inUri, outUri, fullCrop, outWidth, outHeight);
     }
 }

@@ -6,9 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by Luca on 27/01/14.
- */
 public abstract class DatabaseManager {
     private static AtomicInteger sOpenCounter;
     private static DatabaseHelper sDbHelper;
@@ -36,37 +33,41 @@ public abstract class DatabaseManager {
     }
 
     /**
-    * Return the app's database
-    * @return App's database
-    */
+     * Return the app's database
+     *
+     * @return App's database
+     */
     public synchronized SQLiteDatabase openDatabase() {
         int c = sOpenCounter.incrementAndGet();
-        if(c < 1){
+        if (c < 1) {
             Logger.e("Database", "Invalid counter value");
             sOpenCounter.set(1);
         }
-        if(c <= 1){
+        if (c <= 1) {
             sDatabase = sDbHelper.getWritableDatabase();
         }
         return sDatabase;
     }
+
     /**
      * Closes the database and releases all the resources
      */
-    public synchronized void closeDatabase(){
-        if(sOpenCounter.decrementAndGet() == 0){
+    public synchronized void closeDatabase() {
+        if (sOpenCounter.decrementAndGet() == 0) {
             sDatabase.close();
         }
     }
 
     /**
      * String tag for the database
+     *
      * @return tag
      */
     public abstract String getTag();
 
     /**
      * Default method to get a unique id
+     *
      * @return uid
      */
     public String getNewUid() {

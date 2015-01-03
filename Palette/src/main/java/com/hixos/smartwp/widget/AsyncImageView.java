@@ -15,10 +15,7 @@ import android.widget.ImageView;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.ImageManager;
 
-/**
- * Created by Luca on 01/03/14.
- */
-public class AsyncImageView extends ImageView{
+public class AsyncImageView extends ImageView {
 
     private int mAnimationTime = 150;
 
@@ -45,8 +42,8 @@ public class AsyncImageView extends ImageView{
         init(context, attrs);
     }
 
-    private void init(Context context, AttributeSet attrs){
-        if(attrs != null){
+    private void init(Context context, AttributeSet attrs) {
+        if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.AsyncImageView,
@@ -56,7 +53,7 @@ public class AsyncImageView extends ImageView{
         }
 
         ViewTreeObserver observer = getViewTreeObserver();
-        if(observer != null){
+        if (observer != null) {
             observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
@@ -67,40 +64,39 @@ public class AsyncImageView extends ImageView{
         }
     }
 
-    public void setRatio(int width, int height){
-        setRatio((float)width / height);
+    public void setRatio(int width, int height) {
+        setRatio((float) width / height);
     }
 
-    public void setRatio(float ratio){
-        mRatio = ratio;
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2){
-            if(!isInLayout())
-                requestLayout();
-        }else{
-            requestLayout();
-        }
-    }
-
-    public float getRatio(){
+    public float getRatio() {
         return mRatio;
     }
 
+    public void setRatio(float ratio) {
+        mRatio = ratio;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            if (!isInLayout())
+                requestLayout();
+        } else {
+            requestLayout();
+        }
+    }
 
     public void setImageUID(String uid) {
         setImageUID(uid, null);
     }
 
-    public void setImageUID(final String uid, ImageManager.OnImageLoadedListener listener){
+    public void setImageUID(final String uid, ImageManager.OnImageLoadedListener listener) {
         mListener = listener;
 
-        if(mMeasured){
+        if (mMeasured) {
             setImageBitmap(null);
             loadImage(uid);
-        }else{
+        } else {
             setImageBitmap(null);
             final ViewTreeObserver observer = getViewTreeObserver();
-            if(observer != null){
+            if (observer != null) {
                 observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                     @Override
                     public boolean onPreDraw() {
@@ -113,13 +109,13 @@ public class AsyncImageView extends ImageView{
         }
     }
 
-    private void loadImage(String uid){
-        if(mLoadTask != null && mLoadTask.isRunning()){
+    private void loadImage(String uid) {
+        if (mLoadTask != null && mLoadTask.isRunning()) {
             mLoadTask.cancel(true);
         }
-        if(ImageManager.getInstance().isCached(uid)){
+        if (ImageManager.getInstance().isCached(uid)) {
             onImageLoaded(ImageManager.getInstance().getCachedThumbnail(uid), uid, false);
-        }else{
+        } else {
             mLoadTask = new ThumbnailLoadTask(uid);
             mLoadTask.execute();
         }
@@ -137,22 +133,22 @@ public class AsyncImageView extends ImageView{
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
         float screenRatio = 1;
-        if(heightSize > 0){
-            screenRatio = (float)widthSize / (float)heightSize;
+        if (heightSize > 0) {
+            screenRatio = (float) widthSize / (float) heightSize;
         }
 
         int measuredWidth, measuredHeight;
 
-        if(mRatio > 0){
-            if(screenRatio > mRatio){
+        if (mRatio > 0) {
+            if (screenRatio > mRatio) {
                 measuredHeight = heightSize;
-                measuredWidth = Math.round((float)heightSize * mRatio);
-            }else{
-                measuredWidth  = widthSize;
-                measuredHeight =  Math.round((float)widthSize / mRatio);
+                measuredWidth = Math.round((float) heightSize * mRatio);
+            } else {
+                measuredWidth = widthSize;
+                measuredHeight = Math.round((float) widthSize / mRatio);
             }
             setMeasuredDimension(measuredWidth, measuredHeight);
-        }else{
+        } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
     }
@@ -162,20 +158,40 @@ public class AsyncImageView extends ImageView{
         super.onDraw(canvas);
     }
 
+    private void onImageLoaded(Bitmap bitmap, String uid, boolean animate) {
+        setImageBitmap(bitmap);
+        if (mListener != null) {
+            mListener.onImageLoaded(bitmap, uid);
+        }
+        if (animate)
+            fadeInAnimation();
+    }
+
+    private void fadeInAnimation() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (mAnimator != null) {
+                mAnimator.cancel();
+            }
+            mAnimator = ObjectAnimator.ofInt(this, "ImageAlpha", 0, 255);
+            mAnimator.setDuration(mAnimationTime).setInterpolator(new DecelerateInterpolator());
+            mAnimator.start();
+        }
+    }
 
     class ThumbnailLoadTask extends AsyncTask<Void, Void, Bitmap> {
+        private String mUid;
+        private boolean mRunning = false;
+
+        public ThumbnailLoadTask(String uid) {
+            mUid = uid;
+        }
+
         public String getUid() {
             return mUid;
         }
-        private String mUid;
 
         public boolean isRunning() {
             return mRunning;
-        }
-        private boolean mRunning = false;
-
-        public ThumbnailLoadTask(String uid){
-            mUid = uid;
         }
 
         @Override
@@ -199,26 +215,6 @@ public class AsyncImageView extends ImageView{
         @Override
         protected void onCancelled(Bitmap bitmap) {
             mRunning = false;
-        }
-    }
-
-    private void onImageLoaded(Bitmap bitmap, String uid, boolean animate){
-        setImageBitmap(bitmap);
-        if(mListener != null){
-            mListener.onImageLoaded(bitmap, uid);
-        }
-        if(animate)
-            fadeInAnimation();
-    }
-
-    private void fadeInAnimation(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-            if(mAnimator != null){
-                mAnimator.cancel();
-            }
-            mAnimator = ObjectAnimator.ofInt(this, "ImageAlpha", 0, 255);
-            mAnimator.setDuration(mAnimationTime).setInterpolator(new DecelerateInterpolator());
-            mAnimator.start();
         }
     }
 }

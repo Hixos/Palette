@@ -6,9 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 
 import java.io.InputStream;
 
-/**
- * Created by Luca on 02/03/14.
- */
 public class AlphaBitmapDrawable extends BitmapDrawable {
     private int mAlpha = 255;
 
@@ -25,13 +22,13 @@ public class AlphaBitmapDrawable extends BitmapDrawable {
     }
 
     @Override
-    public void setAlpha(int alpha) {
-        super.setAlpha(alpha);
-        mAlpha = alpha;
+    public int getAlpha() {
+        return mAlpha;
     }
 
     @Override
-    public int getAlpha() {
-        return mAlpha;
+    public void setAlpha(int alpha) {
+        super.setAlpha(alpha);
+        mAlpha = alpha;
     }
 }

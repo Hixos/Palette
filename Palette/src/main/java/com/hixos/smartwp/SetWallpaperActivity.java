@@ -14,15 +14,16 @@ import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;
 
 
-public class SetWallpaperActivity extends ActionBarActivity implements View.OnClickListener{
+public class SetWallpaperActivity extends ActionBarActivity implements View.OnClickListener {
     private CircleView mCircle;
     private boolean mClicked = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.acitvity_fade_out);
         setContentView(R.layout.activity_set_wallpaper);
-        mCircle = (CircleView)findViewById(R.id.circleView);
+        mCircle = (CircleView) findViewById(R.id.circleView);
         mCircle.setOnClickListener(this);
     }
 
@@ -35,7 +36,7 @@ public class SetWallpaperActivity extends ActionBarActivity implements View.OnCl
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.set_wallpaper, menu);
         return true;
@@ -55,9 +56,9 @@ public class SetWallpaperActivity extends ActionBarActivity implements View.OnCl
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.circleView:
-                if(!mClicked){
+                if (!mClicked) {
                     mClicked = true;
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mCircle, "radiusPerc", mCircle.getRadiusPerc(), 3);
                     animator.setDuration(600);

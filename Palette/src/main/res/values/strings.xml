@@ -40,12 +40,15 @@
     <string name="wifi_fix_notif_text">Click here for more information</string>
     <string name="location_fix_title">Network location is disabled</string>
     <string name="location_fix_desc">Location-based wallpapers can\'t work if network location is disabled.\nClick here to turn it on.</string>
-    <string name="location_fix_notif_title">Improve location</string>
-    <string name="location_fix_notif_bigtext">@string/location_fix_desc</string>
-    <string name="location_fix_notif_text">Click here for more information</string>
-    <string name="services_fix_notif_title">Improve location</string>
-    <string name="services_fix_notif_bigtext">Location-based wallpapers need to know your location to work correctly.\nClick here for more information.</string>
-    <string name="services_fix_notif_text">Click here for more information</string>
+    <string name="notif_title_location_fix">Improve location</string>
+    <string name="notif_bigtext_location_fix">@string/location_fix_desc</string>
+    <string name="notif_text_location_fix">Click here for more information</string>
+    <string name="notif_title_services_fix">Improve location</string>
+    <string name="notif_bigtext_services_fix">Location-based wallpapers need to know your location to work correctly.\nClick here for more information.</string>
+    <string name="notif_text_services_fix">Click here for more information</string>
+    <string name="notif_title_play_services_fix">Google Play Services missing</string>
+    <string name="notif_bigtext_play_services_fix">Google Play Services are not installed on your device.\nClick here to solve the problem.</string>
+    <string name="notif_text_play_services_fix">Click here to solve the problem.</string>
     <string name="donot_show_again">Don\'t show this again</string>
 
 

@@ -9,10 +9,7 @@ import android.widget.ImageView;
 
 import com.hixos.smartwp.R;
 
-/**
- * Created by Luca on 04/12/2014.
- */
-public class FloatingActionButton extends FrameLayout implements View.OnClickListener{
+public class FloatingActionButton extends FrameLayout implements View.OnClickListener {
 
     public FloatingActionButton(Context context) {
         super(context);
@@ -34,12 +31,12 @@ public class FloatingActionButton extends FrameLayout implements View.OnClickLis
         init(attrs);
     }
 
-    private void init(AttributeSet attrs){
+    private void init(AttributeSet attrs) {
         ImageView imageView = new ImageView(getContext());
         imageView.setLayoutParams(generateDefaultLayoutParams());
         imageView.setClickable(true);
         imageView.setOnClickListener(this);
-        if(attrs != null) {
+        if (attrs != null) {
             TypedArray a = getContext().getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.FloatingActionButton,
@@ -55,6 +52,6 @@ public class FloatingActionButton extends FrameLayout implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-       callOnClick();
+        callOnClick();
     }
 }

@@ -8,9 +8,6 @@ import android.opengl.Matrix;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-/**
- * Created by Luca on 23/02/14.
- */
 public class GLWallpaper {
     private static final String LOGTAG = "GLWallpaper";
 
@@ -41,7 +38,7 @@ public class GLWallpaper {
     private static final int COORDS_PER_TEXTURE_VERTEX = 2;
     private static final int TEXTURE_VERTEX_STRIDE_BYTES = COORDS_PER_TEXTURE_VERTEX * 4;
 
-    private final static short VERTICES_DRAW_ORDER[] = { 0, 1, 2, 1, 2, 3}; // order to draw vertices
+    private final static short VERTICES_DRAW_ORDER[] = {0, 1, 2, 1, 2, 3}; // order to draw vertices
 
     //X Y
     private static final float[] TEXTURE_COORDS = {
@@ -76,37 +73,8 @@ public class GLWallpaper {
     private float mMVPMatrix[] = new float[16];
 
 
-    public static void initGL(){
-        int vertexShader = OpenGLUtils.loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_CODE);
-        int fragmentShader = OpenGLUtils.loadShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER_CODE);
-
-        sProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(sProgram, vertexShader);
-        OpenGLUtils.checkGlError("glAttachShader");
-        GLES20.glAttachShader(sProgram, fragmentShader);
-
-        OpenGLUtils.checkGlError("glAttachShader");
-        GLES20.glLinkProgram(sProgram);
-        OpenGLUtils.checkGlError("glLinkProgram");
-
-        sAttribPositionHandle = GLES20.glGetAttribLocation(sProgram, "aPosition");
-        OpenGLUtils.checkGlError("glGetAttribLocation");
-        sAttribTextureCoordsHandle = GLES20.glGetAttribLocation(sProgram, "aTexCoords");
-        OpenGLUtils.checkGlError("glGetAttribLocation");
-        sUniformTextureHandle = GLES20.glGetUniformLocation(sProgram, "uTexture");
-        OpenGLUtils.checkGlError("glGetUniformLocation");
-        sUniformMVPMatrixHandle = GLES20.glGetUniformLocation(sProgram, "uMVPMatrix");
-        OpenGLUtils.checkGlError("glGetUniformLocation");
-        sUniformAlphaHandle = GLES20.glGetUniformLocation(sProgram, "uAlpha");
-        OpenGLUtils.checkGlError("glGetUniformLocation");
-
-        int[] maxTextureSize = new int[1];
-        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
-        sTileSize = maxTextureSize[0];
-    }
-
-    public GLWallpaper(Bitmap bitmap){
-        if(bitmap == null || bitmap.isRecycled()){
+    public GLWallpaper(Bitmap bitmap) {
+        if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException("Invalid arguments!");
         }
 
@@ -118,9 +86,9 @@ public class GLWallpaper {
 
         mWidth = bitmap.getWidth();
         mHeight = bitmap.getHeight();
-        mRatio = (float)mWidth / mHeight;
-        mCols = (int)Math.ceil((float) mWidth / sTileSize);
-        mRows = (int)Math.ceil((float) mHeight / sTileSize);
+        mRatio = (float) mWidth / mHeight;
+        mCols = (int) Math.ceil((float) mWidth / sTileSize);
+        mRows = (int) Math.ceil((float) mHeight / sTileSize);
 
         mTextureHandles = new int[mRows * mCols];
         if (mCols == 1 && mRows == 1) {
@@ -150,16 +118,45 @@ public class GLWallpaper {
         }
     }
 
+    public static void initGL() {
+        int vertexShader = OpenGLUtils.loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_CODE);
+        int fragmentShader = OpenGLUtils.loadShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER_CODE);
+
+        sProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(sProgram, vertexShader);
+        OpenGLUtils.checkGlError("glAttachShader");
+        GLES20.glAttachShader(sProgram, fragmentShader);
+
+        OpenGLUtils.checkGlError("glAttachShader");
+        GLES20.glLinkProgram(sProgram);
+        OpenGLUtils.checkGlError("glLinkProgram");
+
+        sAttribPositionHandle = GLES20.glGetAttribLocation(sProgram, "aPosition");
+        OpenGLUtils.checkGlError("glGetAttribLocation");
+        sAttribTextureCoordsHandle = GLES20.glGetAttribLocation(sProgram, "aTexCoords");
+        OpenGLUtils.checkGlError("glGetAttribLocation");
+        sUniformTextureHandle = GLES20.glGetUniformLocation(sProgram, "uTexture");
+        OpenGLUtils.checkGlError("glGetUniformLocation");
+        sUniformMVPMatrixHandle = GLES20.glGetUniformLocation(sProgram, "uMVPMatrix");
+        OpenGLUtils.checkGlError("glGetUniformLocation");
+        sUniformAlphaHandle = GLES20.glGetUniformLocation(sProgram, "uAlpha");
+        OpenGLUtils.checkGlError("glGetUniformLocation");
+
+        int[] maxTextureSize = new int[1];
+        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
+        sTileSize = maxTextureSize[0];
+    }
+
     public void draw(float[] vpMatrix, float xOffset, float screenRatio, float alpha) {
         GLES20.glUseProgram(sProgram);
 
         float scale;
-        if(screenRatio > 1 && screenRatio != mRatio){ //Landscape (Only if crop mode != landscape)
+        if (screenRatio > 1 && screenRatio != mRatio) { //Landscape (Only if crop mode != landscape)
             float w = Math.min(Math.max(mRatio, 1), 1 / mRatio);
             float h = w / screenRatio;
 
             scale = 1 / mRatio / h;
-        }else{ //Portrait
+        } else { //Portrait
             scale = Math.max(screenRatio / mRatio, 1);
         }
 
@@ -190,7 +187,7 @@ public class GLWallpaper {
                 TEXTURE_VERTEX_STRIDE_BYTES, mTextureCoordsBuffer);
         GLES20.glEnableVertexAttribArray(sAttribTextureCoordsHandle);
 
-        float maxRight = ((float)mWidth / mHeight) * 2;
+        float maxRight = ((float) mWidth / mHeight) * 2;
 
         for (int y = 0; y < mRows; y++) {
             for (int x = 0; x < mCols; x++) {
@@ -220,8 +217,8 @@ public class GLWallpaper {
         GLES20.glDisableVertexAttribArray(sAttribTextureCoordsHandle);
     }
 
-    public void destroy(){
-        if(mTextureHandles != null){
+    public void destroy() {
+        if (mTextureHandles != null) {
             GLES20.glDeleteTextures(mTextureHandles.length, mTextureHandles, 0);
         }
     }

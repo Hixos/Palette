@@ -9,20 +9,18 @@ import android.widget.TextView;
 
 import com.hixos.smartwp.R;
 
-/**
- * Created by Luca on 05/11/13.
- */
-public class FontTextView extends TextView{
+public class FontTextView extends TextView {
 
-    protected static final String LOGTAG =  "CustomFontTextView";
-    public FontTextView(Context c){
+    protected static final String LOGTAG = "CustomFontTextView";
+
+    public FontTextView(Context c) {
         super(c);
     }
 
-    public FontTextView(Context context, AttributeSet attrs){
+    public FontTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        if(!isInEditMode()){
+        if (!isInEditMode()) {
             Typeface typeface;
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
@@ -36,9 +34,9 @@ public class FontTextView extends TextView{
             }
             font += ".ttf";
 
-            try{
+            try {
                 typeface = Typeface.createFromAsset(context.getAssets(), font);
-            }catch (RuntimeException re){
+            } catch (RuntimeException re) {
                 Log.e(LOGTAG, "Error setting typeface, selected font may not exist | " + re.getMessage());
                 typeface = Typeface.createFromAsset(context.getAssets(), "fonts/Roboto-Regular.ttf");
             }

@@ -8,9 +8,6 @@ import android.opengl.Matrix;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-/**
- * Created by Luca on 21/03/2014.
- */
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String LOGTAG = "GLRenderer";
 
@@ -44,7 +41,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-        mRatio = (float)width / height;
+        mRatio = (float) width / height;
         Matrix.orthoM(mProjectionMatrix, 0,
                 0, mRatio * 2,
                 -1, 1,
@@ -59,42 +56,42 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         boolean animate = mCrossfadeAnimator.tick();
 
-        if(mCurrentWallpaper != null){
+        if (mCurrentWallpaper != null) {
             mCurrentWallpaper.draw(mVPMatrix, mXOffset, mRatio, 1.0f);
         }
 
-        if(mNextWallpaper != null){
+        if (mNextWallpaper != null) {
             float alpha = mCrossfadeAnimator.currentValue();
             mNextWallpaper.draw(mVPMatrix, mXOffset, mRatio, alpha);
         }
 
-        if(animate){
+        if (animate) {
             mCallbacks.requestRender();
         }
     }
 
-    public void onDestroy(){
-        if(mNextWallpaper != null){
+    public void onDestroy() {
+        if (mNextWallpaper != null) {
             mNextWallpaper.destroy();
             mNextWallpaper = null;
         }
-        if(mCurrentWallpaper != null){
+        if (mCurrentWallpaper != null) {
             mCurrentWallpaper.destroy();
             mCurrentWallpaper = null;
         }
     }
 
-    public void setXOffset(float xOffset){
+    public void setXOffset(float xOffset) {
         mXOffset = xOffset;
         mCallbacks.requestRender();
     }
 
-    public void setWallpaper(Bitmap wallpaper, int crossFadeDuration){
+    public void setWallpaper(Bitmap wallpaper, int crossFadeDuration) {
         loadWallpaper(wallpaper, crossFadeDuration);
     }
 
-    private void loadWallpaper(Bitmap wallpaper, int crossFadeDuration){
-        if(mNextWallpaper != null){
+    private void loadWallpaper(Bitmap wallpaper, int crossFadeDuration) {
+        if (mNextWallpaper != null) {
             mCrossfadeAnimator.cancel();
             swapWallpapers();
         }
@@ -107,7 +104,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mCallbacks.requestRender();
     }
 
-    private void startCrossfadeAnimation(int duration){
+    private void startCrossfadeAnimation(int duration) {
         mCrossfadeAnimator.from(0).to(1)
                 .withDuration(duration)
                 .withEndListener(new Runnable() {
@@ -118,9 +115,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
                 }).start();
     }
 
-    private void swapWallpapers(){
+    private void swapWallpapers() {
         if (mNextWallpaper != null) {
-            if(mCurrentWallpaper != null)
+            if (mCurrentWallpaper != null)
                 mCurrentWallpaper.destroy();
 
             mCurrentWallpaper = mNextWallpaper;

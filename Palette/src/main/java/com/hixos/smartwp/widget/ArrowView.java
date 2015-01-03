@@ -16,9 +16,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.hixos.smartwp.R;
 
-/**
- * Created by Luca on 16/03/14.
- */
 public class ArrowView extends View {
 
     private Path mPath;
@@ -53,7 +50,7 @@ public class ArrowView extends View {
     }
 
 
-    public void init(){
+    public void init() {
         setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         mAnimationTime = getResources().getInteger(R.integer.empty_state_animation_time);
@@ -74,11 +71,11 @@ public class ArrowView extends View {
         mArrowPaint.setColor(color);
     }
 
-    public void setPoints(Point source, Point dest, boolean animate){
+    public void setPoints(Point source, Point dest, boolean animate) {
         setPoints(source.x, source.y, dest.x, dest.y, animate);
     }
 
-    public void setPoints(float sX, float sY, float dX, float dY, boolean animate){
+    public void setPoints(float sX, float sY, float dX, float dY, boolean animate) {
         mPath = new Path();
         mPath.moveTo(sX, sY);
         float C1x, C1y, C2x, C2y;
@@ -88,25 +85,25 @@ public class ArrowView extends View {
         mPath.cubicTo(C1x, C1y, C2x, C2y, dX, dY);
 
         mPathLenght = new PathMeasure(mPath, false).getLength();
-        if(animate){
-            if(mAnimator != null) mAnimator.cancel();
+        if (animate) {
+            if (mAnimator != null) mAnimator.cancel();
 
             mAnimator = ObjectAnimator.ofFloat(this, "phase", 0, 1);
             mAnimator.setDuration(mAnimationTime);
             mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
             mAnimator.start();
-        }else{
+        } else {
             setPhase(1);
         }
     }
 
 
-    public void setPhase(float value){
+    public void setPhase(float value) {
         float phase = -value * (mPathLenght - 1);
 
-        int alpha = Math.min(mMaxAlpha, (int)(value * 3 * mMaxAlpha));
+        int alpha = Math.min(mMaxAlpha, (int) (value * 3 * mMaxAlpha));
 
-        PathEffect pathEffect = new DashPathEffect(new float[] {mPathLenght, mPathLenght},
+        PathEffect pathEffect = new DashPathEffect(new float[]{mPathLenght, mPathLenght},
                 phase + mPathLenght);
 
         mPathPaint.setPathEffect(pathEffect);
@@ -126,7 +123,7 @@ public class ArrowView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(mPath != null){
+        if (mPath != null) {
             canvas.drawPath(mPath, mPathPaint);
             canvas.drawPath(mPath, mArrowPaint);
         }

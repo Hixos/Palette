@@ -11,72 +11,74 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.drew.lang.annotations.NotNull;
 import com.hixos.smartwp.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Luca on 15/10/13.
- */
 public class IntervalPicker extends View {
 
-    public interface OnIntervalSelectedListener {
-        public void onIntervalSelected(int interval);
-    }
-
     private OnIntervalSelectedListener mListener;
-
     private int mWidth, mHeight;
-
     private Context mContext;
-
     //View values
     private int mRange = 60;
     private float mStep;
-
     private int mTextCount;
     private float mTextStep;
     private int mClockStep;
-
     private int mCurrentInterval = 1;
-
     private long mLastVibration;
     private int mVibrationStep;
-
     //Dimensions
     private float mTouchableAreaWidth;
-
     //View center
     private int mCenterX, mCenterY;
     private float mOuterRadius;
     private float mTouchableOuterRadius;
     private float mTouchableInnerRadius;
-
     private float mCursorRadius;
-
     //COORDS
     private float mCursorX, mCursorY;
     private float mNeedleX, mNeedleY;
-
     private boolean mPressed = false;
-
     private Drawable mCursor;
-
     //Paints
     private Paint mBgPaint;
     private Paint mNeedlePaint;
     private Paint mClockTextPaint;
-
-
     private List<Point> textPositions;
+
+
+    public IntervalPicker(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        mContext = context;
+        initView();
+    }
+
+    public IntervalPicker(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mContext = context;
+        initView();
+    }
+
+    public IntervalPicker(Context context) {
+        super(context);
+        mContext = context;
+        initView();
+    }
+
+    public int getRange() {
+        return mRange;
+    }
 
     public void setRange(int range) {
         mRange = range;
 
         mCurrentInterval = getCorrectInterval(mCurrentInterval);
 
-        if(mListener != null)
+        if (mListener != null)
             mListener.onIntervalSelected(mCurrentInterval);
         updateStep();
 
@@ -84,10 +86,6 @@ public class IntervalPicker extends View {
         updateTextPositions();
 
         invalidate();
-    }
-
-    public int getRange() {
-        return mRange;
     }
 
     public int getInterval() {
@@ -98,38 +96,18 @@ public class IntervalPicker extends View {
         this.mCurrentInterval = getCorrectInterval(interval);
         updateNeedlePosition();
 
-        if(mListener != null)
-             mListener.onIntervalSelected(mCurrentInterval);
+        if (mListener != null)
+            mListener.onIntervalSelected(mCurrentInterval);
 
 
     }
 
     private int getCorrectInterval(int interval) {
         int out = interval;
-        if(interval > mRange) out = mRange;
-        if(interval < 1) out = 1;
+        if (interval > mRange) out = mRange;
+        if (interval < 1) out = 1;
 
         return out;
-    }
-
-    public IntervalPicker(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        mContext = context;
-        initView();
-    }
-
-
-    public IntervalPicker(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        mContext = context;
-        initView();
-    }
-
-
-    public IntervalPicker(Context context) {
-        super(context);
-        mContext = context;
-        initView();
     }
 
     public void setOnIntervalSelectedListener(OnIntervalSelectedListener listener) {
@@ -141,19 +119,19 @@ public class IntervalPicker extends View {
         mCursor = mContext.getResources().getDrawable(R.drawable.interval_picker_cursor);
         mTouchableAreaWidth = mContext.getResources().getDimensionPixelSize(R.dimen.picker_touchable_area_width);
         mCursorRadius = mTouchableAreaWidth / 2;
-        textPositions = new ArrayList<Point>();
+        textPositions = new ArrayList<>();
         initPaints();
         updateStep();
     }
 
     private void updateStep() {
-        mStep = (2 * (float)Math.PI) / mRange;
-        if(mRange <= 12) {
+        mStep = (2 * (float) Math.PI) / mRange;
+        if (mRange <= 12) {
             mTextCount = mRange;
             mTextStep = mStep;
-        }else {
+        } else {
             mTextCount = 12;
-            mTextStep = (float)Math.PI / 6;
+            mTextStep = (float) Math.PI / 6;
         }
         mClockStep = mRange / mTextCount;
     }
@@ -169,7 +147,7 @@ public class IntervalPicker extends View {
         mNeedlePaint.setStrokeWidth(4);
 
         mClockTextPaint = new Paint();
-        if(!isInEditMode()) {
+        if (!isInEditMode()) {
             mClockTextPaint.setTypeface(Fonts.getTypeface(mContext, Fonts.STYLE_LIGHT | Fonts.STYLE_CONDENSED));
         }
         mClockTextPaint.setAntiAlias(true);
@@ -191,9 +169,9 @@ public class IntervalPicker extends View {
         if (heightMode == MeasureSpec.EXACTLY) {
             //Must be this size
             mHeight = heightSize;
-        } else if(heightMode == MeasureSpec.AT_MOST) {
+        } else if (heightMode == MeasureSpec.AT_MOST) {
             mHeight = Math.min(mWidth, heightSize);
-        }else {
+        } else {
             mHeight = mWidth;
         }
 
@@ -206,15 +184,14 @@ public class IntervalPicker extends View {
 
     }
 
-
     private void initDimensions() {
         mCenterX = mWidth / 2;
         mCenterY = mHeight / 2;
 
-        mOuterRadius = (mWidth < mHeight ?  mWidth / 2 : mHeight / 2);
+        mOuterRadius = (mWidth < mHeight ? mWidth / 2 : mHeight / 2);
 
         mTouchableOuterRadius = mOuterRadius - getResources().getDimensionPixelSize(R.dimen.picker_outer_margin);
-        mTouchableInnerRadius =  mTouchableOuterRadius - mTouchableAreaWidth;
+        mTouchableInnerRadius = mTouchableOuterRadius - mTouchableAreaWidth;
     }
 
     private void updateNeedlePosition() {
@@ -226,9 +203,9 @@ public class IntervalPicker extends View {
         mNeedleY = getY(radians, mTouchableInnerRadius, mCenterY);
     }
 
-    private void updateTextPositions(){
+    private void updateTextPositions() {
         textPositions.clear();
-        for(int i = 1; i <= mTextCount; i++) {
+        for (int i = 1; i <= mTextCount; i++) {
             double angle = mTextStep * i - Math.PI / 2;
             float x = getX(angle, (mTouchableInnerRadius + mTouchableOuterRadius) / 2, mCenterX);
             float y = getY(angle, (mTouchableInnerRadius + mTouchableOuterRadius) / 2, mCenterY);
@@ -238,8 +215,8 @@ public class IntervalPicker extends View {
             x = x - mClockTextPaint.measureText(s) / 2;
             y = y + (mClockTextPaint.getTextSize() * 0.7f) / 2;
             Point p = new Point();
-            p.x = (int)x;
-            p.y = (int)y;
+            p.x = (int) x;
+            p.y = (int) y;
             textPositions.add(p);
         }
     }
@@ -248,25 +225,25 @@ public class IntervalPicker extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
-        switch (event.getAction()){
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                if(isInsideTouchableArea(x, y)) {
+                if (isInsideTouchableArea(x, y)) {
                     onTouch(x, y);
                     mPressed = true;
-                    mCursor.setState(new int[] {android.R.attr.state_pressed});
+                    mCursor.setState(new int[]{android.R.attr.state_pressed});
                 }
                 break;
             }
             case MotionEvent.ACTION_MOVE:
-                if(mPressed) {
+                if (mPressed) {
                     onTouch(x, y);
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if(mPressed) {
+                if (mPressed) {
                     onTouch(x, y);
                     mPressed = false;
-                    mCursor.setState(new int[] {});
+                    mCursor.setState(new int[]{});
                 }
                 break;
 
@@ -276,19 +253,19 @@ public class IntervalPicker extends View {
 
     private void setIntervalByRadians(double radians) {
         radians = radians + Math.PI / 2;
-        if(radians < 0)
+        if (radians < 0)
             radians = radians + 2 * Math.PI;
 
-        int interval = (int)Math.round(radians * mRange / (Math.PI * 2));
+        int interval = (int) Math.round(radians * mRange / (Math.PI * 2));
 
-        if(interval == 0) interval = mRange;
+        if (interval == 0) interval = mRange;
 
-        if(interval != mCurrentInterval) {
-            if(mListener != null)
+        if (interval != mCurrentInterval) {
+            if (mListener != null)
                 mListener.onIntervalSelected(interval);
 
 
-            if(System.currentTimeMillis() - mLastVibration > mVibrationStep){
+            if (System.currentTimeMillis() - mLastVibration > mVibrationStep) {
                 mLastVibration = System.currentTimeMillis();
                 performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             }
@@ -299,7 +276,7 @@ public class IntervalPicker extends View {
 
     private void onTouch(float x, float y) {
         double radians = Math.atan2(x - mCenterX, mCenterY - y);
-        radians = ((float)Math.round(radians / mStep)) * mStep - (Math.PI / 2);
+        radians = ((float) Math.round(radians / mStep)) * mStep - (Math.PI / 2);
 
         mCursorX = getX(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterX) - mCursorRadius;
         mCursorY = getY(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterY) - mCursorRadius;
@@ -333,7 +310,7 @@ public class IntervalPicker extends View {
     }
 
     private void drawNumbers(Canvas canvas) {
-        for(int i = 0; i < textPositions.size(); i++) {
+        for (int i = 0; i < textPositions.size(); i++) {
             int n = mClockStep * (i + 1);
             String s = String.format("%02d", n);
             canvas.drawText(s, textPositions.get(i).x, textPositions.get(i).y, mClockTextPaint);
@@ -341,16 +318,20 @@ public class IntervalPicker extends View {
     }
 
     private void drawCursor(Canvas canvas) {
-        Rect rect = new Rect((int)mCursorX, (int)mCursorY, (int)(mCursorX + mCursorRadius * 2), (int)(mCursorY + mCursorRadius * 2));
+        Rect rect = new Rect((int) mCursorX, (int) mCursorY, (int) (mCursorX + mCursorRadius * 2), (int) (mCursorY + mCursorRadius * 2));
         mCursor.setBounds(rect);
         mCursor.draw(canvas);
     }
 
     private float getX(double angle, float radius, float centerX) {
-        return (float)Math.cos(angle) * radius + centerX;
+        return (float) Math.cos(angle) * radius + centerX;
     }
 
     private float getY(double angle, float radius, float centerY) {
-        return (float)Math.sin(angle) * radius + centerY;
+        return (float) Math.sin(angle) * radius + centerY;
+    }
+
+    public interface OnIntervalSelectedListener {
+        public void onIntervalSelected(int interval);
     }
 }

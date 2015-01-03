@@ -7,10 +7,7 @@ import android.os.Parcelable;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.model.LatLng;
 
-/**
- * Created by Luca on 11/04/2014.
- */
-public class GeofenceData implements Parcelable{
+public class GeofenceData implements Parcelable {
     public final static String[] DATA_COLUMNS = {
             GeofenceDatabase.COLUMN_DATA_ID, //0
             GeofenceDatabase.COLUMN_DATA_LATITUDE, //1
@@ -22,24 +19,51 @@ public class GeofenceData implements Parcelable{
             GeofenceDatabase.COLUMN_DATA_ZOOM_LEVEL, //7
             GeofenceDatabase.COLUMN_DATA_NAME //8
     };
+    public static final Parcelable.Creator<GeofenceData> CREATOR
+            = new Parcelable.Creator<GeofenceData>() {
+        public GeofenceData createFromParcel(Parcel in) {
+            return new GeofenceData(in);
+        }
 
+        public GeofenceData[] newArray(int size) {
+            return new GeofenceData[size];
+        }
+    };
     private String mUid;
-
     private boolean mDeleted;
-
     private double mLatitude;
-
     private double mLongitude;
-
     private float mRadius;
-
     private int mColor;
-
     private float mDistance;
-
     private float mZoomLevel;
-
     private String mName;
+
+    /**
+     * Required for simple xml, DO NOT use that
+     */
+    public GeofenceData() {
+        mDeleted = false;
+    }
+
+    public GeofenceData(Parcel in) {
+        readFromParcel(in);
+    }
+
+    public static GeofenceData fromCursor(Cursor c) {
+        GeofenceData d = new GeofenceData();
+        d.mUid = c.getString(0);
+        d.mLatitude = c.getDouble(1);
+        d.mLongitude = c.getDouble(2);
+        d.mRadius = c.getFloat(3);
+        d.mDistance = c.getFloat(4);
+        d.mColor = c.getInt(5);
+        d.mDeleted = c.getInt(6) == 1;
+        d.mZoomLevel = c.getFloat(7);
+        d.mName = c.getString(8);
+        return d;
+    }
+
     //region Getters & Setters
     public float getDistance() {
         return mDistance;
@@ -105,6 +129,7 @@ public class GeofenceData implements Parcelable{
     public void setDeleted(boolean mDeleted) {
         this.mDeleted = mDeleted;
     }
+//endregion
 
     public float getZoomLevel() {
         return mZoomLevel;
@@ -121,35 +146,8 @@ public class GeofenceData implements Parcelable{
     public void setName(String name) {
         this.mName = name;
     }
-//endregion
 
-    /**
-     * Required for simple xml, DO NOT use that
-     */
-    public GeofenceData() {
-        mDeleted = false;
-    }
-
-    public static GeofenceData fromCursor(Cursor c) {
-        GeofenceData d = new GeofenceData();
-        d.mUid = c.getString(0);
-        d.mLatitude = c.getDouble(1);
-        d.mLongitude = c.getDouble(2);
-        d.mRadius = c.getFloat(3);
-        d.mDistance = c.getFloat(4);
-        d.mColor = c.getInt(5);
-        d.mDeleted = c.getInt(6) == 1;
-        d.mZoomLevel = c.getFloat(7);
-        d.mName = c.getString(8);
-        return d;
-    }
-
-    public GeofenceData(Parcel in) {
-        readFromParcel(in);
-    }
-
-    public Geofence toGeofence()
-    {
+    public Geofence toGeofence() {
         return new Geofence.Builder()
                 .setRequestId(mUid)
                 .setCircularRegion(mLatitude, mLongitude, mRadius)
@@ -157,17 +155,6 @@ public class GeofenceData implements Parcelable{
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build();
     }
-
-    public static final Parcelable.Creator<GeofenceData> CREATOR
-            = new Parcelable.Creator<GeofenceData>() {
-        public GeofenceData createFromParcel(Parcel in) {
-            return new GeofenceData(in);
-        }
-
-        public GeofenceData[] newArray(int size) {
-            return new GeofenceData[size];
-        }
-    };
 
     @Override
     public int describeContents() {
@@ -183,13 +170,12 @@ public class GeofenceData implements Parcelable{
         out.writeFloat(mRadius);
         out.writeFloat(mDistance);
         out.writeInt(mColor);
-        out.writeByte((byte)(mDeleted ? 1 : 0));
+        out.writeByte((byte) (mDeleted ? 1 : 0));
         out.writeFloat(mZoomLevel);
         out.writeString(mName);
     }
 
-    private void readFromParcel(Parcel in)
-    {
+    private void readFromParcel(Parcel in) {
         mUid = in.readString();
         mLatitude = in.readDouble();
         mLongitude = in.readDouble();

@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,10 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.hixos.smartwp.CropperActivity;
@@ -56,9 +53,6 @@ import com.hixos.smartwp.widget.UndoBarController;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Luca on 11/04/2014.
- */
 public class GeofenceFragment extends Fragment implements UndoBarController.UndoListener,
         GeofenceDatabase.OnElementRemovedListener, GeofenceDatabaseAdapter.OnEmptyStateClickListener,
         GeofenceDatabaseAdapter.OnCardOverflowClickListener, PopupMenu.OnMenuItemClickListener,
@@ -67,27 +61,20 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
 
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
+    Handler handler = new Handler();
     private GeofenceDatabase mDatabase;
-
     private UndoBarController mUndoBarController;
     private AnimatedGridView mGridView;
-
     private long mUndobarShownTimestamp = -1;
-
     private GeofenceEditor mEditor;
-
     private View mEmptyState;
     private ArrowView mArrowView;
     private boolean mEmptyStateAnimated = false;
-
     private View mErrorsLayout;
     private View mErrorFrameWifi;
     private View mErrorFrameNetwork;
     private int mDefaultPaddingTop;
-
     private GoogleApiClient mGoogleClient;
-
     private boolean mSetWallpaperActivityVisible = false;
 
     @Override
@@ -107,7 +94,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_geofence, container, false);
 
-        mGridView = (AnimatedGridView)view.findViewById(R.id.gridView);
+        mGridView = (AnimatedGridView) view.findViewById(R.id.gridView);
         setAdapter();
 
         mErrorsLayout = view.findViewById(R.id.errorsLayout);
@@ -120,10 +107,10 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         int paddingTop = MiscUtils.UI.getActionBarHeight(getActivity());
         int paddingBottom = 0;
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)) {
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             paddingTop += MiscUtils.UI.getStatusBarHeight(getActivity());
         }
-        if(getResources().getBoolean(R.bool.has_translucent_navbar)) {
+        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
             paddingBottom += MiscUtils.UI.getNavBarHeight(getActivity());
         }
 
@@ -139,7 +126,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 mGridView.getPaddingRight(),
                 mGridView.getPaddingBottom() + paddingBottom);
 
-        LinearLayout undoBar = (LinearLayout)view.findViewById(R.id.undobar);
+        LinearLayout undoBar = (LinearLayout) view.findViewById(R.id.undobar);
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) undoBar.getLayoutParams();
         params.setMargins(params.leftMargin, params.topMargin, params.rightMargin,
                 params.bottomMargin + paddingBottom);
@@ -154,9 +141,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         return view;
     }
 
-    Handler handler = new Handler();
-    private void initEmptyState(View view){
-        if(mDatabase.getGeofenceCount() != 0 || GeofenceDatabase.hasDefaultWallpaper()){
+    private void initEmptyState(View view) {
+        if (mDatabase.getGeofenceCount() != 0 || GeofenceDatabase.hasDefaultWallpaper()) {
             mArrowView = null;
             mEmptyState = null;
             return;
@@ -165,8 +151,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         mEmptyState = view.findViewById(R.id.emptyState);
         mEmptyState.setVisibility(View.VISIBLE);
 
-        mArrowView = (ArrowView)view.findViewById(R.id.emptyStateArrow);
-        final TextView textView = (TextView)view.findViewById(R.id.emptyStateText);
+        mArrowView = (ArrowView) view.findViewById(R.id.emptyStateArrow);
+        final TextView textView = (TextView) view.findViewById(R.id.emptyStateText);
 
         final ViewTreeObserver viewTreeObserver = getActivity().getWindow().getDecorView().getViewTreeObserver();
         if (viewTreeObserver != null) {
@@ -176,10 +162,10 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                     View menuButton = getActivity().findViewById(R.id.action_new_wallpaper);
 
                     if (menuButton != null) {
-                        if(viewTreeObserver.isAlive()){
-                            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+                        if (viewTreeObserver.isAlive()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                                 viewTreeObserver.removeOnGlobalLayoutListener(this);
-                            }else{
+                            } else {
                                 viewTreeObserver.removeGlobalOnLayoutListener(this);
                             }
                         }
@@ -192,11 +178,11 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                         final Point start = new Point(textLocation[0] + textView.getWidth() / 2,
                                 textLocation[1]);
                         final Point end = new Point(actionLocation[0] + menuButton.getWidth() / 2,
-                                actionLocation[1] + (int)(menuButton.getHeight() * 1.5f));
+                                actionLocation[1] + (int) (menuButton.getHeight() * 1.5f));
 
-                        if(mEmptyStateAnimated){
+                        if (mEmptyStateAnimated) {
                             mArrowView.setPoints(start, end, false);
-                        }else{
+                        } else {
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -211,8 +197,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         }
     }
 
-    private void hideEmptyState(){
-        if(mEmptyState != null){
+    private void hideEmptyState() {
+        if (mEmptyState != null) {
             mEmptyState.setVisibility(View.GONE);
         }
     }
@@ -233,26 +219,26 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     public void onResume() {
         super.onResume();
         showErrorFrames();
-        if(!getActivity().getIntent().getBooleanExtra(
-                ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)){
+        if (!getActivity().getIntent().getBooleanExtra(
+                ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
             checkLiveWallpaper();
         }
-        if(mGoogleClient.isConnected()){
+        if (mGoogleClient != null && mGoogleClient.isConnected()) {
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
-            if(lastLocation != null){
+            if (lastLocation != null) {
                 mDatabase.setLastLocation(lastLocation);
             }
-            ((GeofenceDatabaseAdapter)mGridView.getAdapter()).reloadData();
+            ((GeofenceDatabaseAdapter) mGridView.getAdapter()).reloadData();
         }
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
-        if(lastLocation != null){
+        if (lastLocation != null) {
             mDatabase.setLastLocation(lastLocation);
         }
-        ((GeofenceDatabaseAdapter)mGridView.getAdapter()).reloadData();
+        ((GeofenceDatabaseAdapter) mGridView.getAdapter()).reloadData();
     }
 
     @Override
@@ -278,12 +264,14 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onPause() {
         super.onPause();
-        mGoogleClient.disconnect();
+        if (mGoogleClient != null) {
+            mGoogleClient.disconnect();
+        }
         mGoogleClient = null;
     }
 
-    private void showErrorFrames(){
-        if(mDatabase.getGeofenceCount() > 0 || GeofenceDatabase.hasDefaultWallpaper()) {
+    private void showErrorFrames() {
+        if (mDatabase.getGeofenceCount() > 0 || GeofenceDatabase.hasDefaultWallpaper()) {
             int paddingTop = mDefaultPaddingTop;
 
             boolean atLeastOneVisible = false;
@@ -317,8 +305,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         }
     }
 
-    private void checkLiveWallpaper(){
-        if(!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
+    private void checkLiveWallpaper() {
+        if (!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
                 && GeofenceDatabase.hasDefaultWallpaper()
                 && !mSetWallpaperActivityVisible) {
             startActivityForResult(new Intent(getActivity(), SetWallpaperActivity.class),
@@ -357,15 +345,15 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
             case REQUEST_SET_LIVE_WALLPAPER:
-                if(resultCode != Activity.RESULT_OK){
+                if (resultCode != Activity.RESULT_OK) {
                     getActivity().finish();
                 }
                 mSetWallpaperActivityVisible = false;
                 break;
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
-                if(resultCode != Activity.RESULT_OK){
+                if (resultCode != Activity.RESULT_OK) {
                     Toast.makeText(getActivity(), R.string.error_location_not_found, Toast.LENGTH_LONG);
                 }
                 break;
@@ -374,12 +362,12 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         }
     }
 
-    public void onLocationConnected(Location location){
+    public void onLocationConnected(Location location) {
         mDatabase.setLastLocation(location);
         setAdapter();
     }
 
-    public void setAdapter(){
+    public void setAdapter() {
         GeofenceDatabaseAdapter adapter = new GeofenceDatabaseAdapter(getActivity(), mDatabase, this, this
         );
         mGridView.setAdapter(adapter);
@@ -389,7 +377,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onUndo(long uid) {
         mUndobarShownTimestamp = -1;
-        if(mDatabase != null){
+        if (mDatabase != null) {
             GeofenceService.broadcastAddGeofence(getActivity(), mDatabase.getDeletedGeofences());
             mDatabase.restoreGeofencesAsync();
         }
@@ -398,16 +386,16 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onHide(long uid) {
         mUndobarShownTimestamp = -1;
-        if(mDatabase != null){
+        if (mDatabase != null) {
             mDatabase.clearDeletedGeofencesAsync();
         }
     }
 
-    private void showUndobar(){
+    private void showUndobar() {
         showUndobar(0);
     }
 
-    private void showUndobar(int elapsed){
+    private void showUndobar(int elapsed) {
         mUndobarShownTimestamp = System.currentTimeMillis();
         int quantity = mDatabase.getDeletedGeofencesCount();
 
@@ -415,8 +403,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         mUndoBarController.showUndoBar(message, 0, elapsed);
     }
 
-    private void restoreUndobar(){
-        if(mUndobarShownTimestamp > 0){
+    private void restoreUndobar() {
+        if (mUndobarShownTimestamp > 0) {
             int elapsed = ((int) (System.currentTimeMillis() - mUndobarShownTimestamp));
             showUndobar(elapsed);
         }
@@ -430,11 +418,11 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 showUndobar();
             }
         });
-        List<String> uids = new ArrayList<String>();
+        List<String> uids = new ArrayList<>();
         uids.add(uid);
         GeofenceService.broadcastRemoveGeofence(getActivity(), uids);
         LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-        if (cache != null){
+        if (cache != null) {
             cache.remove(uid);
             cache.remove(GeofenceDatabase.getSnapshotUid(uid));
         }
@@ -456,7 +444,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        switch (menuItem.getItemId()){
+        switch (menuItem.getItemId()) {
             case R.id.action_change_wallpaper:
                 mEditor.pickDefaultWallpaper();
                 break;
@@ -467,7 +455,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.button_error_wifi:
                 startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
                 break;
@@ -477,64 +465,80 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         }
     }
 
-    private class GeofenceEditor implements BitmapIO.OnImageCroppedCallback{
-        public static final int REQUEST_PICK_GEOFENCE           = 0;
-        public static final int REQUEST_PICK_WALLPAPER          = 1;
-        public static final int REQUEST_PICK_CROP_WALLPAPER     = 2;
-        public static final int REQUEST_CHANGE_GEOFENCE         = 3;
-        public static final int REQUEST_CHANGE_WALLPAPER        = 4;
-        public static final int REQUEST_CHANGE_CROP_WALLPAPER   = 5;
+    private void showErrorDialog(int errorCode) {
+        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(
+                errorCode,
+                getActivity(),
+                CONNECTION_FAILURE_RESOLUTION_REQUEST);
 
+        if (errorDialog != null) {
+            ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+            errorFragment.setDialog(errorDialog);
+            errorFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    getActivity().finish();
+                }
+            });
+            errorFragment.show(getFragmentManager(), "services_error");
+
+        }
+    }
+
+    private class GeofenceEditor implements BitmapIO.OnImageCroppedCallback {
+        public static final int REQUEST_PICK_GEOFENCE = 0;
+        public static final int REQUEST_PICK_WALLPAPER = 1;
+        public static final int REQUEST_PICK_CROP_WALLPAPER = 2;
+        public static final int REQUEST_CHANGE_GEOFENCE = 3;
+        public static final int REQUEST_CHANGE_WALLPAPER = 4;
+        public static final int REQUEST_CHANGE_CROP_WALLPAPER = 5;
+        public boolean isPickingDefaultWallpaper = false;
         private boolean mPicking = false;
-
         private String mCurrentUid;
-
         private int mAutoCropRequest;
 
-        public boolean isPickingDefaultWallpaper = false;
-
-        private void onActivityResult(int requestCode, int resultCode, Intent data){
-            switch (requestCode){
+        private void onActivityResult(int requestCode, int resultCode, Intent data) {
+            switch (requestCode) {
                 case REQUEST_PICK_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         continuePickGeowallpaperOne(data);
                     else
                         mPicking = false;
                     break;
                 case REQUEST_PICK_CROP_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         continuePickGeowallpaperTwo();
-                    else{
+                    else {
                         failedPickGeowallpaper();
                         mPicking = false;
                     }
                     break;
                 case REQUEST_PICK_GEOFENCE:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         finishPickGeowallpaper(data);
-                    else{
+                    else {
                         failedPickGeowallpaper();
                         mPicking = false;
                     }
                     break;
                 case REQUEST_CHANGE_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         continueChangeWallpaper(data);
-                    else{
+                    else {
                         mPicking = false;
                         isPickingDefaultWallpaper = false;
                     }
                     break;
                 case REQUEST_CHANGE_CROP_WALLPAPER:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         finishChangeWallpaper();
-                    else{
+                    else {
                         mPicking = false;
                         isPickingDefaultWallpaper = false;
                     }
                     break;
                 case REQUEST_CHANGE_GEOFENCE:
-                    if(resultCode == Activity.RESULT_OK)
+                    if (resultCode == Activity.RESULT_OK)
                         finishChangeGeofence(data);
                     else
                         mPicking = false;
@@ -542,8 +546,8 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             }
         }
 
-        private void pickDefaultWallpaper(){
-            if(mPicking)
+        private void pickDefaultWallpaper() {
+            if (mPicking)
                 return;
             mPicking = true;
             Intent i = MiscUtils.Activity.galleryPickerIntent();
@@ -556,7 +560,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
          * The user is prompted to select an image.
          */
         private void pickGeowallpaper() {
-            if(mPicking)
+            if (mPicking)
                 return;
             mPicking = true;
             Intent i = MiscUtils.Activity.galleryPickerIntent();
@@ -567,28 +571,29 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         /**
          * First part of the geowallpaper picking procedure.
          * Determines how to crop the chosen image
+         *
          * @param data
          */
-        private void continuePickGeowallpaperOne(Intent data){
-            if(data == null || data.getData() == null){
+        private void continuePickGeowallpaperOne(Intent data) {
+            if (data == null || data.getData() == null) {
                 Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
                 mPicking = false;
                 return;
             }
 
             Uri image = data.getData();
-            if(mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)){
-                GeofenceDatabase.deleteDefaultWallpaper(getActivity());
+            if (mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
+                GeofenceDatabase.deleteDefaultWallpaper();
             }
-            if(!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
-                    getResources().getBoolean(R.bool.auto_crop_default_val))){
+            if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
+                    getResources().getBoolean(R.bool.auto_crop_default_val))) {
                 //Manual cropping
                 Intent i = new Intent(getActivity(), CropperActivity.class);
                 i.putExtra(CropperActivity.EXTRA_IMAGE, image);
                 i.putExtra(CropperActivity.EXTRA_OUTPUT,
                         ImageManager.getInstance().getPictureUri(mCurrentUid));
                 startActivityForResult(i, REQUEST_PICK_CROP_WALLPAPER);
-            }else{
+            } else {
                 //Automatic cropping
                 DialogFragment f = new ProgressDialogFragment();
                 f.show(getFragmentManager(), "crop_progress");
@@ -604,9 +609,9 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
          * The user is prompted to choose a location for the geowallpaper
          */
         private void continuePickGeowallpaperTwo() {
-            if(mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)){
+            if (mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
                 LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-                if (cache != null){
+                if (cache != null) {
                     cache.remove(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
                 }
                 ((BaseAdapter) mGridView.getAdapter()).notifyDataSetChanged();
@@ -629,7 +634,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
          * Stores the data into the database
          */
         private void finishPickGeowallpaper(Intent data) {
-            if(data == null){
+            if (data == null) {
                 Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
                 mPicking = false;
                 return;
@@ -647,26 +652,28 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             hideEmptyState();
             showErrorFrames();
             mPicking = false;
-            List<String> uid = new ArrayList<String>();
+            List<String> uid = new ArrayList<>();
             uid.add(mCurrentUid);
 
             GeofenceService.broadcastAddGeofence(getActivity(), uid);
         }
+
         /**
          * Called when the geofence picking failed
          */
-        private void failedPickGeowallpaper(){
+        private void failedPickGeowallpaper() {
             FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(mCurrentUid));
         }
 
         /**
          * Begins the procedure for changing a wallpaper
+         *
          * @param uid The uid of the geowallpaper to edit
          */
         private void beginChangeWallpaper(String uid) {
-            if(mPicking)
+            if (mPicking)
                 return;
-            if(uid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
+            if (uid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
                 isPickingDefaultWallpaper = true;
             }
             mCurrentUid = uid;
@@ -678,24 +685,25 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         /**
          * First part of the wallpaper changing procedure.
          * Determines how to crop the chosen image
+         *
          * @param data
          */
         private void continueChangeWallpaper(Intent data) {
-            if(data == null || data.getData() == null){
+            if (data == null || data.getData() == null) {
                 Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
                 mPicking = false;
                 isPickingDefaultWallpaper = false;
                 return;
             }
             Uri image = data.getData();
-            if(!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
-                    getResources().getBoolean(R.bool.auto_crop_default_val))){
+            if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
+                    getResources().getBoolean(R.bool.auto_crop_default_val))) {
                 Intent i = new Intent(getActivity(), CropperActivity.class);
                 i.putExtra(CropperActivity.EXTRA_IMAGE, image);
                 i.putExtra(CropperActivity.EXTRA_OUTPUT, ImageManager.getInstance().getPictureUri(mCurrentUid));
 
                 startActivityForResult(i, REQUEST_CHANGE_CROP_WALLPAPER);
-            }else{
+            } else {
                 DialogFragment f = new ProgressDialogFragment();
                 f.show(getFragmentManager(), "crop_progress");
                 mAutoCropRequest = REQUEST_CHANGE_CROP_WALLPAPER;
@@ -712,7 +720,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
          */
         private void finishChangeWallpaper() {
             FileUtils.deleteFile(ImageManager.getInstance().getThumbnailUri(mCurrentUid));
-            if(mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)){
+            if (mCurrentUid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
                 isPickingDefaultWallpaper = false;
             }
             mPicking = false;
@@ -720,10 +728,11 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         /**
          * Display the activity to change a geofence
+         *
          * @param uid the uid of the geowallpaper
          */
         private void beginChangeGeofence(String uid) {
-            if(mPicking)
+            if (mPicking)
                 return;
             mPicking = true;
 
@@ -737,6 +746,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         /**
          * Updates the data of the changed geowallpaper
+         *
          * @param data
          */
         private void finishChangeGeofence(Intent data) {
@@ -747,7 +757,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             float distance = data.getFloatExtra(GeofencePickerActivity.RESULT_DISTANCE, -1);
 
             GeofenceData d = mDatabase.getGeofenceData(uid);
-            if(d != null){
+            if (d != null) {
                 d.setLongitude(longitude);
                 d.setLatitude(latitude);
                 d.setRadius(radius);
@@ -760,6 +770,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         /**
          * Removes a geowallpaper and displays the undobar
+         *
          * @param uid
          */
         private void removeGeowallpaper(String uid) {
@@ -782,6 +793,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         /**
          * Instantly removes a geowallpaper. No way back, be careful!
+         *
          * @param uid
          */
         private void instantRemoveGeowallpaper(String uid) {
@@ -798,11 +810,11 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         @Override
         public void onImageCropped(Uri croppedImage) {
-            DialogFragment f = (DialogFragment)getFragmentManager().findFragmentByTag("crop_progress");
-            if(f != null){
+            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
+            if (f != null) {
                 f.dismiss();
             }
-            switch (mAutoCropRequest){
+            switch (mAutoCropRequest) {
                 case REQUEST_PICK_CROP_WALLPAPER:
                     continuePickGeowallpaperTwo();
                     break;
@@ -814,11 +826,11 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
         @Override
         public void onImageCropFailed() {
-            DialogFragment f = (DialogFragment)getFragmentManager().findFragmentByTag("crop_progress");
-            if(f != null){
+            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
+            if (f != null) {
                 f.dismiss();
             }
-            switch (mAutoCropRequest){
+            switch (mAutoCropRequest) {
                 case REQUEST_PICK_CROP_WALLPAPER:
                     failedPickGeowallpaper();
                     mPicking = false;
@@ -829,26 +841,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                     break;
             }
             isPickingDefaultWallpaper = false;
-        }
-    }
-
-    private void showErrorDialog(int errorCode){
-        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(
-                errorCode,
-                getActivity(),
-                CONNECTION_FAILURE_RESOLUTION_REQUEST);
-
-        if (errorDialog != null) {
-            ErrorDialogFragment errorFragment =  new ErrorDialogFragment();
-            errorFragment.setDialog(errorDialog);
-            errorFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    getActivity().finish();
-                }
-            });
-            errorFragment.show(getFragmentManager(), "services_error");
-
         }
     }
 }

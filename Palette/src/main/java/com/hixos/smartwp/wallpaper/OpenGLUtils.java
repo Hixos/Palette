@@ -10,9 +10,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-/**
- * Created by Luca on 19/02/14.
- */
 public class OpenGLUtils {
     /**
      * Method by Roman Nurik's Muzei app
@@ -35,7 +32,7 @@ public class OpenGLUtils {
         return buffer;
     }
 
-    public static ShortBuffer asShortBuffer(short[] array){
+    public static ShortBuffer asShortBuffer(short[] array) {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(array.length * 2)
                 .order(ByteOrder.nativeOrder());
         byteBuffer.position(0);
@@ -45,14 +42,12 @@ public class OpenGLUtils {
         return buffer;
     }
 
-    public static int loadTexture(Bitmap bitmap)
-    {
+    public static int loadTexture(Bitmap bitmap) {
         final int[] textureHandle = new int[1];
 
         GLES20.glGenTextures(1, textureHandle, 0);
 
-        if (textureHandle[0] != 0)
-        {
+        if (textureHandle[0] != 0) {
             // Bind to the texture in OpenGL
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
 
@@ -73,15 +68,14 @@ public class OpenGLUtils {
             bitmap.recycle();
         }
 
-        if (textureHandle[0] == 0)
-        {
+        if (textureHandle[0] == 0) {
             throw new RuntimeException("Error loading texture.");
         }
 
         return textureHandle[0];
     }
 
-    public static int loadShader(int type, String shaderCode){
+    public static int loadShader(int type, String shaderCode) {
         int shader = GLES20.glCreateShader(type);
         GLES20.glShaderSource(shader, shaderCode);
         GLES20.glCompileShader(shader);

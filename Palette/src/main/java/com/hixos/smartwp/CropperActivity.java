@@ -35,21 +35,16 @@ import com.hixos.smartwp.widget.CropView;
 public class CropperActivity extends ActionBarActivity implements BitmapIO.OnImageCroppedCallback, ImageManager.OnImageLoadedListener {
     public final static String EXTRA_IMAGE = "com.hixos.smartwp.EXTRA_IMAGE";
     public final static String EXTRA_OUTPUT = "com.hixos.smartwp.EXTRA_OUTPUT";
-
+    public static final int RESULT_ERROR = 2;
     private CropView mCropView;
     private CropModeSpinnerAdapter mSpinnerAdapter;
     private FrameLayout mProgressLayout;
-
     private Uri mInUri, mOutUri;
-
     private int mSelectedCropMode = 0;
-
     private View mDoneButton;
-
     private boolean mCropping = false;
     private boolean mImageLoaded = false;
 
-    public static final int RESULT_ERROR = 2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,36 +66,36 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         int top, bottom = 0;
         top = MiscUtils.UI.getActionBarHeight(this);
 
-        if(getResources().getBoolean(R.bool.has_translucent_navbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
 
             bottom += MiscUtils.UI.getNavBarHeight(this);
         }
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             top += MiscUtils.UI.getStatusBarHeight(this);
         }
-        FrameLayout root = (FrameLayout)findViewById(R.id.root);
+        FrameLayout root = (FrameLayout) findViewById(R.id.root);
         root.setPadding(root.getPaddingLeft(),
                 root.getPaddingTop() + top,
                 root.getPaddingRight(),
                 root.getPaddingBottom() + bottom);
 
 
-        mProgressLayout = (FrameLayout)findViewById(R.id.progressLayout);
+        mProgressLayout = (FrameLayout) findViewById(R.id.progressLayout);
 
         mSpinnerAdapter = new CropModeSpinnerAdapter(this);
 
-        mCropView = (CropView)findViewById(R.id.cropView);
+        mCropView = (CropView) findViewById(R.id.cropView);
 
         showProgressLayout(true);
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             mCropping = savedInstanceState.getBoolean("cropping");
-            if(!mCropping){
+            if (!mCropping) {
                 mCropView.onRestoreInstanceState(savedInstanceState);
             }
             mSelectedCropMode = savedInstanceState.getInt("selected_crop_mode");
-        }else{
+        } else {
             mSelectedCropMode = Preferences.getInt(this, R.string.preference_crop_mode,
                     MiscUtils.usingGoogleNowLauncher(this) ? 1 : 0);
         }
@@ -108,10 +103,10 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         mOutUri = getIntent().getExtras().getParcelable(EXTRA_OUTPUT);
         mInUri = getIntent().getExtras().getParcelable(EXTRA_IMAGE);
 
-        if(!mCropping){
-            if(mInUri != null){
+        if (!mCropping) {
+            if (mInUri != null) {
                 mCropView.setImageURI(mInUri, this);
-            }else{
+            } else {
                 finish();
             }
         }
@@ -136,7 +131,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         spinner.setAdapter(mSpinnerAdapter);
         spinner.setSelection(mSelectedCropMode);
 
-       // spinner.setPopupBackgroundResource(R.drawable.spinner_material_popup_background);
+        // spinner.setPopupBackgroundResource(R.drawable.spinner_material_popup_background);
 
         if (mImageLoaded && !mCropping) {
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -153,10 +148,10 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
             });
         }
 
-        if(!mImageLoaded || mCropping){
+        if (!mImageLoaded || mCropping) {
             cancelItem.setEnabled(false);
             spinner.setEnabled(false);
-        }else{
+        } else {
             cancelItem.setEnabled(true);
             spinner.setEnabled(true);
         }
@@ -169,7 +164,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        switch (id){
+        switch (id) {
             case R.id.action_cancel:
                 finish();
                 break;
@@ -177,7 +172,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         return super.onOptionsItemSelected(item);
     }
 
-    private void cropWallpaper(){
+    private void cropWallpaper() {
         mCropping = true;
         invalidateOptionsMenu();
         mDoneButton.setOnClickListener(null);
@@ -186,7 +181,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         RectF relativeCrop = mCropView.getRelativeCropRect();
         Point screen = MiscUtils.UI.getDisplaySize(getApplicationContext());
 
-        int outHeight =  mCropView.getCropMode() == CropView.CROP_MODE_LANDSCAPE ?
+        int outHeight = mCropView.getCropMode() == CropView.CROP_MODE_LANDSCAPE ?
                 WallpaperUtils.getLandscapeWallpaperSize(this).y
                 : Math.max(screen.x, screen.y);
 
@@ -208,11 +203,11 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         finish();
     }
 
-    private void showProgressLayout(boolean hideCrop){
+    private void showProgressLayout(boolean hideCrop) {
         int animationDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
 
         mProgressLayout.setVisibility(View.VISIBLE);
-        if(hideCrop){
+        if (hideCrop) {
             mCropView.setVisibility(View.INVISIBLE);
         }
         ObjectAnimator animator = ObjectAnimator.ofFloat(mProgressLayout, "alpha", 0, 1);
@@ -220,7 +215,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         animator.start();
     }
 
-    private void hideProgressLayout(){
+    private void hideProgressLayout() {
         int animationDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
 
         ObjectAnimator animatorCrop = ObjectAnimator.ofFloat(mCropView, "alpha", 1);
@@ -259,11 +254,11 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         invalidateOptionsMenu();
     }
 
-    private static class CropModeSpinnerAdapter extends BaseAdapter{
+    private static class CropModeSpinnerAdapter extends BaseAdapter {
 
         private Context mContext;
 
-        public CropModeSpinnerAdapter(Context context){
+        public CropModeSpinnerAdapter(Context context) {
             mContext = context;
         }
 
@@ -274,7 +269,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
 
         @Override
         public Integer getItem(int i) {
-            switch (i){
+            switch (i) {
                 default:
                 case 0:
                     return CropView.CROP_MODE_DEFAULT;
@@ -287,8 +282,8 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
             }
         }
 
-        public String getText(int i){
-            switch (i){
+        public String getText(int i) {
+            switch (i) {
                 default:
                 case 0:
                     return mContext.getString(R.string.crop_full);
@@ -302,7 +297,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         }
 
         public int getIcon(int i) {
-            switch (i){
+            switch (i) {
                 default:
                 case 0:
                     return R.drawable.ic_crop_full;
@@ -324,7 +319,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         public View getView(int i, View view, ViewGroup viewGroup) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             View v = inflater.inflate(R.layout.spinner_item_cropper, null);
-            TextView t = (TextView)v.findViewById(R.id.textView);
+            TextView t = (TextView) v.findViewById(R.id.textView);
             t.setText(getText(i));
             t.setCompoundDrawablesWithIntrinsicBounds(getIcon(i), 0, 0, 0);
             return v;
@@ -334,7 +329,7 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         public View getDropDownView(int i, View convertView, ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             View v = inflater.inflate(R.layout.spinner_item_cropper_dropdown, null);
-            TextView t = (TextView)v.findViewById(R.id.textView);
+            TextView t = (TextView) v.findViewById(R.id.textView);
             t.setText(getText(i));
             t.setCompoundDrawablesWithIntrinsicBounds(getIcon(i), 0, 0, 0);
             return v;

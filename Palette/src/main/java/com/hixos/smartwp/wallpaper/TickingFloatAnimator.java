@@ -31,6 +31,9 @@ public class TickingFloatAnimator {
     private Runnable mEndCallback;
     private TimeInterpolator mInterpolator = new AccelerateDecelerateInterpolator();
 
+    private TickingFloatAnimator() {
+    }
+
     public static TickingFloatAnimator create() {
         return new TickingFloatAnimator();
     }
@@ -111,8 +114,5 @@ public class TickingFloatAnimator {
 
     public float currentValue() {
         return mCurrentValue;
-    }
-
-    private TickingFloatAnimator() {
     }
 }

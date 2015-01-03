@@ -25,7 +25,7 @@ import com.hixos.smartwp.widget.ProgressDialogFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReceiveWallpaperActivity extends ActionBarActivity implements View.OnClickListener{
+public class ReceiveWallpaperActivity extends ActionBarActivity implements View.OnClickListener {
     private static final int REQUEST_PICK_CROP_WALLPAPER = 1;
     private static final int REQUEST_PICK_GEOFENCE = 2;
 
@@ -40,7 +40,7 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
         setContentView(R.layout.activity_receive_wallpaper);
         findViewById(R.id.layout_geofence).setOnClickListener(this);
         findViewById(R.id.layout_slideshow).setOnClickListener(this);
-        CheckBox checkBox = (CheckBox)findViewById(R.id.checkbox_autocrop);
+        CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_autocrop);
         checkBox.setOnClickListener(this);
         checkBox.setChecked(Preferences.getBoolean(this, R.string.preference_auto_crop,
                 getResources().getBoolean(R.bool.auto_crop_default_val)));
@@ -48,9 +48,9 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(mSelectedService == ServiceUtils.SERVICE_SLIDESHOW){
+        if (mSelectedService == ServiceUtils.SERVICE_SLIDESHOW) {
             mSlideshowWpCreator.onActivityResult(requestCode, resultCode, data);
-        }else{
+        } else {
             mGeofenceWpCreator.onActivityResult(requestCode, resultCode, data);
         }
     }
@@ -68,46 +68,46 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
             }
         }
 
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.checkbox_autocrop:
-                CheckBox checkBox = (CheckBox)findViewById(R.id.checkbox_autocrop);
+                CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_autocrop);
                 Preferences.setBoolean(this, R.string.preference_auto_crop, checkBox.isChecked());
                 break;
             case R.id.layout_slideshow:
-                if(imageUri != null){
-                    if(mSelectedService == 0) {
+                if (imageUri != null) {
+                    if (mSelectedService == 0) {
                         mSelectedService = ServiceUtils.SERVICE_SLIDESHOW;
                         mSlideshowWpCreator = new SlideshowWpCreator();
                         mSlideshowWpCreator.cropWallpaper(imageUri);
                     }
-                }else{
+                } else {
                     finish(false);
                 }
                 break;
             case R.id.layout_geofence:
-                if(imageUri != null){
-                    if(mSelectedService == 0) {
+                if (imageUri != null) {
+                    if (mSelectedService == 0) {
                         mSelectedService = ServiceUtils.SERVICE_GEOFENCE;
                         mGeofenceWpCreator = new GeofenceWpCreator();
                         mGeofenceWpCreator.cropWallpaper(imageUri);
                     }
-                }else{
+                } else {
                     finish(false);
                 }
                 break;
         }
     }
 
-    public void finish(boolean success){
-        if(success){
+    public void finish(boolean success) {
+        if (success) {
             String text;
-            if(mSelectedService == ServiceUtils.SERVICE_SLIDESHOW){
+            if (mSelectedService == ServiceUtils.SERVICE_SLIDESHOW) {
                 text = getString(R.string.toast_add_slideshow_wallpaper_success);
-            }else{
+            } else {
                 text = getString(R.string.toast_add_geofence_wallpaper_success);
             }
             Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-        }else{
+        } else {
             Toast.makeText(this, getString(R.string.toast_add_wallpaper_failed),
                     Toast.LENGTH_LONG).show();
         }
@@ -119,12 +119,12 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
         private SlideshowDatabase mSlideshowDatabase;
         private String mCurrentUid;
 
-        public SlideshowWpCreator(){
+        public SlideshowWpCreator() {
             mContext = ReceiveWallpaperActivity.this;
             mSlideshowDatabase = new SlideshowDatabase(mContext);
         }
 
-        public void cropWallpaper(Uri imageUri){
+        public void cropWallpaper(Uri imageUri) {
             mCurrentUid = mSlideshowDatabase.getNewUid();
 
             if (!Preferences.getBoolean(mContext, R.string.preference_auto_crop,
@@ -145,14 +145,14 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
             }
         }
 
-        public void onActivityResult(int requestCode, int resultCode, Intent data){
-            switch (requestCode){
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            switch (requestCode) {
                 case REQUEST_PICK_CROP_WALLPAPER:
-                    if(resultCode == RESULT_OK) {
+                    if (resultCode == RESULT_OK) {
                         onImageCropped(null);
-                    }else if(resultCode == CropperActivity.RESULT_ERROR){
+                    } else if (resultCode == CropperActivity.RESULT_ERROR) {
                         finish(false);
-                    }else{
+                    } else {
                         finish();
                     }
             }
@@ -175,12 +175,12 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
         private GeofenceDatabase mGeofenceDatabase;
         private String mCurrentUid;
 
-        public GeofenceWpCreator(){
+        public GeofenceWpCreator() {
             mContext = ReceiveWallpaperActivity.this;
             mGeofenceDatabase = new GeofenceDatabase(mContext);
         }
 
-        public void cropWallpaper(Uri imageUri){
+        public void cropWallpaper(Uri imageUri) {
             mCurrentUid = mGeofenceDatabase.getNewUid();
 
             if (!Preferences.getBoolean(mContext, R.string.preference_auto_crop,
@@ -210,19 +210,19 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
             startActivityForResult(i, REQUEST_PICK_GEOFENCE);
         }
 
-        public void onActivityResult(int requestCode, int resultCode, Intent data){
-            switch (requestCode){
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            switch (requestCode) {
                 case REQUEST_PICK_CROP_WALLPAPER:
-                    if(resultCode == RESULT_OK) {
+                    if (resultCode == RESULT_OK) {
                         onImageCropped(null);
-                    }else if(resultCode == CropperActivity.RESULT_ERROR){
+                    } else if (resultCode == CropperActivity.RESULT_ERROR) {
                         finish(false);
-                    }else{
+                    } else {
                         finish();
                     }
                     break;
                 case REQUEST_PICK_GEOFENCE:
-                    if(resultCode == RESULT_OK){
+                    if (resultCode == RESULT_OK) {
                         double latitude = data.getDoubleExtra(GeofencePickerActivity.RESULT_LATITUDE, 45);
                         double longitude = data.getDoubleExtra(GeofencePickerActivity.RESULT_LONGITUDE, 8);
                         float radius = data.getFloatExtra(GeofencePickerActivity.RESULT_RADIUS, 1);
@@ -231,12 +231,12 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
 
                         mGeofenceDatabase.createGeowallpaper(mCurrentUid, new LatLng(latitude, longitude), radius,
                                 mGeofenceDatabase.getLeastUsedColor(), distance, zoom);
-                        List<String> uid = new ArrayList<String>();
+                        List<String> uid = new ArrayList<>();
                         uid.add(mCurrentUid);
 
                         GeofenceService.broadcastAddGeofence(mContext, uid);
                         finish(true);
-                    }else {
+                    } else {
                         finish();
                     }
             }

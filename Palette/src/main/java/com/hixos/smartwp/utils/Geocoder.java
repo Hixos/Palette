@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public final class Geocoder
-{
+public final class Geocoder {
     private static final String LOGTAG = "Geocoder";
     private static final String PREFERENCES_GEOCODER = Geocoder.class.getName()
             + ".GEOCODER";
@@ -31,8 +30,7 @@ public final class Geocoder
 
     private final Context context;
 
-    public Geocoder(Context context)
-    {
+    public Geocoder(Context context) {
         this.context = context;
     }
 
@@ -67,7 +65,43 @@ public final class Geocoder
         return results;
     }*/
 
-    public List<Address> getFromLocationName(String locationName, int maxResults) throws IOException{
+    private static boolean isLimitExceeded(Context context) {
+        return System.currentTimeMillis() <= getAllowedDate(context);
+    }
+
+    private static void setAllowedDate(Context context, long date) {
+        final SharedPreferences p = context.getSharedPreferences(
+                PREFERENCES_GEOCODER, Context.MODE_PRIVATE);
+        final Editor e = p.edit();
+        e.putLong(KEY_ALLOW, date);
+        e.commit();
+    }
+
+    private static long getAllowedDate(Context context) {
+        final SharedPreferences p = context.getSharedPreferences(
+                PREFERENCES_GEOCODER, Context.MODE_PRIVATE);
+        return p.getLong(KEY_ALLOW, 0);
+    }
+
+    private static String readUrl(String urlString) throws Exception {
+        BufferedReader reader = null;
+        try {
+            URL url = new URL(urlString);
+            reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            StringBuffer buffer = new StringBuffer();
+            int read;
+            char[] chars = new char[1024];
+            while ((read = reader.read(chars)) != -1)
+                buffer.append(chars, 0, read);
+
+            return buffer.toString();
+        } finally {
+            if (reader != null)
+                reader.close();
+        }
+    }
+
+    public List<Address> getFromLocationName(String locationName, int maxResults) throws IOException {
         if (locationName == null) {
             throw new IllegalArgumentException("locationName == null");
         }
@@ -76,7 +110,7 @@ public final class Geocoder
             return null;
         }
 
-        final List<Address> results = new ArrayList<Address>();
+        final List<Address> results = new ArrayList<>();
 
         final StringBuilder request = new StringBuilder(
                 "http://maps.googleapis.com/maps/api/geocode/json?sensor=false");
@@ -84,11 +118,10 @@ public final class Geocoder
         request.append("&address=").append(URLEncoder.encode(locationName, "UTF-8"));
 
 
-
         String data;
-        try{
+        try {
             data = readUrl(request.toString());
-        }catch (Exception ex){
+        } catch (Exception ex) {
             data = null;
         }
 
@@ -104,9 +137,9 @@ public final class Geocoder
                     return results;
                 }
 
-                try{
+                try {
                     data = readUrl(request.toString());
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     data = null;
                 }
                 if (data != null) {
@@ -124,8 +157,7 @@ public final class Geocoder
     }
 
     private void parseJson(List<Address> address, int maxResults, String json)
-            throws LimitExceededException
-    {
+            throws LimitExceededException {
         try {
             final JSONObject o = new JSONObject(json);
             final String status = o.getString("status");
@@ -159,45 +191,6 @@ public final class Geocoder
 
     }
 
-    private static boolean isLimitExceeded(Context context)
-    {
-        return System.currentTimeMillis() <= getAllowedDate(context);
-    }
-
-    private static void setAllowedDate(Context context, long date)
-    {
-        final SharedPreferences p = context.getSharedPreferences(
-                PREFERENCES_GEOCODER, Context.MODE_PRIVATE);
-        final Editor e = p.edit();
-        e.putLong(KEY_ALLOW, date);
-        e.commit();
-    }
-
-    private static long getAllowedDate(Context context)
-    {
-        final SharedPreferences p = context.getSharedPreferences(
-                PREFERENCES_GEOCODER, Context.MODE_PRIVATE);
-        return p.getLong(KEY_ALLOW, 0);
-    }
-
-    public static final class LimitExceededException extends Exception{}
-
-
-    private static String readUrl(String urlString) throws Exception {
-        BufferedReader reader = null;
-        try {
-            URL url = new URL(urlString);
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int read;
-            char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
-
-            return buffer.toString();
-        } finally {
-            if (reader != null)
-                reader.close();
-    }
+    public static final class LimitExceededException extends Exception {
     }
 }
