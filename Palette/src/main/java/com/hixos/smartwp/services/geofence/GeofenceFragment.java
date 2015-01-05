@@ -204,31 +204,18 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
+        showErrorFrames();
         mGoogleClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleClient.connect();
-
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        showErrorFrames();
         if (!getActivity().getIntent().getBooleanExtra(
                 ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
             checkLiveWallpaper();
-        }
-        if (mGoogleClient != null && mGoogleClient.isConnected()) {
-            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
-            if (lastLocation != null) {
-                mDatabase.setLastLocation(lastLocation);
-            }
-            ((GeofenceDatabaseAdapter) mGridView.getAdapter()).reloadData();
         }
     }
 
