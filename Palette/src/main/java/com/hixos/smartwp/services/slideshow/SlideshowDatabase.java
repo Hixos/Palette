@@ -629,7 +629,6 @@ public class SlideshowDatabase extends DatabaseManager {
     public void setWallpaper(String uid) {
         if (!uid.equals(Preferences.getString(getContext(), R.string.preference_slideshow_last_set, ""))) {
             // ServiceManager.setWallpaper(getFileManager().getWallpaperUri(uid), getContext());
-            Logger.fileW(getContext(), TAG, "Wallpaper set");
             Preferences.setString(getContext(), R.string.preference_slideshow_last_set, uid);
             Preferences.setLong(getContext(), R.string.preference_slideshow_last_set_time,
                     System.currentTimeMillis());

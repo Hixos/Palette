@@ -315,7 +315,7 @@ public class GeofenceService {
             GoogleApiClient.OnConnectionFailedListener {
         private final static String LOGTAG = "GeofenceManager";
 
-        //In order of importance
+        //Highest number -> highest importance
         private final static int REQUEST_NOPE = 0;
         private final static int REQUEST_ADD = 1;
         private final static int REQUEST_REMOVE = 2;
@@ -346,6 +346,7 @@ public class GeofenceService {
 
         @Override
         public void onConnected(Bundle bundle) {
+            Logger.fileW(mContext, LOGTAG, "Google client connected");
             switch (mRequest) {
                 case REQUEST_ADD_ALL:
                     addAllGeofences();
@@ -394,6 +395,7 @@ public class GeofenceService {
         public void addAllGeofences() {
             if (mGoogleClient != null) {
                 if (mGoogleClient.isConnected()) {
+                    Logger.fileW(mContext, LOGTAG, "Adding all");
                     PendingIntent transition = getTransitionPendingIntent();
                     List<Geofence> geofences = new ArrayList<>();
                     GeofenceDatabase database = new GeofenceDatabase(mContext);
@@ -409,6 +411,7 @@ public class GeofenceService {
                         LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
                     }
                 } else {
+                    Logger.fileW(mContext, LOGTAG, "(NOT_CONNECTED)Adding all");
                     request(REQUEST_ADD_ALL, null);
                     if (!mGoogleClient.isConnecting()) {
                         initGoogleClient();
@@ -420,9 +423,11 @@ public class GeofenceService {
         public void removeAllGeofences() {
             if (mGoogleClient != null) {
                 if (mGoogleClient.isConnected()) {
+                    Logger.fileW(mContext, LOGTAG, "Removing all");
                     LocationServices.GeofencingApi.removeGeofences(mGoogleClient,
                             getTransitionPendingIntent());
                 } else {
+                    Logger.fileW(mContext, LOGTAG, "(NOT_CONNECTED)Removing all");
                     request(REQUEST_REMOVE_ALL, null);
                     if (!mGoogleClient.isConnecting()) {
                         initGoogleClient();
@@ -434,6 +439,7 @@ public class GeofenceService {
         public void addGeofences(List<String> geofenceUids) {
             if (mGoogleClient != null) {
                 if (mGoogleClient.isConnected()) {
+                    Logger.fileW(mContext, LOGTAG, "Adding one");
                     PendingIntent transition = getTransitionPendingIntent();
                     List<Geofence> geofences = new ArrayList<>();
                     GeofenceDatabase database = new GeofenceDatabase(mContext);
@@ -450,6 +456,7 @@ public class GeofenceService {
                             .build();
                     LocationServices.GeofencingApi.addGeofences(mGoogleClient, geoRequest, transition);
                 } else {
+                    Logger.fileW(mContext, LOGTAG, "(NOT_CONNECTED)Adding one");
                     request(REQUEST_ADD, geofenceUids);
                     if (!mGoogleClient.isConnecting()) {
                         initGoogleClient();
@@ -461,11 +468,13 @@ public class GeofenceService {
         public void removeGeofence(List<String> geofenceUids) {
             if (mGoogleClient != null) {
                 if (mGoogleClient.isConnected()) {
+                    Logger.fileW(mContext, LOGTAG, "Removing one");
                     LocationServices.GeofencingApi.removeGeofences(mGoogleClient, geofenceUids);
                     if (mCallback != null) {
                         mCallback.setWallpaper(mContext);
                     }
                 } else {
+                    Logger.fileW(mContext, LOGTAG, "(NOT_CONNECTED)Removing one");
                     request(REQUEST_REMOVE, geofenceUids);
                     if (!mGoogleClient.isConnecting()) {
                         initGoogleClient();
@@ -489,7 +498,7 @@ public class GeofenceService {
         public void onReceive(Context context, Intent intent) {
             GeofenceDatabase database = new GeofenceDatabase(context);
             GeofencingEvent geoEvent = GeofencingEvent.fromIntent(intent);
-
+            Logger.fileW(context, LOGTAG, "Wallpaper received");
             if (geoEvent.hasError()) {
                 int errorCode = geoEvent.getErrorCode();
                 Logger.e("ReceiveTransitionsIntentService",
@@ -510,7 +519,6 @@ public class GeofenceService {
                         database.removeActiveGeowallpaper(geofence.getRequestId());
                     }
                 }
-
                 setWallpaper(context);
             }
         }

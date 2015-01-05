@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.hixos.smartwp.DatabaseManager;
+import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.utils.FileUtils;
@@ -550,6 +551,8 @@ public class GeofenceDatabase extends DatabaseManager {
         v.put(COLUMN_DATA_ACTIVE, true);
         database.update(TABLE_DATA, v, COLUMN_DATA_ID + " = ?", new String[]{uid});
         closeDatabase();
+        Logger.fileW(getContext(), LOGTAG, "Added active geowallpaper: %s", uid);
+        listActiveGeofences();
     }
 
     /**
@@ -563,6 +566,8 @@ public class GeofenceDatabase extends DatabaseManager {
         v.put(COLUMN_DATA_ACTIVE, false);
         database.update(TABLE_DATA, v, COLUMN_DATA_ID + " = ?", new String[]{uid});
         closeDatabase();
+        Logger.fileW(getContext(), LOGTAG, "Removed active geowallpaper: %s", uid);
+        listActiveGeofences();
     }
 
     /**
@@ -574,6 +579,15 @@ public class GeofenceDatabase extends DatabaseManager {
         v.put(COLUMN_DATA_ACTIVE, false);
         database.update(TABLE_DATA, v, COLUMN_DATA_ACTIVE + " = 1", null);
         closeDatabase();
+    }
+
+    private void listActiveGeofences() {
+        ArrayList<GeofenceData> data = getActiveGeowallpapers();
+        Logger.fileW(getContext(), LOGTAG, "Active geofences:");
+        int i = 1;
+        for(GeofenceData d : data) {
+            Logger.fileW(getContext(), LOGTAG, "\t\t%d: %s", i, d.getUid());
+        }
     }
 
     public void setOnElementRemovedListener(OnElementRemovedListener listener) {

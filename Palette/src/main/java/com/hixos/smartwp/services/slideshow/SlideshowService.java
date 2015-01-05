@@ -48,10 +48,8 @@ public class SlideshowService {
         if (context == null || callback == null) {
             throw new IllegalArgumentException();
         }
-        Logger.fileW(context, LOGTAG, "Starting listener...");
         if (sIstance != null && !sIstance.isStopped()) {
             sIstance.stop(context);
-            Logger.fileW(context, LOGTAG, " +Stopped old");
         }
         sIstance = new SlideshowService(callback, context);
 
@@ -59,10 +57,8 @@ public class SlideshowService {
     }
 
     public static void stopListener(Context context) {
-        Logger.fileW(context, LOGTAG, "Stopping listener...");
         if (sIstance != null) {
             sIstance.stop(context);
-            Logger.fileW(context, LOGTAG, " +Stopped");
         }
         cancelAlarm(context);
     }
