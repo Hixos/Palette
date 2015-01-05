@@ -8,11 +8,13 @@ android {
         versionCode 27
         versionName '1.0.0 RC5'
     }
+
     lintOptions {
         abortOnError false
     }
+
     signingConfigs {
-        pub {
+        rel {
             storeFile file('release.keystore')
             storePassword 'hX_105.RelKeystore'
             keyAlias 'swpalias'
@@ -24,8 +26,14 @@ android {
         release {
             debuggable false
             zipAlignEnabled true
-            signingConfig signingConfigs.pub
+            signingConfig signingConfigs.rel
             versionNameSuffix ' Beta'
+        }
+        alpha {
+            debuggable false
+            zipAlignEnabled true
+            signingConfig signingConfigs.rel
+            versionNameSuffix ' Alpha'
         }
         debug {
             applicationIdSuffix '.debug'

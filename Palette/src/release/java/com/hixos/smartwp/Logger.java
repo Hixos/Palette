@@ -3,19 +3,14 @@ package com.hixos.smartwp;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.Log;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 
 /**
  * Created by Luca on 13/01/14.
  */
 public final class Logger {
-    private static final String LOGTAG = "LogUtils";
     public static final String LOG_FILE = "log.txt";
+    private static final String LOGTAG = "LogUtils";
 
     public static void w(String logtag, String message){
         Log.w(logtag, message);
@@ -52,6 +47,10 @@ public final class Logger {
     }
 
     public static void fileW(Context c, String tag, String text){
+
+    }
+
+    public static void fileW(Context c, String tag, String text, Object... args) {
 
     }
 
