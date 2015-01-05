@@ -108,6 +108,7 @@ public class GeofenceService {
         } else if (sIstance == null) {
             GeofenceManager manager = new GeofenceManager(context, null);
             manager.removeAllGeofences();
+            manager.disconnect();
         }
     }
 
@@ -260,6 +261,7 @@ public class GeofenceService {
         database.clearActiveGeofences();
 
         mManager.removeAllGeofences();
+        mManager.disconnect();
     }
 
     private boolean isStopped() {
@@ -342,6 +344,13 @@ public class GeofenceService {
                     .addConnectionCallbacks(this)
                     .build();
             mGoogleClient.connect();
+        }
+
+        public void disconnect() {
+            if (mGoogleClient != null &&
+                    (mGoogleClient.isConnected() || mGoogleClient.isConnecting())) {
+                mGoogleClient.disconnect();
+            }
         }
 
         @Override
