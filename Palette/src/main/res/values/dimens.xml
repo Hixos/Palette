@@ -2,6 +2,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="undobar_margin">8dp</dimen>
+
     <!--TEXT-->
 
     <dimen name="text_xsmall">16sp</dimen>
@@ -67,8 +69,8 @@
     <dimen name="error_text_padding">12dp</dimen>
 
     <!--THUMBS-->
-    <item type="dimen" name="thumbnail_geofence_default_factor">1.5</item>
-    <item type="dimen" name="thumbnail_geofence_factor">2.0</item>
-    <item type="dimen" name="thumbnail_slideshow_factor">3.0</item>
-    <item type="dimen" name="thumbnail_snapshot_factor">3.8</item>
+    <item name="thumbnail_geofence_default_factor" type="dimen">1.5</item>
+    <item name="thumbnail_geofence_factor" type="dimen">2.0</item>
+    <item name="thumbnail_slideshow_factor" type="dimen">3.0</item>
+    <item name="thumbnail_snapshot_factor" type="dimen">3.8</item>
 </resources>
