@@ -2,7 +2,6 @@ package com.hixos.smartwp.services.geofence;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,10 +25,11 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-//import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -55,26 +55,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+//import com.google.android.gms.location.LocationClient;
+
 public class GeofencePickerActivity extends ActionBarActivity implements View.OnClickListener {
-    private static final String LOGTAG = "GeofencePicker";
-
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
     public final static String EXTRA_GEOFENCES = "com.hixos.smartwp.EXTRA_GEOFENCES";
     public final static String EXTRA_UID = "com.hixos.smartwp.EXTRA_UID";
     public final static String EXTRA_TARGET_GEOFENCE = "com.hixos.smartwp.EXTRA_TARGET_GEOFENCE";
     public final static String EXTRA_COLOR = "com.hixos.smartwp.EXTRA_COLOR";
-
     public final static String RESULT_LATITUDE = "latitude";
     public final static String RESULT_LONGITUDE = "longitude";
     public final static String RESULT_RADIUS = "radius";
     public final static String RESULT_UID = "uid";
     public final static String RESULT_DISTANCE = "distance";
     public final static String RESULT_ZOOM = "zoom";
-
+    private static final String LOGTAG = "GeofencePicker";
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private SearchBox mSearchBox;
     private GoogleMap mMap;
-    private static PlayLocationSource mLocationSource;
+    private PlayLocationSource mLocationSource;
 
     private String uid;
     private Intent mReturnIntent;
@@ -90,18 +88,17 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     private Marker mSearchMarker;
 
     private int mColor;
-
     private boolean mPositioned = false;
 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
-                if(resultCode == Activity.RESULT_OK){
+                if (resultCode == Activity.RESULT_OK) {
                     checkPlayServices();
-                }else{
+                } else {
                     finish();
                 }
                 break;
@@ -113,24 +110,24 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geofence_picker);
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             View statusBackground = findViewById(R.id.statusbar_background);
             statusBackground.setVisibility(View.VISIBLE);
             statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
         }
 
 
-        mOtherGeofences = new ArrayList<Circle>();
-        if(!checkPlayServices()) {
+        mOtherGeofences = new ArrayList<>();
+        if (!checkPlayServices()) {
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
         mColor = getIntent().getIntExtra(EXTRA_COLOR, getResources().getColor(R.color.geofence_default_color));
 
         createActionbar();
-        initMap(savedInstanceState, (GeofenceData)getIntent().getParcelableExtra(EXTRA_TARGET_GEOFENCE));
+        initMap(savedInstanceState, (GeofenceData) getIntent().getParcelableExtra(EXTRA_TARGET_GEOFENCE));
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             mTargetGeofenceUid = savedInstanceState.getString("target_uid");
             mColor = savedInstanceState.getInt("color");
         }
@@ -138,7 +135,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         drawGeofences(getIntent().getParcelableArrayListExtra(EXTRA_GEOFENCES));
         uid = getIntent().getStringExtra(EXTRA_UID);
 
-        mProgressDialog = (ProgressDialogFragment)getFragmentManager().findFragmentByTag("progress_dialog");
+        mProgressDialog = (ProgressDialogFragment) getFragmentManager().findFragmentByTag("progress_dialog");
     }
 
 
@@ -156,7 +153,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
                     CONNECTION_FAILURE_RESOLUTION_REQUEST);
 
             if (errorDialog != null) {
-                ErrorDialogFragment errorFragment =  new ErrorDialogFragment();
+                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
                 errorFragment.setDialog(errorDialog);
                 errorFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
@@ -176,17 +173,17 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
         ab.setCustomView(R.layout.actionbar_geofence_picker);
         ab.setDisplayShowCustomEnabled(true);
-        mSearchBox = (SearchBox)findViewById(R.id.search_box);
-        if(ViewConfiguration.get(getApplicationContext()).hasPermanentMenuKey()){
+        mSearchBox = (SearchBox) findViewById(R.id.search_box);
+        if (ViewConfiguration.get(getApplicationContext()).hasPermanentMenuKey()) {
             mSearchBox.setPadding(mSearchBox.getPaddingLeft(), mSearchBox.getPaddingTop(), getResources().getDimensionPixelSize(R.dimen.search_box_padding_right), mSearchBox.getPaddingBottom());
         }
-        if(!Geocoder.isPresent()){
+        if (!Geocoder.isPresent()) {
             mSearchBox.setVisibility(View.GONE);
         }
         mSearchBox.setOnSearchActionListener(new SearchBox.OnSearchActionListener() {
             @Override
             public void onSearch(String query) {
-                if(mSearchMarker != null){
+                if (mSearchMarker != null) {
                     mSearchMarker.remove();
                 }
                 GeocoderTask task = new GeocoderTask();
@@ -195,7 +192,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
             @Override
             public void onDismiss() {
-                if(mSearchMarker != null){
+                if (mSearchMarker != null) {
                     mSearchMarker.remove();
                 }
             }
@@ -210,7 +207,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
             mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map_frame)).getMap();
         }
 
-        if(mMap == null) {
+        if (mMap == null) {
             Toast.makeText(this, getString(R.string.error_cant_load_map), Toast.LENGTH_LONG).show();
             setResult(Activity.RESULT_CANCELED);
             finish();
@@ -218,22 +215,22 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         int top, bottom = 0;
         top = MiscUtils.UI.getActionBarHeight(this);
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             View statusBackground = findViewById(R.id.statusbar_background);
             statusBackground.setVisibility(View.VISIBLE);
             statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
             top += MiscUtils.UI.getStatusBarHeight(this);
         }
 
-        if(getResources().getBoolean(R.bool.has_translucent_navbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
             bottom += MiscUtils.UI.getNavBarHeight(this);
         }
 
-        LinearLayout layout = (LinearLayout)findViewById(R.id.layout_pointer);
+        LinearLayout layout = (LinearLayout) findViewById(R.id.layout_pointer);
         mMap.setPadding(0, top, 0, bottom);
-        layout.setPadding(0,top,0,bottom);
+        layout.setPadding(0, top, 0, bottom);
         mMap.setIndoorEnabled(false);
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             CameraPosition.Builder builder = new CameraPosition.Builder();
             builder.target(new LatLng(savedInstanceState.getDouble("current_latitude"), savedInstanceState.getDouble("current_longitude")))
                     .bearing(savedInstanceState.getFloat("current_bearing"))
@@ -241,20 +238,19 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
             CameraUpdate cu = CameraUpdateFactory.newCameraPosition(builder.build());
             mMap.moveCamera(cu);
             mPositioned = true;
-        }else if(target != null){
+        } else if (target != null) {
             mColor = target.getColor();
             mTargetGeofenceUid = target.getUid();
             gotoGeofence(target);
             mPositioned = true;
         }
 
-        if(MiscUtils.Location.networkLocationProviderEnabled(this)) {
+        if (MiscUtils.Location.networkLocationProviderEnabled(this)) {
             mMap.setMyLocationEnabled(true);
 
-            if(mLocationSource == null){
-                mLocationSource = new PlayLocationSource(this, !mPositioned);
+            if (mLocationSource == null) {
+                mLocationSource = new PlayLocationSource(!mPositioned);
             }
-
             mMap.setLocationSource(mLocationSource);
         }
 
@@ -292,11 +288,22 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     @Override
     protected void onResume() {
         super.onResume();
+        if (mLocationSource != null) {
+            mLocationSource.activateRequests();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mLocationSource != null) {
+            mLocationSource.deactivateRequests();
+        }
+        super.onPause();
     }
 
     @Override
     protected void onStop() {
-        if(mLocationSource != null)
+        if (mLocationSource != null)
             mLocationSource.deactivate();
 
         mLocationSource = null;
@@ -307,7 +314,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.geofence_picker, menu);
         MenuItem sat = menu.findItem(R.id.action_sat_imagery);
-        if(sat != null){
+        if (sat != null) {
             sat.setChecked(Preferences.getInt(this, R.string.preference_map_type,
                     GoogleMap.MAP_TYPE_SATELLITE) == GoogleMap.MAP_TYPE_SATELLITE);
         }
@@ -317,15 +324,15 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_sat_imagery:
                 boolean checked = item.isChecked();
                 item.setChecked(!checked);
 
-                if(item.isChecked()){
+                if (item.isChecked()) {
                     Preferences.setInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_SATELLITE);
                     mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                }else{
+                } else {
                     Preferences.setInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_NORMAL);
                     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 }
@@ -334,27 +341,25 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         return super.onOptionsItemSelected(item);
     }
 
-    private void gotoGeofence(GeofenceData target)
-    {
+    private void gotoGeofence(GeofenceData target) {
         //LatLngBounds bounds = new LatLngBounds(ne, sw);
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(target.getLatLng(), target.getZoomLevel());
         mMap.animateCamera(cu);
     }
 
-    private void animateToLocation(double lat, double lng){
+    private void animateToLocation(double lat, double lng) {
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), mMap.getCameraPosition().zoom);
         mMap.animateCamera(cu);
     }
 
-    private void animateToLocation(double lat, double lng, float zoom){
+    private void animateToLocation(double lat, double lng, float zoom) {
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom);
         mMap.animateCamera(cu);
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId())
-        {
+        switch (view.getId()) {
            /* case R.id.button_discard:
                 setResult(RESULT_CANCELED);
                 finish();
@@ -367,15 +372,15 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
                 mReturnIntent.putExtra(RESULT_LONGITUDE, center.longitude);
                 float radius = getRadius();
                 boolean imperial = Preferences.getBoolean(this, R.string.preference_imperial_system, false);
-                if(imperial){
-                    if(UnitLocale.toYards(radius) < 50){
+                if (imperial) {
+                    if (UnitLocale.toYards(radius) < 50) {
                         Toast.makeText(this,
                                 String.format(getString(R.string.error_geofence_too_small), getResources().getQuantityString(R.plurals.yard, 50).toLowerCase()),
                                 Toast.LENGTH_LONG).show();
                         return;
                     }
-                }else{
-                    if(radius < 50){
+                } else {
+                    if (radius < 50) {
                         Toast.makeText(this,
                                 String.format(getString(R.string.error_geofence_too_small), getResources().getQuantityString(R.plurals.meter, 50).toLowerCase()),
                                 Toast.LENGTH_LONG).show();
@@ -387,17 +392,17 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
                 mReturnIntent.putExtra(RESULT_UID, uid);
                 mReturnIntent.putExtra(RESULT_ZOOM, mMap.getCameraPosition().zoom);
 
-                if(mLocation != null) {
+                if (mLocation != null) {
                     float distance = GeoMath.getDistance(center.latitude, center.longitude,
                             mLocation.getLatitude(), mLocation.getLongitude()) - radius;
-                    if(distance < 0){
+                    if (distance < 0) {
                         distance = 0;
                     }
                     mReturnIntent.putExtra(RESULT_DISTANCE, distance);
                 }
 
 
-                for(Circle c : mOtherGeofences){
+                for (Circle c : mOtherGeofences) {
                     c.setVisible(false);
                 }
                 mOtherGeofences.clear();
@@ -418,25 +423,22 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         }
     }
 
-    private void drawGeofences(ArrayList<Parcelable> geofences)
-    {
-        if(geofences == null) {
+    private void drawGeofences(ArrayList<Parcelable> geofences) {
+        if (geofences == null) {
             Log.e(LOGTAG, "Geofence parcelable is null");
             return;
         }
 
-        for(Parcelable p : geofences)
-        {
-            GeofenceData g = (GeofenceData)p;
+        for (Parcelable p : geofences) {
+            GeofenceData g = (GeofenceData) p;
 
-            if(!g.getUid().equals(mTargetGeofenceUid)) {
+            if (!g.getUid().equals(mTargetGeofenceUid)) {
                 drawGeofence(g, g.getColor());
             }
         }
     }
 
-    private void drawGeofence(GeofenceData data, int color)
-    {
+    private void drawGeofence(GeofenceData data, int color) {
         CircleOptions opt = new CircleOptions()
                 .center(data.getLatLng())
                 .radius(data.getRadius())
@@ -446,22 +448,21 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         mOtherGeofences.add(mMap.addCircle(opt));
     }
 
-    private int adjustAlpha(int color, float factor){
+    private int adjustAlpha(int color, float factor) {
         int alpha = Math.round(Color.alpha(color) * factor);
         return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }
 
-    private float getRadius()
-    {
+    private float getRadius() {
         View gmap = findViewById(R.id.map_frame);
 
         int mw = gmap.getWidth();
         int mh = gmap.getHeight();
         Point pointer_pos;
 
-        if(mw > mh){
+        if (mw > mh) {
             pointer_pos = new Point(mw / 2, mh - mh / 8);
-        }else{
+        } else {
             pointer_pos = new Point(mw - mw / 6, mh / 2);
         }
 
@@ -473,77 +474,11 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         return radius[0];
     }
 
-    private LatLng getCenter()
-    {
+    private LatLng getCenter() {
         return mMap.getCameraPosition().target;
     }
 
-
-    public class PlayLocationSource implements LocationSource, GooglePlayServicesClient.ConnectionCallbacks,
-            GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
-        OnLocationChangedListener mListener;
-
-        //LocationClient mLocationClient;
-        private boolean mGotoLocation = true;
-
-        private Context mContext;
-
-        public PlayLocationSource(Context c, boolean gotoLocation)
-        {
-            mContext = c;
-            mGotoLocation = gotoLocation;
-        }
-
-        @Override
-        public void activate(LocationSource.OnLocationChangedListener onLocationChangedListener) {
-         /*   if(mLocationClient == null){
-                mLocationClient = new LocationClient(mContext, this, this);
-            }
-            mLocationClient.connect();*/
-            mListener = onLocationChangedListener;
-        }
-
-        @Override
-        public void deactivate() {
-            //mLocationClient.disconnect();
-            mListener = null;
-        }
-
-        @Override
-        public void onConnected(Bundle bundle) {
-            //mLocation = mLocationClient.getLastLocation();
-            //Log.w(LOGTAG, "Getting last location " + (mLocation != null ? "Ok" : "Null"));
-            if(mListener != null && mLocation != null)
-                mListener.onLocationChanged(mLocation);
-
-            if(mGotoLocation && mLocation != null)
-            {
-                LatLng coord = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 18f));
-            }
-            //mLocationClient.disconnect();
-        }
-
-        @Override
-        public void onDisconnected() {
-            //mLocationClient = null;
-        }
-
-        @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
-
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            if(mListener != null  && location != null)
-                mListener.onLocationChanged(location);
-            mLocation = location;
-        }
-    }
-
-    private void getSnapshot()
-    {
+    private void getSnapshot() {
         mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(Bitmap bitmap) {
@@ -553,41 +488,140 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         });
     }
 
+    private String parseAddress(Address address) {
+        String out = address.getFeatureName();
+        boolean comma = !isNumeric(out);
+        if (address.getThoroughfare() != null)
+            out += (comma ? ", " : " ") + address.getThoroughfare();
+        if (address.getSubLocality() != null) out += ", " + address.getSubLocality();
+        if (address.getLocality() != null && !address.getLocality().equals(address.getFeatureName()))
+            out += ", " + address.getLocality();
+        if (address.getAdminArea() != null) out += ", " + address.getAdminArea();
+        if (address.getCountryName() != null) out += ", " + address.getCountryName();
+        return out;
+    }
+
+    private boolean isNumeric(String s) {
+        try {
+            Long.parseLong(s);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    public class PlayLocationSource implements LocationSource, GoogleApiClient.OnConnectionFailedListener,
+            GoogleApiClient.ConnectionCallbacks, LocationListener {
+
+        private GoogleApiClient mGoogleClient;
+        private OnLocationChangedListener mListener;
+        private LocationRequest mLocationRequest;
+
+        private boolean mGotoLocation;
+
+        public PlayLocationSource(boolean gotoLocation) {
+            mLocationRequest = LocationRequest.create();
+            mLocationRequest.setInterval(5000);
+            mLocationRequest.setFastestInterval(1000);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            mGotoLocation = gotoLocation;
+        }
+
+        @Override
+        public void onConnected(Bundle bundle) {
+            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleClient);
+            mListener.onLocationChanged(mLocation);
+            activateRequests();
+            if (mGotoLocation && mLocation != null) {
+                LatLng coord = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 18f));
+            }
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            mLocation = location;
+            mListener.onLocationChanged(location);
+        }
+
+        @Override
+        public void activate(OnLocationChangedListener onLocationChangedListener) {
+            mGoogleClient = null;
+            mGoogleClient = new GoogleApiClient.Builder(GeofencePickerActivity.this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+            mGoogleClient.connect();
+            mListener = onLocationChangedListener;
+        }
+
+        @Override
+        public void deactivate() {
+            deactivateRequests();
+            mGoogleClient.disconnect();
+        }
+
+        public void activateRequests() {
+            if (mGoogleClient.isConnected()) {
+                LocationServices.FusedLocationApi
+                        .requestLocationUpdates(mGoogleClient, mLocationRequest, this);
+            }
+        }
+
+        public void deactivateRequests() {
+            if (mGoogleClient.isConnected()) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleClient, this);
+            }
+        }
+
+        @Override
+        public void onConnectionFailed(ConnectionResult connectionResult) {
+
+        }
+    }
+
     private class GeocoderTask extends AsyncTask<String, Void, Address> {
         @Override
         protected Address doInBackground(String... strings) {
             Address out = getAddress1(strings[0]);
 
-            if(out == null){
+            if (out == null) {
                 out = getAddress2(strings[0]);
             }
 
             return out;
         }
 
-        private Address getAddress1(String query){
+        private Address getAddress1(String query) {
             Geocoder gc = new Geocoder(getApplicationContext());
-            try{
+            try {
                 List<Address> address = gc.getFromLocationName(query, 1);
-                if(address != null && address.size() > 0 && address.get(0).hasLatitude() && address.get(0).hasLongitude())
+                if (address != null && address.size() > 0 && address.get(0).hasLatitude() && address.get(0).hasLongitude())
                     return address.get(0);
                 else
                     return null;
-            }catch (IOException ex){
+            } catch (IOException ex) {
                 Log.e(LOGTAG, "Error decoding address. (1) " + ex.getMessage());
                 return null;
             }
         }
 
-        private Address getAddress2(String query){
+        private Address getAddress2(String query) {
             com.hixos.smartwp.utils.Geocoder gc = new com.hixos.smartwp.utils.Geocoder(getApplicationContext());
-            try{
+            try {
                 List<Address> address = gc.getFromLocationName(query, 1);
-                if(address != null && address.size() > 0 && address.get(0).hasLatitude() && address.get(0).hasLongitude())
+                if (address != null && address.size() > 0 && address.get(0).hasLatitude() && address.get(0).hasLongitude())
                     return address.get(0);
                 else
                     return null;
-            }catch (IOException ex){
+            } catch (IOException ex) {
                 Log.e(LOGTAG, "Error decoding address. (2) " + ex.getMessage());
                 return null;
             }
@@ -597,44 +631,25 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         protected void onPostExecute(Address address) {
             super.onPostExecute(address);
             mSearchBox.hideProgress();
-            if(address != null ){
+            if (address != null) {
                 MarkerOptions options = new MarkerOptions()
                         .title(parseAddress(address))
                         .position(new LatLng(address.getLatitude(), address.getLongitude()));
                 mSearchMarker = mMap.addMarker(options);
                 animateToLocation(address.getLatitude(), address.getLongitude());
-            }else{
+            } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.error_search_location_not_found), Toast.LENGTH_LONG).show();
             }
         }
     }
-    private String parseAddress(Address address){
-        String out = address.getFeatureName();
-        boolean comma = !isNumeric(out);
-        if(address.getThoroughfare() != null) out += (comma ? ", " : " ") + address.getThoroughfare();
-        if(address.getSubLocality() != null) out += ", " + address.getSubLocality();
-        if(address.getLocality()  != null && !address.getLocality().equals(address.getFeatureName())) out += ", " + address.getLocality();
-        if(address.getAdminArea() != null) out += ", " + address.getAdminArea();
-        if(address.getCountryName() != null) out += ", " + address.getCountryName();
-        return out;
-    }
 
-    private boolean isNumeric(String s){
-        try{
-            Long.parseLong(s);
-            return true;
-        }catch (NumberFormatException ex){
-            return false;
-        }
-    }
-
-    private class SaveSnapshotTask extends AsyncTask<Bitmap, Void, Boolean>{
+    private class SaveSnapshotTask extends AsyncTask<Bitmap, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Bitmap... bitmaps) {
             boolean success = ImageManager.getInstance().saveBitmap(bitmaps[0],
                     GeofenceDatabase.getSnapshotUid(uid));
             ImageManager.RecycleBin recycleBin = ImageManager.getInstance().getRecycleBin();
-            if(recycleBin != null){
+            if (recycleBin != null) {
                 recycleBin.put(bitmaps[0]);
             }
             return success;
@@ -643,12 +658,12 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            if(aBoolean){
+            if (aBoolean) {
                 setResult(RESULT_OK, mReturnIntent);
-            }else{
+            } else {
                 setResult(RESULT_CANCELED);
             }
-            if(mProgressDialog != null){
+            if (mProgressDialog != null) {
                 mProgressDialog.dismiss();
             }
             finish();

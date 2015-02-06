@@ -9,6 +9,7 @@
     <string name="action_sat_imagery">Satellite</string>
 
     <!-- ERRORS -->
+    <string name="error_location_not_found">Unable to get location. Location wallpapers may not work correctly</string>
     <string name="error_network_location">Location unavailable</string>
     <string name="error_network_location_desc">Enable location services</string>
     <string name="error_network_location_solution">Enable</string>

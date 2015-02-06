@@ -1,18 +1,20 @@
 apply plugin: 'com.android.application'
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 27
-        versionName '1.0.0 RC5'
+        versionCode 28
+        versionName '1.0.0 RC6'
     }
+
     lintOptions {
         abortOnError false
     }
+
     signingConfigs {
-        pub {
+        rel {
             storeFile file('release.keystore')
             storePassword 'hX_105.RelKeystore'
             keyAlias 'swpalias'
@@ -24,8 +26,14 @@ android {
         release {
             debuggable false
             zipAlignEnabled true
-            signingConfig signingConfigs.pub
+            signingConfig signingConfigs.rel
             versionNameSuffix ' Beta'
+        }
+        alpha {
+            debuggable false
+            zipAlignEnabled true
+            signingConfig signingConfigs.rel
+            versionNameSuffix ' Alpha'
         }
         debug {
             applicationIdSuffix '.debug'

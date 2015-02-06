@@ -2,13 +2,12 @@ package com.hixos.smartwp;
 
 import android.widget.BaseAdapter;
 
-/**
- * Created by Luca on 26/02/14.
- */
 public abstract class AnimatedListAdapter extends BaseAdapter {
 
     public abstract void dragStarted(String itemId);
+
     public abstract void drag(String itemId, String beforeId);
+
     public abstract void dragEndend(String itemID);
 
     public abstract int getItemPosition(String id);

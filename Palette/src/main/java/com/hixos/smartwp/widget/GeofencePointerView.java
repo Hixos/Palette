@@ -9,46 +9,39 @@ import android.view.View;
 
 import com.hixos.smartwp.R;
 
-/**
- * Created by Luca on 25/11/13.
- */
 public class GeofencePointerView extends View {
     private final static String LOGTAG = "GeofenceView";
 
     private Context mContext;
 
     private float mCenterX, mCenterY;
-
-    public float getRadius() {
-        return mRadius;
-    }
-
     private float mRadius;
-
     private float mBorderWidth;
-
     private Paint mBorderPaint;
     private Paint mInnerPaint;
-
     public GeofencePointerView(Context context) {
         super(context);
         mContext = context;
         init();
     }
 
-    public GeofencePointerView(Context context, AttributeSet attrs){
+    public GeofencePointerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         init();
     }
 
-    public GeofencePointerView(Context context, AttributeSet attrs, int defStyle){
+    public GeofencePointerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mContext = context;
         init();
     }
 
-    private void init(){
+    public float getRadius() {
+        return mRadius;
+    }
+
+    private void init() {
         mBorderWidth = mContext.getResources()
                 .getDimensionPixelSize(R.dimen.geofence_current_border_width);
 
@@ -63,13 +56,13 @@ public class GeofencePointerView extends View {
         setColor(Color.RED);
     }
 
-    public void setColor(int color){
+    public void setColor(int color) {
         mBorderPaint.setColor(adjustAlpha(color, 0.75f));
         mInnerPaint.setColor(adjustAlpha(color, 0.35f));
         invalidate();
     }
 
-    private int adjustAlpha(int color, float factor){
+    private int adjustAlpha(int color, float factor) {
         int alpha = Math.round(Color.alpha(color) * factor);
         return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }

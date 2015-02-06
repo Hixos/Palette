@@ -4,56 +4,53 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-/**
- * Created by Luca on 12/10/2014.
- */
 public class RectUtils {
 
-    public static int getSampleSize(Rect size, int outWidth, int outHeight){
+    public static int getSampleSize(Rect size, int outWidth, int outHeight) {
         int ss = 1;
         do {
             ss = ss << 1;
-        }while((float)size.width() / (float)ss > outWidth
-                && (float)size.height() / (float)ss > outHeight);
+        } while ((float) size.width() / (float) ss > outWidth
+                && (float) size.height() / (float) ss > outHeight);
 
         return ss >> 1;
     }
 
-    public static Rect getCropArea(float ratio, Rect bounds){
-        float originalRatio = (float)bounds.width() / (float)bounds.height();
+    public static Rect getCropArea(float ratio, Rect bounds) {
+        float originalRatio = (float) bounds.width() / (float) bounds.height();
 
         Rect out = new Rect();
-        if(ratio == originalRatio){
+        if (ratio == originalRatio) {
             out.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
-        }else if(ratio < originalRatio){
+        } else if (ratio < originalRatio) {
             out.top = bounds.top;
             out.bottom = bounds.bottom;
-            int w = (int)(bounds.height() * ratio);
-            out.left = bounds.left + (int)((bounds.width() - w) / 2f);
+            int w = (int) (bounds.height() * ratio);
+            out.left = bounds.left + (int) ((bounds.width() - w) / 2f);
             out.right = out.left + w;
-        }else{
+        } else {
             out.left = bounds.left;
             out.right = bounds.right;
-            int h = (int)(bounds.width() / ratio);
-            out.top = bounds.top + (int)((bounds.height() - h) / 2f);
+            int h = (int) (bounds.width() / ratio);
+            out.top = bounds.top + (int) ((bounds.height() - h) / 2f);
             out.bottom = out.top + h;
         }
         return out;
     }
 
-    public static RectF getCropArea(float ratio, RectF bounds){
+    public static RectF getCropArea(float ratio, RectF bounds) {
         float originalRatio = bounds.width() / bounds.height();
 
         RectF out = new RectF();
-        if(ratio == originalRatio){
+        if (ratio == originalRatio) {
             out.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
-        }else if(ratio < originalRatio){
+        } else if (ratio < originalRatio) {
             out.top = bounds.top;
             out.bottom = bounds.bottom;
             float w = bounds.height() * ratio;
             out.left = bounds.left + (bounds.width() - w) / 2f;
             out.right = out.left + w;
-        }else{
+        } else {
             out.left = bounds.left;
             out.right = bounds.right;
             float h = bounds.width() / ratio;
@@ -63,11 +60,11 @@ public class RectUtils {
         return out;
     }
 
-    public static Rect getFullRect(RectF relativeRect, Rect originalSize){
-        if(relativeRect == null){
+    public static Rect getFullRect(RectF relativeRect, Rect originalSize) {
+        if (relativeRect == null) {
             throw new IllegalArgumentException("Argument (relativeRect) is null!");
         }
-        if(originalSize == null){
+        if (originalSize == null) {
             throw new IllegalArgumentException("Argument (originalSize) is null!");
         }
         Rect out = new Rect();
@@ -79,11 +76,11 @@ public class RectUtils {
         return out;
     }
 
-    public static RectF getFullRect(RectF relativeRect, RectF originalSize){
-        if(relativeRect == null){
+    public static RectF getFullRect(RectF relativeRect, RectF originalSize) {
+        if (relativeRect == null) {
             throw new IllegalArgumentException("Argument (relativeRect) is null!");
         }
-        if(originalSize == null){
+        if (originalSize == null) {
             throw new IllegalArgumentException("Argument (originalSize) is null!");
         }
 
@@ -96,11 +93,11 @@ public class RectUtils {
         return out;
     }
 
-    public static RectF getRelativeRect(RectF rect, RectF container){
-        if(rect == null){
+    public static RectF getRelativeRect(RectF rect, RectF container) {
+        if (rect == null) {
             throw new IllegalArgumentException("Argument (rect) is null!");
         }
-        if(container == null){
+        if (container == null) {
             throw new IllegalArgumentException("Argument (container) is null!");
         }
         float left = rect.left - container.left;
@@ -125,10 +122,10 @@ public class RectUtils {
         return out;
     }
 
-    public static RectF rotateRect(RectF rect, RectF container, int rotation){
+    public static RectF rotateRect(RectF rect, RectF container, int rotation) {
         RectF out = new RectF();
         float dX = 0, dY = 0;
-        switch (rotation){
+        switch (rotation) {
             case 90:
                 dX = container.height();
                 break;

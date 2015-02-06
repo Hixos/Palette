@@ -12,7 +12,7 @@ import com.hixos.smartwp.R;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 
-public class ProviderFixActivity extends Activity implements View.OnClickListener{
+public class ProviderFixActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,12 +24,12 @@ public class ProviderFixActivity extends Activity implements View.OnClickListene
         locationLayout.setOnClickListener(this);
         wifiLayout.setOnClickListener(this);
 
-        CheckBox checkBox = (CheckBox)findViewById(R.id.checkbox_dontshowagain);
+        CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_dontshowagain);
 
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-           checkBox.setVisibility(View.GONE);
-        }else{
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            checkBox.setVisibility(View.GONE);
+        } else {
             checkBox.setOnClickListener(this);
             checkBox.setChecked(!Preferences.getBoolean(this,
                     R.string.preference_show_provider_error, true));
@@ -43,11 +43,11 @@ public class ProviderFixActivity extends Activity implements View.OnClickListene
         View wifiLayout = findViewById(R.id.layout_wifi);
         boolean location = MiscUtils.Location.networkLocationProviderEnabled(this);
         boolean wifi = MiscUtils.Location.wifiLocationEnabled(this);
-        if(location && wifi){
+        if (location && wifi) {
             finish();
-        }else if(location){
+        } else if (location) {
             locationLayout.setVisibility(View.GONE);
-        }else if(wifi){
+        } else if (wifi) {
             wifiLayout.setVisibility(View.GONE);
         }
     }
@@ -55,7 +55,7 @@ public class ProviderFixActivity extends Activity implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.layout_wifi:
                 startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 break;
@@ -63,7 +63,7 @@ public class ProviderFixActivity extends Activity implements View.OnClickListene
                 startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                 break;
             case R.id.checkbox_dontshowagain:
-                CheckBox checkBox = (CheckBox)findViewById(R.id.checkbox_dontshowagain);
+                CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_dontshowagain);
                 Preferences.setBoolean(this, R.string.preference_show_provider_error,
                         !checkBox.isChecked());
         }

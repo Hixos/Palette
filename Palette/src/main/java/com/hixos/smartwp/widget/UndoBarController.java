@@ -37,14 +37,15 @@ public class UndoBarController {
 
     // State objects
     private long mUndoToken;
+    private Runnable mHideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mUndoListener.onHide(mUndoToken);
+            hideUndoBar(false);
+        }
+    };
     private CharSequence mUndoMessage;
-
     private long mShowTimestamp = 0;
-
-    public interface UndoListener {
-        void onUndo(long uid);
-        void onHide(long uid);
-    }
 
     public UndoBarController(View undoBarView, UndoListener undoListener) {
         mBarView = undoBarView;
@@ -74,7 +75,7 @@ public class UndoBarController {
         mHideHandler.removeCallbacks(mHideRunnable);
 
         int hideDelay = mBarView.getResources().getInteger(R.integer.undobar_hide_delay);
-        if(elapsedTime >=0 && elapsedTime <= hideDelay)
+        if (elapsedTime >= 0 && elapsedTime <= hideDelay)
             hideDelay -= elapsedTime;
 
         mHideHandler.postDelayed(mHideRunnable, hideDelay);
@@ -147,11 +148,9 @@ public class UndoBarController {
         }
     }
 
-    private Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mUndoListener.onHide(mUndoToken);
-            hideUndoBar(false);
-        }
-    };
+    public interface UndoListener {
+        void onUndo(long uid);
+
+        void onHide(long uid);
+    }
 }

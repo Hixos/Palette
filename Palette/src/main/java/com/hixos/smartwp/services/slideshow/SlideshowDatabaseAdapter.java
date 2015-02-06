@@ -11,19 +11,13 @@ import com.hixos.smartwp.widget.AsyncImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Luca on 01/03/14.
- */
-public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements SlideshowDatabase.DatabaseObserver{
-
-    private SlideshowDatabase mDatabase;
-
-    private List<SlideshowData> mData;
-    private List<String> mBeforeDragIDs;
-
-    private Context mContext;
+public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements SlideshowDatabase.DatabaseObserver {
 
     int mLastMovedPosition = -1;
+    private SlideshowDatabase mDatabase;
+    private List<SlideshowData> mData;
+    private List<String> mBeforeDragIDs;
+    private Context mContext;
 
     public SlideshowDatabaseAdapter(SlideshowDatabase mDatabase,
                                     Context context) {
@@ -32,8 +26,8 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
         mDatabase.setDatabaseObserver(this);
 
-        mData = new ArrayList<SlideshowData>();
-        mBeforeDragIDs = new ArrayList<String>();
+        mData = new ArrayList<>();
+        mBeforeDragIDs = new ArrayList<>();
         reloadData();
     }
 
@@ -49,7 +43,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public long getItemId(int i) {
-        if(i >= 0 && i < getCount())
+        if (i >= 0 && i < getCount())
             return mData.get(i).getUid().hashCode();
         else
             return -1;
@@ -57,7 +51,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public String getItemUid(int i) {
-        if(i >= 0 && i < getCount())
+        if (i >= 0 && i < getCount())
             return mData.get(i).getUid();
         else
             return "";
@@ -65,8 +59,8 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public int getItemPosition(String id) {
-        for(int i = 0; i < mData.size(); i++){
-            if(mData.get(i).getUid().equals(id))
+        for (int i = 0; i < mData.size(); i++) {
+            if (mData.get(i).getUid().equals(id))
                 return i;
         }
         return -1;
@@ -75,7 +69,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
     @Override
     public void dragStarted(String itemId) {
         mBeforeDragIDs.clear();
-        for(SlideshowData d : mData){
+        for (SlideshowData d : mData) {
             mBeforeDragIDs.add(d.getUid());
         }
     }
@@ -85,7 +79,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
         int oldPosition = getItemPosition(itemId);
         int newPosition = getItemPosition(beforeId);
 
-        if(oldPosition >= 0 && newPosition >= 0){
+        if (oldPosition >= 0 && newPosition >= 0) {
             mLastMovedPosition = newPosition;
 
             SlideshowData item = mData.get(oldPosition);
@@ -96,7 +90,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public void dragEndend(String itemID) {
-        if(mLastMovedPosition != -1)
+        if (mLastMovedPosition != -1)
             mDatabase.updateOrderAsync(mData, false);
 
         mLastMovedPosition = -1;
@@ -111,8 +105,8 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public void remove(String id) {
-        for(SlideshowData data : mData){
-            if(data.getUid().equals(id)){
+        for (SlideshowData data : mData) {
+            if (data.getUid().equals(id)) {
                 mData.remove(data);
                 break;
             }
@@ -122,8 +116,8 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public void onElementRemoved(String uid) {
-        for(SlideshowData data : mData){
-            if(data.getUid().equals(uid)){
+        for (SlideshowData data : mData) {
+            if (data.getUid().equals(uid)) {
                 mData.remove(data);
                 break;
             }
@@ -141,7 +135,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
         reloadData();
     }
 
-    public void reloadData(){
+    public void reloadData() {
         mData.clear();
 
         mDatabase.getOrderedWallpapersAsync(new SlideshowDatabase.OnWallpapersLoadedListener() {
@@ -159,17 +153,17 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
         AsyncImageView imageView;
         String uid = mData.get(i).getUid();
 
-        if(convertView != null){
+        if (convertView != null) {
             v = convertView;
-        }else {
+        } else {
             v = View.inflate(mContext, R.layout.grid_item_slideshow, null);
         }
 
-        if(v.getTag() == null){
-            imageView = (AsyncImageView)v.findViewById(R.id.image_thumbnail);
+        if (v.getTag() == null) {
+            imageView = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
             v.setTag(imageView);
-        }else{
-            imageView = (AsyncImageView)v.getTag();
+        } else {
+            imageView = (AsyncImageView) v.getTag();
         }
         imageView.setImageUID(uid);
 

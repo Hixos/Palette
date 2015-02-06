@@ -19,9 +19,6 @@ import android.view.View;
 
 import com.hixos.smartwp.R;
 
-/**
- * Created by Luca on 18/04/2014.
- */
 public class CircleView extends View {
 
     private float mRadiusPerc = 0.6f;
@@ -64,8 +61,8 @@ public class CircleView extends View {
         init(context, attrs);
     }
 
-    private void init(Context context, AttributeSet attrs){
-        if(attrs != null) {
+    private void init(Context context, AttributeSet attrs) {
+        if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.CircleView,
@@ -73,13 +70,13 @@ public class CircleView extends View {
             mAlpha = Math.max(Math.min(a.getFloat(R.styleable.CircleView_circleAlpha, 0.4f), 1), 0);
             mColor = a.getColor(R.styleable.CircleView_circleColor,
                     isInEditMode() ? getResources().getColor(R.color.accent_blue) : Color.BLUE);
-            mDrawable = (BitmapDrawable)a.getDrawable(R.styleable.CircleView_innerDrawable);
+            mDrawable = (BitmapDrawable) a.getDrawable(R.styleable.CircleView_innerDrawable);
             mForeground = a.getDrawable(R.styleable.CircleView_foreground);
-            if(mForeground != null){
+            if (mForeground != null) {
                 mForeground.setCallback(this);
             }
-            if(isInEditMode() && mDrawable == null){
-                mDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.ic_slideshow);
+            if (isInEditMode() && mDrawable == null) {
+                mDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_slideshow);
             }
             mMaxWidth = a.getDimensionPixelSize(R.styleable.CircleView_maxWidth, 0);
             mMaxHeight = a.getDimensionPixelSize(R.styleable.CircleView_maxHeight, 0);
@@ -112,12 +109,12 @@ public class CircleView extends View {
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
 
-        if(mMaxWidth > 0 && mMaxWidth < widthSize){
+        if (mMaxWidth > 0 && mMaxWidth < widthSize) {
             widthSize = mMaxWidth;
             widthMode = MeasureSpec.AT_MOST;
         }
 
-        if(mMaxHeight > 0 && mMaxHeight < heightSize){
+        if (mMaxHeight > 0 && mMaxHeight < heightSize) {
             heightSize = mMaxHeight;
             heightMode = MeasureSpec.AT_MOST;
         }
@@ -130,7 +127,7 @@ public class CircleView extends View {
 
         mCenterX = mWidth / 2;
         mCenterY = mHeight / 2;
-        mMaxRadius = (int)Math.max(Math.min(mWidth - Math.max(getPaddingLeft(), getPaddingRight()) * 2,
+        mMaxRadius = (int) Math.max(Math.min(mWidth - Math.max(getPaddingLeft(), getPaddingRight()) * 2,
                 mHeight - Math.max(getPaddingTop(), getPaddingBottom()) * 2) / 2f, 0);
         updateRadius();
     }
@@ -140,9 +137,9 @@ public class CircleView extends View {
         super.onDraw(canvas);
         canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
         int drawableRadius = mDrawableFixedRadius > 0
-                ? (int)(mDrawableFixedRadius * mMaxRadius)
+                ? (int) (mDrawableFixedRadius * mMaxRadius)
                 : mRadius;
-        if(mDrawable != null) {
+        if (mDrawable != null) {
             mDrawableBounds.left = Math.round(mCenterX - drawableRadius / 1.5f);
             mDrawableBounds.right = Math.round(mCenterX + drawableRadius / 1.5f);
             mDrawableBounds.top = Math.round(mCenterY - drawableRadius / 1.5f);
@@ -155,7 +152,7 @@ public class CircleView extends View {
 
     @Override
     public void draw(Canvas canvas) {
-        if(mForeground != null){
+        if (mForeground != null) {
             canvas.saveLayer(null, new Paint(), Canvas.ALL_SAVE_FLAG);
 
             canvas.saveLayer(null, null, Canvas.HAS_ALPHA_LAYER_SAVE_FLAG |
@@ -167,7 +164,7 @@ public class CircleView extends View {
             canvas.saveLayer(null, mMaskPaint, Canvas.HAS_ALPHA_LAYER_SAVE_FLAG | Canvas.CLIP_SAVE_FLAG);
             canvas.drawCircle(mCenterX, mCenterY, mRadius, mWhitePaint);
             canvas.restore();
-        }else{
+        } else {
             super.draw(canvas);
         }
     }
@@ -180,14 +177,14 @@ public class CircleView extends View {
     @Override
     public void jumpDrawablesToCurrentState() {
         super.jumpDrawablesToCurrentState();
-        if(mForeground != null)
+        if (mForeground != null)
             mForeground.jumpToCurrentState();
     }
 
     @Override
     protected void drawableStateChanged() {
         super.drawableStateChanged();
-        if(mForeground != null){
+        if (mForeground != null) {
             mForeground.setState(getDrawableState());
             invalidate();
         }
@@ -219,15 +216,15 @@ public class CircleView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
-        int distance = (int)Math.sqrt(
+        int distance = (int) Math.sqrt(
                 Math.pow(y - mCenterY, 2) + Math.pow(x - mCenterX, 2));
         boolean inside = distance <= mRadius;
-        switch (event.getAction()){
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if(inside) {
+                if (inside) {
                     mPressing = true;
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                        drawableHotspotChanged(x,y);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        drawableHotspotChanged(x, y);
                     }
                     refreshDrawableState();
                     return true;
@@ -235,7 +232,7 @@ public class CircleView extends View {
             case MotionEvent.ACTION_UP:
                 mPressing = false;
                 refreshDrawableState();
-                if(inside && mClickListener != null){
+                if (inside && mClickListener != null) {
                     mClickListener.onClick(this);
                     playSoundEffect(SoundEffectConstants.CLICK);
                 }
@@ -243,16 +240,21 @@ public class CircleView extends View {
         }
         return super.onTouchEvent(event);
     }
-    protected void updateForegroundBounds(){
-        if(mForeground != null){
+
+    protected void updateForegroundBounds() {
+        if (mForeground != null) {
             mForeground.setBounds(mCenterX - mRadius, mCenterY - mRadius,
                     mCenterX + mRadius, mCenterY + mRadius);
             getAlpha();
         }
     }
 
-    public void setRadiusPerc(float perc){
-        if(perc < 0){
+    public float getRadiusPerc() {
+        return mRadiusPerc;
+    }
+
+    public void setRadiusPerc(float perc) {
+        if (perc < 0) {
             throw new IllegalArgumentException("Radius percentage must be >= 0");
         }
         mRadiusPerc = perc;
@@ -260,12 +262,8 @@ public class CircleView extends View {
         invalidate();
     }
 
-    public float getRadiusPerc(){
-        return mRadiusPerc;
-    }
-
-    private void updateRadius(){
-        mRadius = (int)(mRadiusPerc * mMaxRadius);
+    private void updateRadius() {
+        mRadius = (int) (mRadiusPerc * mMaxRadius);
         updateForegroundBounds();
     }
 
@@ -303,12 +301,12 @@ public class CircleView extends View {
         mClickListener = l;
     }
 
-    public void setForeground(Drawable foreground){
-        if(mForeground != null){
+    public void setForeground(Drawable foreground) {
+        if (mForeground != null) {
             mForeground.setCallback(null);
         }
         mForeground = foreground;
-        if(mForeground != null){
+        if (mForeground != null) {
             mForeground.setCallback(this);
         }
     }

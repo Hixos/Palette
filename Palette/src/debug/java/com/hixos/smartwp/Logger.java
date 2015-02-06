@@ -44,6 +44,7 @@ public final class Logger {
         w(logtag, String.format("%s(Left: %f, Top: %f, Width: %f, Height: %f, Ratio %f)",text, r.left, r.top, r.width(), r.height(), ratio));
     }
 
+
     public static void fileW(Context c, String tag, String text){
         Log.w(tag, text);
         String date = android.text.format.DateFormat.format("yyyy-MM-dd kk:mm:ss", new java.util.Date()).toString();
@@ -70,26 +71,8 @@ public final class Logger {
         }
     }
 
-    public static void fileNewLine(Context c){
-        FileWriter out = null;
-        try {
-            File f = new File(getLogFilePath(c));
-            out = new FileWriter(f, true);
-            out.append(String.format("\n"));
-            out.close();
-        }
-        catch (IOException e) {
-            Log.e(LOGTAG, "File write failed: " + e.toString());
-        }finally {
-            if(out != null){
-                try{
-                    out.close();
-                }catch (IOException e) {
-                    Log.e(LOGTAG, "Error closing writer: " + e.toString());
-                }
-
-            }
-        }
+    public static void fileW(Context c, String tag, String text, Object... args){
+        fileW(c, tag, String.format(text, args));
     }
 
     private static String getLogFilePath(Context c){

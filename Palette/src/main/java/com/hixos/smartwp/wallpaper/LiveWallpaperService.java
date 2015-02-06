@@ -24,19 +24,10 @@ import com.hixos.smartwp.utils.Preferences;
 
 import glwallpaperservice.GLWallpaperService;
 
-
-/**
- * Created by Luca on 23/02/14.
- */
-public class LiveWallpaperService extends GLWallpaperService{
+public class LiveWallpaperService extends GLWallpaperService {
     public static final String ACTION_SERVICE_ACTIVATED = "com.hixos.smartwp.ACTION_SERVICE_ACTIVATED";
 
     private final static String LOGTAG = "LiveWallpaperService";
-
-    public interface Callbacks {
-        public void requestRender();
-    }
-
     private WallpaperEngine mEngine;
 
     @Override
@@ -48,6 +39,10 @@ public class LiveWallpaperService extends GLWallpaperService{
     public WallpaperService.Engine onCreateEngine() {
         mEngine = new WallpaperEngine();
         return mEngine;
+    }
+
+    public interface Callbacks {
+        public void requestRender();
     }
 
     private class WallpaperEngine extends GLEngine implements OnWallpaperChangedCallback {
@@ -83,11 +78,11 @@ public class LiveWallpaperService extends GLWallpaperService{
             initService();
         }
 
-        public void initService(){
+        public void initService() {
             int activeService = ServiceUtils.getActiveService(LiveWallpaperService.this);
 
-            if(!isPreview()) {
-                switch (activeService){
+            if (!isPreview()) {
+                switch (activeService) {
                     case ServiceUtils.SERVICE_SLIDESHOW:
                         SlideshowService.startListener(this, LiveWallpaperService.this);
                         GeofenceService.stopListener(LiveWallpaperService.this);
@@ -99,7 +94,7 @@ public class LiveWallpaperService extends GLWallpaperService{
                 }
             }
 
-            switch (activeService){
+            switch (activeService) {
                 case ServiceUtils.SERVICE_SLIDESHOW:
                     setWallpaper(SlideshowService.getBestWallpaperUri(LiveWallpaperService.this));
                     break;
@@ -114,8 +109,8 @@ public class LiveWallpaperService extends GLWallpaperService{
             mRenderer.onDestroy();
 
             int activeService = ServiceUtils.getActiveService(LiveWallpaperService.this);
-            if(!isPreview()){
-                switch (activeService){
+            if (!isPreview()) {
+                switch (activeService) {
                     case ServiceUtils.SERVICE_SLIDESHOW:
                         SlideshowService.stopListener(LiveWallpaperService.this);
                         break;
@@ -132,9 +127,9 @@ public class LiveWallpaperService extends GLWallpaperService{
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
             mVisible = visible;
-            if(mVisible && mQueuedWallpaper != null){
+            if (mVisible && mQueuedWallpaper != null) {
                 setWallpaper(mQueuedWallpaper);
-            }else if(!mVisible && mTask != null && !mTask.isCancelled()){
+            } else if (!mVisible && mTask != null && !mTask.isCancelled()) {
                 mTask.cancel(true);
             }
         }
@@ -148,31 +143,31 @@ public class LiveWallpaperService extends GLWallpaperService{
             requestRender();
         }
 
-        public void setWallpaper(Uri wallpaper){
-            if(mVisible){
-                if(mCurrentWallaper == null || wallpaper.compareTo(mCurrentWallaper) != 0){
-                    if(mTask != null && !mTask.isCancelled()){
+        public void setWallpaper(Uri wallpaper) {
+            if (mVisible) {
+                if (mCurrentWallaper == null || wallpaper.compareTo(mCurrentWallaper) != 0) {
+                    if (mTask != null && !mTask.isCancelled()) {
                         mTask.cancel(true);
                     }
                     mTask = new SetWallpaperTask();
                     mTask.execute(wallpaper);
                 }
-            }else{
+            } else {
                 mQueuedWallpaper = wallpaper;
             }
         }
 
         @Override
-        public void requestRender(){
-            if(mVisible)
+        public void requestRender() {
+            if (mVisible)
                 super.requestRender();
         }
 
         @Override
         public void onWallpaperChanged(Uri wallpaper) {
-            if(wallpaper != null){
+            if (wallpaper != null) {
                 setWallpaper(wallpaper);
-            }else {
+            } else {
                 Logger.e(LOGTAG, "Wallpaper uri is null");
             }
         }
@@ -191,9 +186,9 @@ public class LiveWallpaperService extends GLWallpaperService{
                 wpUri = uris[0];
                 Rect size = BitmapIO.getImageSize(LiveWallpaperService.this, wpUri);
                 Point displaySize = MiscUtils.UI.getDisplaySize(LiveWallpaperService.this);
-                if(size == null || displaySize == null){
-                    return  BitmapIO.loadBitmap(LiveWallpaperService.this, wpUri, false);
-                }else {
+                if (size == null || displaySize == null) {
+                    return BitmapIO.loadBitmap(LiveWallpaperService.this, wpUri, false);
+                } else {
                     int heigth = Math.max(displaySize.x, displaySize.y);
                     int width = Math.round(heigth * ((float) size.width() / size.height()));
                     return BitmapIO.loadBitmap(LiveWallpaperService.this, wpUri,
@@ -204,7 +199,7 @@ public class LiveWallpaperService extends GLWallpaperService{
             @Override
             protected void onPostExecute(final Bitmap bitmap) {
                 super.onPostExecute(bitmap);
-                if(bitmap != null && mVisible){
+                if (bitmap != null && mVisible) {
                     final int crossfadeDuration = Integer.valueOf(Preferences.getString(LiveWallpaperService.this,
                             R.string.preference_wallpaper_crossfade_duration,
                             getString(R.string.pref_crossfade_duration_default_value)));
@@ -217,7 +212,7 @@ public class LiveWallpaperService extends GLWallpaperService{
                     mQueuedWallpaper = null;
                     mCurrentWallaper = wpUri;
                     requestRender();
-                }else if(bitmap != null){
+                } else if (bitmap != null) {
                     bitmap.recycle();
                     System.gc();
                 }
@@ -225,7 +220,7 @@ public class LiveWallpaperService extends GLWallpaperService{
 
             @Override
             protected void onCancelled(Bitmap bitmap) {
-                if(bitmap != null){
+                if (bitmap != null) {
                     bitmap.recycle();
                     bitmap = null;
                 }

@@ -14,9 +14,6 @@ import com.hixos.smartwp.services.geofence.GeofenceFragment;
 import com.hixos.smartwp.services.slideshow.SlideshowFragment;
 import com.hixos.smartwp.utils.MiscUtils;
 
-/**
- * Created by Luca on 26/02/14.
- */
 public class ServicesActivity extends ActionBarActivity {
     public final static String EXTRA_SERVIVE = "com.hixos.smartwp.EXTRA_SERVICE";
     public final static String EXTRA_DISABLE_LWP_CHECK = "com.hixos.smartp.DISABLE_LWP_CHECK";
@@ -24,13 +21,14 @@ public class ServicesActivity extends ActionBarActivity {
     private static final String SLIDESHOW = "slideshow";
     private static final String GEOFENCE = "geofence";
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
                 Fragment f = getFragmentManager().findFragmentByTag(GEOFENCE);
-                if(f != null){
+                if (f != null) {
                     f.onActivityResult(requestCode, resultCode, data);
                 }
                 break;
@@ -43,7 +41,7 @@ public class ServicesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_services);
         getWindow().setBackgroundDrawable(null);
 
-        if(getResources().getBoolean(R.bool.has_translucent_statusbar)){
+        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
             View statusBackground = findViewById(R.id.statusbar_background);
             statusBackground.setVisibility(View.VISIBLE);
             statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
@@ -53,24 +51,24 @@ public class ServicesActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         String tag;
-        if(getIntent() != null && getIntent().hasExtra(EXTRA_SERVIVE)){
+        if (getIntent() != null && getIntent().hasExtra(EXTRA_SERVIVE)) {
             tag = getIntent().getExtras().getInt(EXTRA_SERVIVE, 1)
                     == ServiceUtils.SERVICE_GEOFENCE
                     ? GEOFENCE
                     : SLIDESHOW;
-        }else {
+        } else {
             tag = SLIDESHOW;
         }
 
         Fragment f = getFragmentManager().findFragmentByTag(tag);
-        if(f == null){
-            if(tag.equals(SLIDESHOW)){
+        if (f == null) {
+            if (tag.equals(SLIDESHOW)) {
                 f = new SlideshowFragment();
                 FragmentManager manager = getFragmentManager();
                 manager.beginTransaction()
                         .replace(R.id.content_frame, f, SLIDESHOW)
                         .commit();
-            }else if(tag.equals(GEOFENCE)){
+            } else if (tag.equals(GEOFENCE)) {
                 f = new GeofenceFragment();
                 FragmentManager manager = getFragmentManager();
                 manager.beginTransaction()
@@ -94,6 +92,6 @@ public class ServicesActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    
+
 
 }

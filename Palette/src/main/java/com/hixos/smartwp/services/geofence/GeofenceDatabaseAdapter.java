@@ -11,30 +11,14 @@ import com.hixos.smartwp.widget.AsyncImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Luca on 11/04/2014.
- */
 public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements GeofenceDatabase.DatabaseObserver {
     private final static int VIEW_TYPE_DEFAULT = 0;
     private final static int VIEW_TYPE_GEOFENCE = 1;
-
-    public interface OnEmptyStateClickListener {
-        public void onEmptyStateClick(View view);
-    }
-
-    public interface OnCardOverflowClickListener {
-        public void onCardOverflowClick(String uid, View view);
-    }
-
     private GeofenceDatabase mDatabase;
-
     private List<GeofenceData> mData;
-
     private OnEmptyStateClickListener mEmptyStateListener;
     private OnCardOverflowClickListener mCardOverflowListener;
-
     private Context mContext;
-
     public GeofenceDatabaseAdapter(Context context, GeofenceDatabase database, OnCardOverflowClickListener cardListener,
                                    OnEmptyStateClickListener emptyStateListener) {
         this.mDatabase = database;
@@ -45,22 +29,22 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
         mDatabase.setDatabaseObserver(this);
 
-        mData = new ArrayList<GeofenceData>();
+        mData = new ArrayList<>();
         reloadData();
     }
 
     @Override
     public int getCount() {
-        if(mData.size() > 0 || GeofenceDatabase.hasDefaultWallpaper()) {
+        if (mData.size() > 0 || GeofenceDatabase.hasDefaultWallpaper()) {
             return mData.size() + 1;
-        }else {
+        } else {
             return 0;
         }
     }
 
     @Override
     public GeofenceData getItem(int i) {
-        if(i < 1) return null;
+        if (i < 1) return null;
 
         return mData.get(i - 1);
     }
@@ -68,7 +52,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     @Override
     public long getItemId(int i) {
         i -= 1;
-        if(i >= 0 && i < mData.size())
+        if (i >= 0 && i < mData.size())
             return mData.get(i).getUid().hashCode();
         else
             return -1;
@@ -77,7 +61,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     @Override
     public String getItemUid(int i) {
         i -= 1;
-        if(i >= 0 && i < getCount())
+        if (i >= 0 && i < getCount())
             return mData.get(i).getUid();
         else
             return "";
@@ -85,8 +69,8 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
     @Override
     public int getItemPosition(String id) {
-        for(int i = 0; i < mData.size(); i++){
-            if(mData.get(i).getUid().equals(id))
+        for (int i = 0; i < mData.size(); i++) {
+            if (mData.get(i).getUid().equals(id))
                 return i + 1;
         }
         return -1;
@@ -109,18 +93,17 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
     @Override
     public void removeAt(int position) {
-        if(position < 1) return;
+        if (position < 1) return;
 
         mData.remove(position - 1);
         String uid = getItemUid(position);
         mDatabase.adapterDeleteGeofence(uid);
     }
 
-
     @Override
     public void remove(String id) {
-        for(GeofenceData data : mData){
-            if(data.getUid().equals(id)){
+        for (GeofenceData data : mData) {
+            if (data.getUid().equals(id)) {
                 mData.remove(data);
                 break;
             }
@@ -130,8 +113,8 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
     @Override
     public void onElementRemoved(String uid) {
-        for(GeofenceData data : mData){
-            if(data.getUid().equals(uid)){
+        for (GeofenceData data : mData) {
+            if (data.getUid().equals(uid)) {
                 mData.remove(data);
                 break;
             }
@@ -149,26 +132,14 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
         reloadData();
     }
 
-    public void reloadData(){
-        mData.clear();
-
-        mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
-            @Override
-            public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
-                mData = wallpapers;
-                notifyDataSetChanged();
-            }
-        });
-    }
-
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
-        switch (getItemViewType(i)){
+        switch (getItemViewType(i)) {
             case VIEW_TYPE_DEFAULT: {
                 View v = View.inflate(mContext, R.layout.grid_item_geofence_def, null);
 
-                if(GeofenceDatabase.hasDefaultWallpaper()){
-                    AsyncImageView thumb = (AsyncImageView)v.findViewById(R.id.image_thumbnail);
+                if (GeofenceDatabase.hasDefaultWallpaper()) {
+                    AsyncImageView thumb = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
                     thumb.setImageUID(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
 
                     final View overflow = v.findViewById(R.id.button_overflow);
@@ -179,7 +150,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
                                     GeofenceDatabase.DEFAULT_WALLPAPER_UID, overflow);
                         }
                     });
-                }else {
+                } else {
                     View emptyState = v.findViewById(R.id.emptyState);
                     emptyState.setVisibility(View.VISIBLE);
                     v.findViewById(R.id.frame_thumbnail).setVisibility(View.INVISIBLE);
@@ -201,22 +172,22 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
                 String uid = mData.get(i).getUid();
 
-                if(convertView != null){
+                if (convertView != null) {
                     v = convertView;
-                }else{
+                } else {
                     v = View.inflate(mContext, R.layout.grid_item_geofence, null);
                 }
 
-                ViewHolder holder = (ViewHolder)v.getTag();
+                ViewHolder holder = (ViewHolder) v.getTag();
 
-                if(holder == null){
-                    thumbnail = (AsyncImageView)v.findViewById(R.id.image_thumbnail);
-                    snapshot = (AsyncImageView)v.findViewById(R.id.image_snapshot);
+                if (holder == null) {
+                    thumbnail = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
+                    snapshot = (AsyncImageView) v.findViewById(R.id.image_snapshot);
                     holder = new ViewHolder();
                     holder.Snapshot = snapshot;
                     holder.Thumbnail = thumbnail;
                     v.setTag(holder);
-                }else{
+                } else {
                     thumbnail = holder.Thumbnail;
                     snapshot = holder.Snapshot;
                 }
@@ -225,6 +196,17 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
                 return v;
             }
         }
+    }
+
+    public void reloadData() {
+        mData.clear();
+        mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
+            @Override
+            public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
+                mData = wallpapers;
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -236,6 +218,14 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     @Override
     public int getViewTypeCount() {
         return 2;
+    }
+
+    public interface OnEmptyStateClickListener {
+        public void onEmptyStateClick(View view);
+    }
+
+    public interface OnCardOverflowClickListener {
+        public void onCardOverflowClick(String uid, View view);
     }
 
     private class ViewHolder {

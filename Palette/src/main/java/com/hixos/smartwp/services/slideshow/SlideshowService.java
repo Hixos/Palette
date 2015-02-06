@@ -14,9 +14,6 @@ import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.wallpaper.OnWallpaperChangedCallback;
 
-/**
- * Created by Luca on 20/03/14.
- */
 public class SlideshowService {
     private final static String LOGTAG = "SlideshowService";
 
@@ -35,67 +32,7 @@ public class SlideshowService {
 
     private boolean mStopped = false;
 
-    public static void startListener(OnWallpaperChangedCallback callback, Context context){
-        if(context == null || callback == null){
-            throw new IllegalArgumentException();
-        }
-        Logger.fileW(context, LOGTAG, "Starting listener...");
-        if(sIstance != null && !sIstance.isStopped()){
-            sIstance.stop(context);
-            Logger.fileW(context, LOGTAG, " +Stopped old");
-        }
-        sIstance = new SlideshowService(callback, context);
-
-        startAlarm(context);
-    }
-
-    public static void stopListener(Context context){
-        Logger.fileW(context, LOGTAG, "Stopping listener...");
-        if(sIstance != null) {
-            sIstance.stop(context);
-            Logger.fileW(context, LOGTAG, " +Stopped");
-        }
-        cancelAlarm(context);
-    }
-
-    private static void startAlarm(Context context){
-        Intent intent = new Intent(ACTION_SLIDESHOW_SERVICE);
-
-        PendingIntent pi = PendingIntent.getBroadcast(context, 123, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        AlarmManager manager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-
-        SlideshowDatabase database = new SlideshowDatabase(context);
-        long interval = database.getIntervalMs();
-        interval = Math.max(60000, interval);
-        manager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + interval,
-                interval, pi);
-    }
-
-    private static void cancelAlarm(Context context){
-        Intent intent = new Intent(ACTION_SLIDESHOW_SERVICE);
-
-        PendingIntent pi = PendingIntent.getBroadcast(context, 123, intent, 0);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pi);
-    }
-
-    private static void updateInterval(Context context){
-        startAlarm(context);
-    }
-
-    public static void broadcastIntervalChanged(Context context){
-        Intent intent = new Intent(ACTION_CHANGE_INTERVAL);
-        context.sendBroadcast(intent);
-    }
-
-    public static void broadcastReloadWallpaper(Context context) {
-        Intent intent = new Intent(ACTION_RELOAD_WALLPAPER);
-        context.sendBroadcast(intent);
-    }
-
-    private SlideshowService(OnWallpaperChangedCallback callback, Context context){
+    private SlideshowService(OnWallpaperChangedCallback callback, Context context) {
         mCallback = callback;
 
         mReceiver = new SlideshowServiceReceiver();
@@ -107,8 +44,76 @@ public class SlideshowService {
         context.registerReceiver(mReloadReceiver, new IntentFilter(ACTION_RELOAD_WALLPAPER));
     }
 
-    private void stop(Context context){
-        if(mStopped) return;
+    public static void startListener(OnWallpaperChangedCallback callback, Context context) {
+        if (context == null || callback == null) {
+            throw new IllegalArgumentException();
+        }
+        if (sIstance != null && !sIstance.isStopped()) {
+            sIstance.stop(context);
+        }
+        sIstance = new SlideshowService(callback, context);
+
+        startAlarm(context);
+    }
+
+    public static void stopListener(Context context) {
+        if (sIstance != null) {
+            sIstance.stop(context);
+        }
+        cancelAlarm(context);
+    }
+
+    private static void startAlarm(Context context) {
+        Intent intent = new Intent(ACTION_SLIDESHOW_SERVICE);
+
+        PendingIntent pi = PendingIntent.getBroadcast(context, 123, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        SlideshowDatabase database = new SlideshowDatabase(context);
+        long interval = database.getIntervalMs();
+        interval = Math.max(60000, interval);
+        manager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + interval,
+                interval, pi);
+    }
+
+    private static void cancelAlarm(Context context) {
+        Intent intent = new Intent(ACTION_SLIDESHOW_SERVICE);
+
+        PendingIntent pi = PendingIntent.getBroadcast(context, 123, intent, 0);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(pi);
+    }
+
+    private static void updateInterval(Context context) {
+        startAlarm(context);
+    }
+
+    public static void broadcastIntervalChanged(Context context) {
+        Intent intent = new Intent(ACTION_CHANGE_INTERVAL);
+        context.sendBroadcast(intent);
+    }
+
+    public static void broadcastReloadWallpaper(Context context) {
+        Intent intent = new Intent(ACTION_RELOAD_WALLPAPER);
+        context.sendBroadcast(intent);
+    }
+
+    public static Uri getBestWallpaperUri(Context context) {
+        SlideshowDatabase database = new SlideshowDatabase(context);
+        SlideshowData current = database.getCurrentWallpaper();
+        if (current != null) {
+            Uri uri = ImageManager.getInstance().getPictureUri(current.getUid());
+            if (FileUtils.fileExistance(uri)) return uri;
+        }
+        Logger.w(LOGTAG + ".getBest", "Wallpaper not found, returning default");
+        return Uri.parse("android.resource://" + context.getPackageName() + "/"
+                + R.raw.wallpaper);
+    }
+
+    private void stop(Context context) {
+        if (mStopped) return;
 
         mStopped = true;
 
@@ -117,53 +122,41 @@ public class SlideshowService {
         context.unregisterReceiver(mReloadReceiver);
     }
 
-    private boolean isStopped(){
+    private boolean isStopped() {
         return mStopped;
     }
 
-    private boolean setWallpaper(Uri wallpaperUri){
-        if(wallpaperUri != null){
+    private boolean setWallpaper(Uri wallpaperUri) {
+        if (wallpaperUri != null) {
             mCallback.onWallpaperChanged(wallpaperUri);
             return true;
         }
         return false;
     }
 
-    public static Uri getBestWallpaperUri(Context context){
-        SlideshowDatabase database = new SlideshowDatabase(context);
-        SlideshowData current = database.getCurrentWallpaper();
-        if(current != null){
-            Uri uri = ImageManager.getInstance().getPictureUri(current.getUid());
-            if(FileUtils.fileExistance(uri)) return uri;
+    private static class ChangeIntervalReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateInterval(context);
         }
-        Logger.w(LOGTAG + ".getBest", "Wallpaper not found, returning default");
-        return Uri.parse("android.resource://" + context.getPackageName() + "/"
-                + R.raw.wallpaper);
     }
 
-    private class SlideshowServiceReceiver extends BroadcastReceiver{
+    private class SlideshowServiceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             SlideshowDatabase database = new SlideshowDatabase(context);
             SlideshowData next = database.nextWallpaper();
             boolean success = false;
-            if(next != null){
+            if (next != null) {
                 success = setWallpaper(ImageManager.getInstance()
                         .getPictureUri(next.getUid()));
             }
-            if(!success){
+            if (!success) {
                 Uri wallpaper = Uri.parse("android.resource://" + context.getPackageName() + "/"
                         + R.raw.wallpaper);
                 Logger.w(LOGTAG + ".receive", "Wallpaper not found, using default");
                 setWallpaper(wallpaper);
             }
-        }
-    }
-
-    private static class ChangeIntervalReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateInterval(context);
         }
     }
 
