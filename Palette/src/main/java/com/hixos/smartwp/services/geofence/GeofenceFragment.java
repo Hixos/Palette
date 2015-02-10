@@ -82,7 +82,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        getActivity().setTitle(R.string.name_geofence);
         mDatabase = new GeofenceDatabase(getActivity());
         mDatabase.clearDeletedGeofences();
         mDatabase.setOnElementRemovedListener(this);
@@ -206,6 +205,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().setTitle(R.string.name_geofence);
         showErrorFrames();
         mGoogleClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
                 .addApi(LocationServices.API)
