@@ -55,7 +55,6 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        getActivity().setTitle(R.string.name_slideshow);
         mDatabase = new SlideshowDatabase(getActivity());
         mDatabase.setOnElementRemovedListener(this);
         mDatabase.clearDeletedWallpapers();
@@ -163,6 +162,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().setTitle(R.string.name_slideshow);
         if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
             checkLiveWallpaper();
         }

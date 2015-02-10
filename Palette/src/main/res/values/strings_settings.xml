@@ -4,7 +4,7 @@
     <string name="pref_group_info">Info</string>
     <string name="pref_title_contact">Contact me!</string>
     <string name="pref_desc_contact" translatable="false">lucaerbetta105@gmail.com</string>
-    <string name="pref_desc_version" translatable="false">Copyright &#169; 2014&#8211;2015 Luca Erbetta</string>
+    <string name="pref_desc_version" translatable="false">Copyright &#169; 2015 Luca Erbetta</string>
 
     <string name="pref_group_geowalls">Location</string>
     <string name="pref_title_show_notif">Show location error notifications</string>
