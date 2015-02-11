@@ -132,10 +132,10 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
         int paddingTop = MiscUtils.UI.getActionBarHeight(getActivity());
         int paddingBottom = 0;
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
+        if (MiscUtils.UI.addStatusBarPadding(getActivity())) {
             paddingTop += MiscUtils.UI.getStatusBarHeight(getActivity());
         }
-        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
+        if (MiscUtils.UI.hasTranslucentNavigation(getActivity())) {
             paddingBottom += MiscUtils.UI.getNavBarHeight(getActivity());
         }
 

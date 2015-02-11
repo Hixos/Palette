@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -32,7 +33,7 @@ public class MiscUtils {
 
         /**
          * Returns the size of the display in pixels
-         *
+         * The returned size is adjusted based on display rotation
          * @param context Current context
          * @return Point
          */
@@ -64,6 +65,33 @@ public class MiscUtils {
             return result;
         }
 
+        public static boolean addStatusBarPadding(Context context) {
+            return hasTranslucentNavigation(context) || hasTranslucentStatus(context);
+        }
+
+        public static boolean hasTranslucentStatus(Context activity) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                TypedArray a = activity.getTheme().obtainStyledAttributes(
+                        R.style.Theme_DarkPalette_Material_Translucent,
+                        new int[]{android.R.attr.windowTranslucentStatus});
+                boolean out = a.getBoolean(0, false);
+                a.recycle();
+                return out;
+            } else
+                return false;
+        }
+
+        public static boolean hasTranslucentNavigation(Context activity) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                TypedArray a = activity.getTheme().obtainStyledAttributes(
+                        R.style.Theme_DarkPalette_Material_Translucent,
+                        new int[]{android.R.attr.windowTranslucentNavigation});
+                boolean out = a.getBoolean(0, false);
+                a.recycle();
+                return out;
+            } else
+                return false;
+        }
         /**
          * Returns the height of the navigation bar
          *

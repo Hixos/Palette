@@ -3,6 +3,7 @@ package com.hixos.smartwp.services;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
@@ -41,12 +42,11 @@ public class ServicesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_services);
         getWindow().setBackgroundDrawable(null);
 
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
+        if (MiscUtils.UI.hasTranslucentStatus(this) && Build.VERSION.SDK_INT < 21) {
             View statusBackground = findViewById(R.id.statusbar_background);
             statusBackground.setVisibility(View.VISIBLE);
             statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
         }
-
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
