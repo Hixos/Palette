@@ -11,7 +11,6 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.drew.lang.annotations.NotNull;
 import com.hixos.smartwp.R;
 
 import java.util.ArrayList;
@@ -41,12 +40,12 @@ public class IntervalPicker extends View {
     private float mCursorRadius;
     //COORDS
     private float mCursorX, mCursorY;
-    private float mNeedleX, mNeedleY;
+    private float mPointerX, mPointerY;
     private boolean mPressed = false;
     private Drawable mCursor;
     //Paints
     private Paint mBgPaint;
-    private Paint mNeedlePaint;
+    private Paint mPointerPaint;
     private Paint mClockTextPaint;
     private List<Point> textPositions;
 
@@ -82,7 +81,7 @@ public class IntervalPicker extends View {
             mListener.onIntervalSelected(mCurrentInterval);
         updateStep();
 
-        updateNeedlePosition();
+        updatePointerPosition();
         updateTextPositions();
 
         invalidate();
@@ -94,7 +93,7 @@ public class IntervalPicker extends View {
 
     public void setInterval(int interval) {
         this.mCurrentInterval = getCorrectInterval(interval);
-        updateNeedlePosition();
+        updatePointerPosition();
 
         if (mListener != null)
             mListener.onIntervalSelected(mCurrentInterval);
@@ -141,10 +140,10 @@ public class IntervalPicker extends View {
         mBgPaint.setColor(mContext.getResources().getColor(R.color.picker_background));
         mBgPaint.setAntiAlias(true);
 
-        mNeedlePaint = new Paint();
-        mNeedlePaint.setColor(mContext.getResources().getColor(R.color.picker_cursor_accent));
-        mNeedlePaint.setAntiAlias(true);
-        mNeedlePaint.setStrokeWidth(4);
+        mPointerPaint = new Paint();
+        mPointerPaint.setColor(mContext.getResources().getColor(R.color.picker_cursor_accent));
+        mPointerPaint.setAntiAlias(true);
+        mPointerPaint.setStrokeWidth(4);
 
         mClockTextPaint = new Paint();
         if (!isInEditMode()) {
@@ -177,7 +176,7 @@ public class IntervalPicker extends View {
 
         initDimensions();
 
-        updateNeedlePosition();
+        updatePointerPosition();
         updateTextPositions();
         //MUST CALL THIS
         setMeasuredDimension(mWidth, mHeight);
@@ -194,13 +193,13 @@ public class IntervalPicker extends View {
         mTouchableInnerRadius = mTouchableOuterRadius - mTouchableAreaWidth;
     }
 
-    private void updateNeedlePosition() {
+    private void updatePointerPosition() {
         double radians = (2 * Math.PI * mCurrentInterval) / mRange - Math.PI / 2;
         mCursorX = getX(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterX) - mCursorRadius;
         mCursorY = getY(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterY) - mCursorRadius;
 
-        mNeedleX = getX(radians, mTouchableInnerRadius, mCenterX);
-        mNeedleY = getY(radians, mTouchableInnerRadius, mCenterY);
+        mPointerX = getX(radians, mTouchableInnerRadius, mCenterX);
+        mPointerY = getY(radians, mTouchableInnerRadius, mCenterY);
     }
 
     private void updateTextPositions() {
@@ -281,8 +280,8 @@ public class IntervalPicker extends View {
         mCursorX = getX(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterX) - mCursorRadius;
         mCursorY = getY(radians, mTouchableInnerRadius + mTouchableAreaWidth / 2, mCenterY) - mCursorRadius;
 
-        mNeedleX = getX(radians, mTouchableInnerRadius, mCenterX);
-        mNeedleY = getY(radians, mTouchableInnerRadius, mCenterY);
+        mPointerX = getX(radians, mTouchableInnerRadius, mCenterX);
+        mPointerY = getY(radians, mTouchableInnerRadius, mCenterY);
 
         setIntervalByRadians(radians);
         invalidate();
@@ -303,7 +302,7 @@ public class IntervalPicker extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawCircle(mCenterX, mCenterY, mOuterRadius, mBgPaint);
-        canvas.drawLine(mCenterX, mCenterY, mNeedleX, mNeedleY, mNeedlePaint);
+        canvas.drawLine(mCenterX, mCenterY, mPointerX, mPointerY, mPointerPaint);
         drawNumbers(canvas);
         drawCursor(canvas);
 
