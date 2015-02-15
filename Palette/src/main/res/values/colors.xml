@@ -44,6 +44,7 @@
     <!--INTERVAL PICKER-->
     <color name="picker_outer_stroke">#FFFF</color>
     <color name="picker_background">#F222</color>
+    <color name="picker_background_light">#F333</color>
     <color name="picker_inner_circle">#FFFF</color>
 
     <color name="picker_cursor_background">#5FFF</color>

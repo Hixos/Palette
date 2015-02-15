@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.hixos.smartwp.services.ServiceUtils;
-import com.hixos.smartwp.services.ServicesActivity;
+import com.hixos.smartwp.triggers.ServiceUtils;
+import com.hixos.smartwp.triggers.ServicesActivity;
 
 public class WallpaperSettingsActivity extends Activity {
 

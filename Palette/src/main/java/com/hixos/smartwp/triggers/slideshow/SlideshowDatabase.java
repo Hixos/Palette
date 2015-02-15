@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.slideshow;
+package com.hixos.smartwp.triggers.slideshow;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 
 import com.hixos.smartwp.DatabaseManager;
-import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.utils.FileUtils;

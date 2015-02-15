@@ -13,8 +13,8 @@ import android.util.TypedValue;
 
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 import com.hixos.smartwp.utils.ExternalStorageAccessException;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;

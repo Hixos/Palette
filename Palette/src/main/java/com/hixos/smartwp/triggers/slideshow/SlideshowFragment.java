@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.slideshow;
+package com.hixos.smartwp.triggers.slideshow;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -29,7 +29,7 @@ import com.hixos.smartwp.SetWallpaperActivity;
 import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
-import com.hixos.smartwp.services.ServicesActivity;
+import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;

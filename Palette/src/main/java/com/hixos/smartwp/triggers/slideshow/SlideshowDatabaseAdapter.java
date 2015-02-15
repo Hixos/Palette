@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.slideshow;
+package com.hixos.smartwp.triggers.slideshow;
 
 import android.content.Context;
 import android.view.View;

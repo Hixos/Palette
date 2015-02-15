@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services;
+package com.hixos.smartwp.triggers;
 
 import android.content.Context;
 import android.content.Intent;

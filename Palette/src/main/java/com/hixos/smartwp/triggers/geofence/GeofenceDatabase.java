@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.geofence;
+package com.hixos.smartwp.triggers.geofence;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -585,7 +585,7 @@ public class GeofenceDatabase extends DatabaseManager {
         ArrayList<GeofenceData> data = getActiveGeowallpapers();
         Logger.fileW(getContext(), LOGTAG, "Active geofences:");
         int i = 1;
-        for(GeofenceData d : data) {
+        for (GeofenceData d : data) {
             Logger.fileW(getContext(), LOGTAG, "\t\t%d: %s", i, d.getUid());
         }
     }

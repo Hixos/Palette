@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.geofence;
+package com.hixos.smartwp.triggers.geofence;
 
 import android.content.Context;
 import android.view.View;
@@ -19,6 +19,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     private OnEmptyStateClickListener mEmptyStateListener;
     private OnCardOverflowClickListener mCardOverflowListener;
     private Context mContext;
+
     public GeofenceDatabaseAdapter(Context context, GeofenceDatabase database, OnCardOverflowClickListener cardListener,
                                    OnEmptyStateClickListener emptyStateListener) {
         this.mDatabase = database;

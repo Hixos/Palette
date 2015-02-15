@@ -16,9 +16,9 @@ import android.view.SurfaceHolder;
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.BitmapIO;
-import com.hixos.smartwp.services.ServiceUtils;
-import com.hixos.smartwp.services.geofence.GeofenceService;
-import com.hixos.smartwp.services.slideshow.SlideshowService;
+import com.hixos.smartwp.triggers.ServiceUtils;
+import com.hixos.smartwp.triggers.geofence.GeofenceService;
+import com.hixos.smartwp.triggers.slideshow.SlideshowService;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 

@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.geofence;
+package com.hixos.smartwp.triggers.geofence;
 
 import android.app.Activity;
 import android.app.Dialog;

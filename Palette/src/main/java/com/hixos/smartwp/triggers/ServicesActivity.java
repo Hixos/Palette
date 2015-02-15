@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services;
+package com.hixos.smartwp.triggers;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -11,8 +11,9 @@ import android.view.View;
 
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SettingsActivity;
-import com.hixos.smartwp.services.geofence.GeofenceFragment;
-import com.hixos.smartwp.services.slideshow.SlideshowFragment;
+import com.hixos.smartwp.triggers.geofence.GeofenceFragment;
+import com.hixos.smartwp.triggers.slideshow.SlideshowFragment;
+import com.hixos.smartwp.triggers.timeofday.TodFragment;
 import com.hixos.smartwp.utils.MiscUtils;
 
 public class ServicesActivity extends ActionBarActivity {
@@ -21,6 +22,8 @@ public class ServicesActivity extends ActionBarActivity {
 
     private static final String SLIDESHOW = "slideshow";
     private static final String GEOFENCE = "geofence";
+    private static final String TIMEOFDAY = "timeofday";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     @Override
@@ -52,10 +55,18 @@ public class ServicesActivity extends ActionBarActivity {
 
         String tag;
         if (getIntent() != null && getIntent().hasExtra(EXTRA_SERVIVE)) {
-            tag = getIntent().getExtras().getInt(EXTRA_SERVIVE, 1)
-                    == ServiceUtils.SERVICE_GEOFENCE
-                    ? GEOFENCE
-                    : SLIDESHOW;
+            switch (getIntent().getExtras().getInt(EXTRA_SERVIVE, 1)) {
+                default:
+                case ServiceUtils.SERVICE_SLIDESHOW:
+                    tag = SLIDESHOW;
+                    break;
+                case ServiceUtils.SERVICE_TIMEOFDAY:
+                    tag = TIMEOFDAY;
+                    break;
+                case ServiceUtils.SERVICE_GEOFENCE:
+                    tag = GEOFENCE;
+                    break;
+            }
         } else {
             tag = SLIDESHOW;
         }
@@ -64,17 +75,15 @@ public class ServicesActivity extends ActionBarActivity {
         if (f == null) {
             if (tag.equals(SLIDESHOW)) {
                 f = new SlideshowFragment();
-                FragmentManager manager = getFragmentManager();
-                manager.beginTransaction()
-                        .replace(R.id.content_frame, f, SLIDESHOW)
-                        .commit();
             } else if (tag.equals(GEOFENCE)) {
                 f = new GeofenceFragment();
-                FragmentManager manager = getFragmentManager();
-                manager.beginTransaction()
-                        .replace(R.id.content_frame, f, GEOFENCE)
-                        .commit();
+            } else if (tag.equals(TIMEOFDAY)) {
+                f = new TodFragment();
             }
+            FragmentManager manager = getFragmentManager();
+            manager.beginTransaction()
+                    .replace(R.id.content_frame, f, tag)
+                    .commit();
         }
     }
 

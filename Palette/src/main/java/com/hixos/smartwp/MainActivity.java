@@ -22,10 +22,10 @@ import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.hixos.smartwp.services.ServiceUtils;
-import com.hixos.smartwp.services.ServicesActivity;
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.ServiceUtils;
+import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;
 
@@ -168,9 +168,13 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(intent);
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                mSlideshowBubble.deactivate();
                 intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
                         ServiceUtils.SERVICE_GEOFENCE);
+                startActivity(intent);
+                break;
+            case ServiceUtils.SERVICE_TIMEOFDAY:
+                intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
+                        ServiceUtils.SERVICE_TIMEOFDAY);
                 startActivity(intent);
                 break;
         }

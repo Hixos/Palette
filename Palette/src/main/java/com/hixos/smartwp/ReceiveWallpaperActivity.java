@@ -14,11 +14,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
-import com.hixos.smartwp.services.ServiceUtils;
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.geofence.GeofencePickerActivity;
-import com.hixos.smartwp.services.geofence.GeofenceService;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.ServiceUtils;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofencePickerActivity;
+import com.hixos.smartwp.triggers.geofence.GeofenceService;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.ProgressDialogFragment;
 

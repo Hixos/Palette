@@ -1,4 +1,4 @@
-package com.hixos.smartwp.services.geofence;
+package com.hixos.smartwp.triggers.geofence;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -40,7 +40,7 @@ import com.hixos.smartwp.SetWallpaperActivity;
 import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
-import com.hixos.smartwp.services.ServicesActivity;
+import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;

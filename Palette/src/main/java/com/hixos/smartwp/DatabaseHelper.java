@@ -4,8 +4,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 
 /**
  * Created by Luca on 22/10/13.
