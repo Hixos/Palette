@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.hixos.smartwp.R;
+import com.hixos.smartwp.widget.TodPickerView;
 
 /**
  * Created by Luca on 11/02/2015.
@@ -26,5 +27,10 @@ public class TodFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_timeofday, container, false);
         return view;
+    }
+
+    public void createWallpaper(String uid, TodPickerView.Hour startHour,
+                                TodPickerView.Hour endHour, int color) {
+
     }
 }
