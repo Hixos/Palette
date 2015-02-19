@@ -6,7 +6,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 21
         versionCode 30
-        versionName '1.0.1'
+        versionName '1.0.0'
     }
 
     lintOptions {
