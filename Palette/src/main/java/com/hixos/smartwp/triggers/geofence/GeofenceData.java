@@ -39,11 +39,7 @@ public class GeofenceData implements Parcelable {
     private float mZoomLevel;
     private String mName;
 
-    /**
-     * Required for simple xml, DO NOT use that
-     */
-    public GeofenceData() {
-        mDeleted = false;
+    private GeofenceData() {
     }
 
     public GeofenceData(Parcel in) {
@@ -83,10 +79,6 @@ public class GeofenceData implements Parcelable {
 
     public String getUid() {
         return mUid;
-    }
-
-    public void setUid(String mUid) {
-        this.mUid = mUid;
     }
 
     public double getLatitude() {

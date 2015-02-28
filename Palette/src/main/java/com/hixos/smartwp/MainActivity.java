@@ -26,6 +26,8 @@ import com.hixos.smartwp.triggers.ServiceUtils;
 import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
 import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.timeofday.TimeOfDayWallpaper;
+import com.hixos.smartwp.triggers.timeofday.TodDatabase;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;
 
@@ -150,7 +152,7 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     mSlideshowBubble.deactivate();
                     mLocationBubble.deactivate();
-                    //ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_TIMEOFDAY);
+                    ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_TIMEOFDAY);
                 }
                 break;
         }
@@ -194,9 +196,10 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
             case ServiceUtils.SERVICE_TIMEOFDAY:
-                /*if (!GeofenceDatabase.hasDefaultWallpaper()) {
-                    onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
-                }*/
+                TodDatabase todDatabase = new TodDatabase(this);
+                if(todDatabase.getWallpaperCount() == 0){
+                    onSettingsClick(ServiceUtils.SERVICE_TIMEOFDAY);
+                }
                 break;
         }
     }

@@ -59,10 +59,10 @@ import java.util.List;
 //import com.google.android.gms.location.LocationClient;
 
 public class GeofencePickerActivity extends ActionBarActivity implements View.OnClickListener {
-    public final static String EXTRA_GEOFENCES = "com.hixos.smartwp.EXTRA_GEOFENCES";
-    public final static String EXTRA_UID = "com.hixos.smartwp.EXTRA_UID";
-    public final static String EXTRA_TARGET_GEOFENCE = "com.hixos.smartwp.EXTRA_TARGET_GEOFENCE";
-    public final static String EXTRA_COLOR = "com.hixos.smartwp.EXTRA_COLOR";
+    public final static String EXTRA_GEOFENCES = "geofences";
+    public final static String EXTRA_UID = "uid";
+    public final static String EXTRA_TARGET_GEOFENCE = "target_geofence";
+    public final static String EXTRA_COLOR = "color";
     public final static String RESULT_LATITUDE = "latitude";
     public final static String RESULT_LONGITUDE = "longitude";
     public final static String RESULT_RADIUS = "radius";
@@ -70,6 +70,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
     public final static String RESULT_DISTANCE = "distance";
     public final static String RESULT_ZOOM = "zoom";
     private static final String LOGTAG = "GeofencePicker";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private SearchBox mSearchBox;
     private GoogleMap mMap;
@@ -111,11 +112,12 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geofence_picker);
 
-        mOtherGeofences = new ArrayList<>();
         if (!checkPlayServices()) {
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
+
+        mOtherGeofences = new ArrayList<>();
         mColor = getIntent().getIntExtra(EXTRA_COLOR, getResources().getColor(R.color.geofence_default_color));
 
         createActionbar();

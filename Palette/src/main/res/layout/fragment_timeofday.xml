@@ -1,15 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical"
-    android:weightSum="1">
 
-    <view
-        android:id="@+id/view"
-        class="com.hixos.smartwp.widget.TodPickerView"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <view class="com.hixos.smartwp.widget.AnimatedGridView"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        custom:draggable="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/gridView"
+        android:paddingBottom="@dimen/grid_vertical_padding"
+        android:paddingTop="@dimen/grid_vertical_padding"
+        android:paddingLeft="@dimen/grid_horizontal_padding"
+        android:paddingRight="@dimen/grid_horizontal_padding"
+        android:layout_gravity="center"
+        android:numColumns="1"
+        android:clipToPadding="false"
+        android:horizontalSpacing="@dimen/item_horizontal_spacing"
+        android:verticalSpacing="@dimen/item_vertical_spacing"
+        android:listSelector="@android:color/transparent"
+        />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/emptyState"
+        android:visibility="gone">
+
+        <view
+            class="com.hixos.smartwp.widget.FontTextView"
+            style="@style/EmptyStateTextLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="@string/empty_state_text_slideshow"
+            android:id="@+id/emptyStateText"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
+
+        <view
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            class="com.hixos.smartwp.widget.ArrowView"
+            android:id="@+id/emptyStateArrow"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_above="@+id/emptyStateText" />
+    </RelativeLayout>
+
+    <LinearLayout android:id="@+id/undobar" style="@style/UndoBar">
+        <TextView android:id="@+id/undobar_message" style="@style/UndoBarMessage" />
+        <Button android:id="@+id/undobar_button" style="@style/UndoBarButton" />
+    </LinearLayout>
+    <!--<view
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
+        class="com.hixos.smartwp.widget.FloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
-</LinearLayout>
+        android:id="@+id/fab"
+        android:layout_gravity="right|bottom"
+        android:background="@drawable/fab_background"
+        fab:selector="@drawable/fab_selector"
+        fab:image="@drawable/fab_icon"/>-->
+</FrameLayout>

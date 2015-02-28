@@ -59,8 +59,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_END_MINUTE + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_END_PERIOD + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_COLOR + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
         sql += ");";
 
         sqLiteDatabase.execSQL(sql);
@@ -77,8 +78,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
             sql += TodDatabase.COLUMN_DATA_END_MINUTE + " INTEGER, ";
             sql += TodDatabase.COLUMN_DATA_END_PERIOD + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_COLOR + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER, ";
+            sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
+            sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
+            sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
             sql += ");";
 
             sqLiteDatabase.execSQL(sql);

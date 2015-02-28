@@ -151,14 +151,14 @@ public class SlideshowDatabase extends DatabaseManager {
 
         if (!data.isAfterLast()) {
             out = SlideshowData.fromCursor(data);
+            data.close();
+            closeDatabase();
+            return out;
         } else {
             data.close();
+            closeDatabase();
             return null;
         }
-
-        data.close();
-        closeDatabase();
-        return out;
     }
 
     /**

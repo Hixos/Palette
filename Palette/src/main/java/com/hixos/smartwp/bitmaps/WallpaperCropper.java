@@ -1,11 +1,13 @@
 package com.hixos.smartwp.bitmaps;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v7.graphics.Palette;
 
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.wallpaper.WallpaperUtils;
@@ -20,11 +22,11 @@ public class WallpaperCropper {
      * @param outUri   cropped wallpape uri
      * @param callback called when the cropping has finished.
      */
+
     public static void autoCropWallpaper(final Context context, final Uri inUri, final Uri outUri,
-                                         final BitmapIO.OnImageCroppedCallback callback) {
+                                         final BitmapIO.OnImageCroppedCallback callback){
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             Rect size;
-
             @Override
             protected Boolean doInBackground(Void... voids) {
                 size = BitmapIO.getImageSize(context.getApplicationContext(), inUri);

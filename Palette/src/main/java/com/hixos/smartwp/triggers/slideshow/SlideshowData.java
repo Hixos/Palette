@@ -36,10 +36,6 @@ public class SlideshowData implements Parcelable {
         return mUid;
     }
 
-    public void setUid(String uid) {
-        this.mUid = uid;
-    }
-
     @Override
     public int describeContents() {
         return 0;

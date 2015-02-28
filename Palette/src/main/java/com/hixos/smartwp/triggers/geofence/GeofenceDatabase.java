@@ -237,6 +237,7 @@ public class GeofenceDatabase extends DatabaseManager {
         }
         c.close();
         closeDatabase();
+
     }
 
     public void clearDeletedGeofencesAsync() {
@@ -271,7 +272,7 @@ public class GeofenceDatabase extends DatabaseManager {
      * @param uid
      * @return The geowallpaper, or null if the geowallpaper doesn't exist
      */
-    public GeofenceData getGeofenceData(String uid) {
+    public GeofenceData getWallpaper(String uid) {
         SQLiteDatabase database = openDatabase();
         Cursor c = database.query(TABLE_DATA, GeofenceData.DATA_COLUMNS,
                 COLUMN_DATA_ID + " = ?", new String[]{uid},
@@ -282,9 +283,11 @@ public class GeofenceDatabase extends DatabaseManager {
         if (!c.isAfterLast()) {
             GeofenceData d = GeofenceData.fromCursor(c);
             c.close();
+            closeDatabase();
             return d;
         } else {
             c.close();
+            closeDatabase();
             return null;
         }
     }

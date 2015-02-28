@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false">
+    <FrameLayout
+        android:id="@+id/frameTime"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <view
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_gravity="center"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="4dp"
+                custom:textFont="RobotoCondensed-Regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_small"
+                tools:text="From"
+                android:text="From"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:textColor="@color/accent_green"
+                android:textAllCaps="true" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+                <view
+                    xmlns:custom="http://schemas.android.com/apk/res-auto"
+                    class="com.hixos.smartwp.widget.FontTextView"
+                    custom:textFont="Roboto-Light"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_large"
+                    android:id="@+id/textview_starttime"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="2dp"
+                    android:layout_marginBottom="4dp"
+                    tools:text="9:15"/>
+                <view
+                    xmlns:custom="http://schemas.android.com/apk/res-auto"
+                    class="com.hixos.smartwp.widget.FontTextView"
+                    custom:textFont="RobotoCondensed-Light"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_medium"
+                    android:id="@+id/textview_starttimeperiod"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAllCaps="true"
+                    tools:text="am"/>
+            </LinearLayout>
+
+            <view
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                class="com.hixos.smartwp.widget.FontTextView"
+                android:layout_gravity="center"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="4dp"
+                custom:textFont="RobotoCondensed-Regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_small"
+                tools:text="To"
+                android:text="To"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:textColor="@color/accent_red"
+                android:textAllCaps="true" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+                <view
+                    xmlns:custom="http://schemas.android.com/apk/res-auto"
+                    class="com.hixos.smartwp.widget.FontTextView"
+                    custom:textFont="Roboto-Light"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_large"
+                    android:id="@+id/textview_endtime"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="2dp"
+                    android:layout_marginBottom="4dp"
+                    tools:text="4:20"/>
+                <view
+                    xmlns:custom="http://schemas.android.com/apk/res-auto"
+                    class="com.hixos.smartwp.widget.FontTextView"
+                    custom:textFont="RobotoCondensed-Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_medium"
+                    android:id="@+id/textview_endtimeperiod"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAllCaps="true"
+                    tools:text="pm"/>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+
+    <view
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        custom:ratio="@dimen/item_ratio_tod"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        class="com.hixos.smartwp.widget.AsyncImageView"
+        android:id="@+id/image_thumbnail"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+        android:layout_weight="1.5"/>
+</LinearLayout>

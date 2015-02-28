@@ -204,7 +204,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
         mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
             @Override
             public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
-                mData = wallpapers;
+                mData.addAll(wallpapers);
                 notifyDataSetChanged();
             }
         });

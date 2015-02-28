@@ -725,7 +725,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
             Intent i = new Intent(getActivity(), GeofencePickerActivity.class);
             i.putExtra(GeofencePickerActivity.EXTRA_UID, uid);
-            i.putExtra(GeofencePickerActivity.EXTRA_TARGET_GEOFENCE, mDatabase.getGeofenceData(uid));
+            i.putExtra(GeofencePickerActivity.EXTRA_TARGET_GEOFENCE, mDatabase.getWallpaper(uid));
             i.putParcelableArrayListExtra(GeofencePickerActivity.EXTRA_GEOFENCES,
                     mDatabase.getGeofencesByDistance());
             startActivityForResult(i, REQUEST_CHANGE_GEOFENCE);
@@ -743,7 +743,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             String uid = data.getStringExtra(GeofencePickerActivity.RESULT_UID);
             float distance = data.getFloatExtra(GeofencePickerActivity.RESULT_DISTANCE, -1);
 
-            GeofenceData d = mDatabase.getGeofenceData(uid);
+            GeofenceData d = mDatabase.getWallpaper(uid);
             if (d != null) {
                 d.setLongitude(longitude);
                 d.setLatitude(latitude);

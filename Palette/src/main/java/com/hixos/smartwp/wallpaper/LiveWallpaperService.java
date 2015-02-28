@@ -19,8 +19,11 @@ import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.triggers.ServiceUtils;
 import com.hixos.smartwp.triggers.geofence.GeofenceService;
 import com.hixos.smartwp.triggers.slideshow.SlideshowService;
+import com.hixos.smartwp.triggers.timeofday.TimeOfDayService;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
+
+import java.sql.Time;
 
 import glwallpaperservice.GLWallpaperService;
 
@@ -86,10 +89,17 @@ public class LiveWallpaperService extends GLWallpaperService {
                     case ServiceUtils.SERVICE_SLIDESHOW:
                         SlideshowService.startListener(this, LiveWallpaperService.this);
                         GeofenceService.stopListener(LiveWallpaperService.this);
+                        TimeOfDayService.stopListener(LiveWallpaperService.this);
                         break;
                     case ServiceUtils.SERVICE_GEOFENCE:
                         GeofenceService.startListener(this, LiveWallpaperService.this);
                         SlideshowService.stopListener(LiveWallpaperService.this);
+                        TimeOfDayService.stopListener(LiveWallpaperService.this);
+                        break;
+                    case ServiceUtils.SERVICE_TIMEOFDAY:
+                        GeofenceService.stopListener(LiveWallpaperService.this);
+                        SlideshowService.stopListener(LiveWallpaperService.this);
+                        TimeOfDayService.startListener(this, LiveWallpaperService.this);
                         break;
                 }
             }
@@ -100,6 +110,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     break;
                 case ServiceUtils.SERVICE_GEOFENCE:
                     setWallpaper(GeofenceService.getBestWallpaperUri(LiveWallpaperService.this));
+                    break;
+                case ServiceUtils.SERVICE_TIMEOFDAY:
+                    setWallpaper(TimeOfDayService.getBestWallpaperUri(LiveWallpaperService.this));
                     break;
             }
         }

@@ -95,5 +95,6 @@
     <string name="title_activity_provider_fix" translatable="false">Provider Fix</string>
     <string name="title_activity_wallpaper_settings">Live Wallpaper Settings</string>
     <string name="title_activity_receive_wallpaper">Add wallpaper</string>
+    <string name="title_activity_time_picker">TimePickerActivity</string>
 
 </resources>

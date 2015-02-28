@@ -454,7 +454,7 @@ public class GeofenceService {
                     GeofenceDatabase database = new GeofenceDatabase(mContext);
 
                     for (String uid : geofenceUids) {
-                        GeofenceData data = database.getGeofenceData(uid);
+                        GeofenceData data = database.getWallpaper(uid);
                         if (data != null) {
                             geofences.add(data.toGeofence());
                         }

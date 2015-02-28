@@ -2,7 +2,6 @@ package com.hixos.smartwp.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -17,17 +16,13 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
+import com.hixos.smartwp.utils.Hour;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TodPickerView extends View {
-
-    public static final int AM = 0x01;
-    public static final int PM = 0x10;
-
     private static final int NONE = 0;
     //Cursors
     private int mActiveCursor = NONE;
@@ -57,6 +52,8 @@ public class TodPickerView extends View {
     private Drawable mHourCursor;
 
     private Hour mHour;
+    private Hour mLastHour;
+    private int mQuadrant = Hour.AM;
 
     //Paints
     private Paint mMinuteBgPaint;
@@ -82,9 +79,11 @@ public class TodPickerView extends View {
     private List<ClockArea> mUsedAreas;
     private List<ClockArea> mUsedAreasMask;
 
+    private int mZeroPeriod = Hour.AM;
+
     //Active area
     private ClockArea mActiveArea;
-    private Hour mMaxHour = null;
+    private Hour mMaxHour = new Hour(11,59,Hour.PM);
 
     public TodPickerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -113,12 +112,13 @@ public class TodPickerView extends View {
         return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
-    public Hour getHour() {
+    public Hour getTime() {
         return mHour;
     }
 
     private void initView() {
-        mHour = new Hour();
+        mHour = new Hour(0,0,Hour.AM);
+        mLastHour = new Hour(0,0,Hour.AM);
 
         mVibrationStep = getResources().getInteger(R.integer.picker_vibration_step);
 
@@ -145,7 +145,7 @@ public class TodPickerView extends View {
         mAreaSeparator = getResources().getDimensionPixelSize(R.dimen.picker_outer_margin);
         initPaints();
 
-        setTime(new Hour(0, 0, AM));
+        setTime(new Hour(0, 0, Hour.AM), true);
         invalidate();
     }
 
@@ -208,12 +208,25 @@ public class TodPickerView extends View {
         mPath = new Path();
     }
 
-    private void enableActiveArea(Hour startHour) {
-        mActiveArea = new ClockArea(startHour, startHour, Color.GREEN);
+    public void enableActiveArea(Hour startHour, int color) {
+        mActiveArea = new ClockArea(startHour, startHour, color);
+
         mHour.setPeriod(startHour.getPeriod());
-        mMaxHour = new Hour(11, 59, PM);
+        int addHour = 0;
+        if(startHour.getMinute() + 1 == 60){
+            addHour = 1;
+        }
+        mHour.setMinute(startHour.getMinute() + 1);
+
+        if(startHour.getHour() + addHour == 12){
+            mHour.setPeriod(Hour.PM);
+        }
+        mHour.setHour(startHour.getHour() + addHour);
+
+
+        mMaxHour.set(11,59,Hour.PM);
         for (ClockArea a : mUsedAreas) {
-            if (a.getStartHour().compare(mActiveArea.getStartHour()) == 1) {
+            if (a.getStartHour().compare(mActiveArea.getStartHour()) > 0) {
                 mMaxHour.set(a.getStartHour());
                 break;
             }
@@ -222,8 +235,8 @@ public class TodPickerView extends View {
 
     public void addUsedArea(ClockArea area) {
         boolean added = false;
-        for (int i = 0; i <= mUsedAreas.size(); i++) {
-            if (mUsedAreas.get(i).getStartHour().compare(area.getStartHour()) == 1) {
+        for (int i = 0; i < mUsedAreas.size(); i++) {
+            if (mUsedAreas.get(i).getStartHour().compare(area.getStartHour()) > 0) {
                 added = true;
                 mUsedAreas.add(i, area);
                 break;
@@ -252,45 +265,96 @@ public class TodPickerView extends View {
         if (area != null) {
             mUsedAreasMask.add(area);
         }
+        mZeroPeriod = (mUsedAreasMask.size() > 0 && !isAmmissible(new Hour(0,0,Hour.AM)))
+                ? mUsedAreasMask.get(0).getEndHour().getPeriod() : Hour.AM;
+        mHour.set(0,0,mZeroPeriod);
+        setTime(mHour, true);
     }
 
-    public void setTime(Hour hour) {
+    public void setTime(Hour hour){
+        setTime(hour, false);
+    }
+
+    public void setTime(Hour hour, boolean notBefore) {
+        Hour h = new Hour();
+        h.set(hour);
+
+        if(h.compare(mMaxHour) > 0){
+            h.set(mMaxHour);
+        }
         if (mActiveArea != null) {
-            if (mMaxHour != null && hour.compare(mMaxHour) == 1) {
-                hour = mMaxHour;
+            ClockArea area = new ClockArea(mActiveArea.getStartHour(),
+                    new Hour(11,59,mQuadrant),0);
+            if(h.compare(mActiveArea.getStartHour()) <= 0) {
+                if (mLastHour.compare(area.getMiddle()) <= 0) {
+                    h.set(Hour.add(mActiveArea.getStartHour(), 1));
+                } else {
+                    h.set(11, 59, mQuadrant);
+                }
             }
-            if (hour.compare(mActiveArea.getStartHour()) < 1) {
-                int m = mActiveArea.getStartHour().getMinute();
-                int h = mActiveArea.getStartHour().getHour() + (m == 59 ? 1 : 0);
-                hour = new Hour(h, m + 1, mActiveArea.getStartHour().getPeriod());
-            }
+            mActiveArea.setEndHour(h);
         } else {
             for (ClockArea a : mUsedAreasMask) {
-                ClockArea section = a.getPeriodSection(mHour.getPeriod());
-                if (section != null && section.contains(hour)) {
-                    if (hour.compare(section.getMiddle()) == 1) {
-                        hour = section.getEndHour();
-                        hour.setPeriod(getHour().getPeriod()); //Prevent inadvertently changing period
+                ClockArea section = a.getPeriodSection(mQuadrant);
+                if (section != null && (section.contains(h) || section.getStartHour().equals(h))) {
+                    if (h.compare(section.getMiddle()) > 0 || notBefore) {
+                        Hour end = section.getEndHour();
+                        if(end.equals(11,59,Hour.PM)){
+                            h.set(0,0,Hour.PM);
+                        }else{
+                            h.set(end);
+                        }
+                        h.setPeriod(mQuadrant); //Prevent inadvertently changing period
+                        if(!isAmmissible(h)){
+                            h.set(Hour.subtract(section.getStartHour(),1));
+                            h.setPeriod(mQuadrant); //Prevent inadvertently changing period
+                        }
                     } else {
-                        hour = section.getStartHour();
+                        h.set(Hour.subtract(section.getStartHour(),1));
+                        h.setPeriod(mQuadrant); //Prevent inadvertently changing period
+                        if(!isAmmissible(h)){
+                            h.set(section.getEndHour());
+                            h.setPeriod(mQuadrant); //Prevent inadvertently changing period
+                        }
                     }
                     break;
                 }
             }
         }
-        mHour.set(hour);
-
-        mActiveArea.setEndHour(mHour);
-
+        mLastHour.set(mHour);
+        /*if(mActiveArea != null){
+            if(h.equals(0,0,Hour.PM)){
+                mQuadrant = Hour.AM;
+            }else if(h.equals(0,0,Hour.AM)){
+                mQuadrant = Hour.PM;
+            }else{
+                mQuadrant = h.getPeriod();
+            }
+        }else{*/
+            mQuadrant = h.getPeriod();
+        //}
+        mHour.set(h);      
         int totMinute = mHour.getHour() * 60 + mHour.getMinute();
         float hourRadians = totMinute * HOUR_PREC_STEP;
         float minuteRadians = mHour.getMinute() * MINUTE_STEP;
         moveHourCursor(hourRadians);
         moveMinuteCursor(minuteRadians);
+        invalidate();
+    }
+
+    private boolean isAmmissible(Hour hour){
+        for (ClockArea a : mUsedAreas){
+            if(a.contains(hour) || a.getStartHour().equals(hour)
+                    || (hour.equals(11,59,Hour.PM) && a.getEndHour().equals(11,59,Hour.PM))){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        MeasureSpec.getMode(widthMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mCenter.set(getMeasuredWidth() / 2, getMeasuredHeight() / 2);
 
@@ -414,7 +478,7 @@ public class TodPickerView extends View {
             }
             case MINUTE: {
                 Hour hour = new Hour(mHour.getHour(), radiansToPrecMinute(radians),
-                        mHour.getPeriod());
+                        mQuadrant);
                 if (mHour.getMinute() != hour.getMinute()) {
                     if (mHour.getMinute() < 15 && hour.getMinute() > 45) {
                        /* if (mHour - 1 == 11 && mQuadrant == PM) {
@@ -433,7 +497,6 @@ public class TodPickerView extends View {
                 break;
             }
         }
-        invalidate();
     }
 
     private void moveHourCursor(float radians) {
@@ -457,7 +520,7 @@ public class TodPickerView extends View {
     private Hour radiansToHour(double radians) {
         radians = radians < 0 ? radians + 2 * Math.PI : radians;
         int hour = (int) Math.floor(radians / HOUR_STEP);
-        return new Hour(hour, (int) (radians / HOUR_PREC_STEP) - hour * 60, mHour.getPeriod());
+        return new Hour(hour, (int) (radians / HOUR_PREC_STEP) - hour * 60, mQuadrant);
     }
 
     private int radiansToPrecMinute(float radians) { //For use with Minute pointer radians
@@ -511,13 +574,13 @@ public class TodPickerView extends View {
     }
 
     private void drawClockArea(Canvas canvas, ClockArea area) {
-        if ((area.getPeriod() & mHour.getPeriod()) == mHour.getPeriod()) {
-            ClockArea section = area.getPeriodSection(mHour.getPeriod());
+        if ((area.getPeriod() & mQuadrant) == mQuadrant) {
+            ClockArea section = area.getPeriodSection(mQuadrant);
 
             mArcPaint.setColor(section.getColor());
             mArcBorderPaint.setColor(section.getColor());
-            mArcPaint.setAlpha(85);
-            mArcBorderPaint.setAlpha(180);
+            mArcPaint.setAlpha(150);
+            mArcBorderPaint.setAlpha(220);
 
             canvas.drawArc(mArcRect, section.getStartHourAngle() - 90,
                     section.getStartEndAngle(), true, mArcPaint); //Fill the arc
@@ -551,7 +614,12 @@ public class TodPickerView extends View {
 
     private void drawAmPmSwitch(Canvas canvas) {
         canvas.drawCircle(mCenter.x, mCenter.y, mAmPmRadius, mMinuteBgPaint);
-        String text = mHour.getPeriod() == PM ? "PM" : "AM";
+        String text;
+       /* if(mActiveArea != null){
+            
+        }else{*/
+            text = mQuadrant == Hour.PM ? "PM" : "AM";
+        //}
         int x = mCenter.x - (int) (mAmPmTextPaint.measureText(text) / 2f);
         int y = mCenter.y + (int) (mAmPmTextPaint.getTextSize() * 0.35f);
         canvas.drawText(text, x, y, mAmPmTextPaint);
@@ -575,97 +643,46 @@ public class TodPickerView extends View {
     }
 
     private void toggleAmPm() {
-        if (mActiveArea != null && (mActiveArea.getStartHour().getPeriod() == PM
-                || mMaxHour.getPeriod() == AM)) {
+        int period;
+        if (mQuadrant == Hour.AM) {
+            period = Hour.PM;
+        } else {
+            period = Hour.AM;
+        }
+        if (mActiveArea != null
+                && (mActiveArea.getStartHour().getPeriod() == Hour.PM
+                    || mMaxHour.getPeriod() == Hour.AM )
+                || (getAvailablePeriods() & period) == 0) {
             return;
         }
-        if (mHour.getPeriod() == AM) {
-            mHour.setPeriod(PM);
-        } else {
-            mHour.setPeriod(AM);
-        }
-        setTime(mHour);
-        if (mActiveArea != null)
-            mActiveArea.getEndHour().setPeriod(mHour.getPeriod());
-        invalidate();
+        mHour.setPeriod(period);
+        mQuadrant = period;
+        setTime(mHour, false);
     }
 
-    public class Hour {
-        private int mHour;
-        private int mMinute;
-        private int mPeriod;
-
-        public Hour() {
-            mHour = 0;
-            mMinute = 0;
-            mPeriod = AM;
-        }
-
-        public Hour(int hour, int minute, int period) {
-            mHour = hour % 12;
-            mMinute = minute % 60;
-            mPeriod = period;
-        }
-
-        public void log(String tag, String info) {
-            Logger.w(tag, info + " %d:%d %s", getHour(),
-                    getMinute(), getPeriod() == AM ? "AM" : "PM");
-        }
-
-        public int getHour() {
-            return mHour;
-        }
-
-        public void setHour(int hour) {
-            this.mHour = hour % 12;
-        }
-
-        public int getRealHour() {
-            return mHour == 0 ? 12 : mHour;
-        }
-
-        public int getMinute() {
-            return mMinute;
-        }
-
-        public void setMinute(int minute) {
-            this.mMinute = minute % 60;
-        }
-
-        public int getPeriod() {
-            return mPeriod;
-        }
-
-        public void setPeriod(int period) {
-            this.mPeriod = period;
-        }
-
-        public int compare(Hour hour) {
-            int t1 = (getHour() + (getPeriod() == PM ? 12 : 0)) * 60 + getMinute();
-            int t2 = (hour.getHour() + (hour.getPeriod() == PM ? 12 : 0)) * 60 + hour.getMinute();
-
-            if (t1 - t2 == 0) {
-                return 0;
-            } else if (t1 - t2 < 0) {
-                return -1;
-            } else {
-                return 1;
+    private int getAvailablePeriods(){
+        int out = 0;
+        if(mUsedAreas.size() > 0){
+            if(!mUsedAreas.get(0).getStartHour().equals(0,0,Hour.AM)){
+                out |= Hour.AM;
             }
+            if(!mUsedAreas.get(mUsedAreas.size() - 1).getEndHour().equals(11,59,Hour.PM)){
+                out |= Hour.PM;
+            }
+            for(int i = 1; i < mUsedAreas.size() && out != (Hour.AM | Hour.PM); i++){
+                if(!mUsedAreas.get(i).getStartHour().equals(mUsedAreas.get(i-1).getEndHour())){
+                    out |= mUsedAreas.get(i - 1).getEndHour().getPeriod();
+                    out |= mUsedAreas.get(i).getStartHour().getPeriod();
+                }
+            }
+        }else {
+            out = Hour.AM | Hour.PM;
         }
-
-        public boolean equals(Hour hour) {
-            return compare(hour) == 0;
-        }
-
-        public void set(Hour hour) {
-            mHour = hour.getHour();
-            mMinute = hour.getMinute();
-            mPeriod = hour.getPeriod();
-        }
+        return out;
     }
 
 
-    public class ClockArea {
+    public static class ClockArea {
         private static final int CUT_NONE = 0;
         private static final int CUT_START = 1;
         private static final int CUT_END = 2;
@@ -774,23 +791,23 @@ public class TodPickerView extends View {
                 } else {
                     return new ClockArea(mStartHour.getHour(), mStartHour.getMinute(),
                             mStartHour.getPeriod(),
-                            0, 0, PM, mColor, CUT_END);
+                            0, 0, Hour.PM, mColor, CUT_END);
                 }
             } else {
                 if (mEndHour.getPeriod() == period) {
-                    return new ClockArea(0, 0, PM,
+                    return new ClockArea(0, 0, Hour.PM,
                             mEndHour.getHour(), mEndHour.getMinute(), mEndHour.getPeriod(),
                             mColor, CUT_START);
                 } else {
-                    return null;//new ClockArea(mStartHour, mEndHour, mColor);
+                    return null;
                 }
             }
         }
 
         public Hour getMiddle() {
-            int ts = (mStartHour.getHour() + (mStartHour.getPeriod() == PM ? 12 : 0)) * 60
+            int ts = (mStartHour.getHour() + (mStartHour.getPeriod() == Hour.PM ? 12 : 0)) * 60
                     + mStartHour.getMinute();
-            int te = (mEndHour.getHour() + (mEndHour.getPeriod() == PM ? 12 : 0)) * 60
+            int te = (mEndHour.getHour() + (mEndHour.getPeriod() == Hour.PM ? 12 : 0)) * 60
                     + mEndHour.getMinute();
             int mm = (te + ts) / 2;
             int mh = 0;
@@ -798,7 +815,7 @@ public class TodPickerView extends View {
                 mm -= 60;
                 mh++;
             }
-            return new Hour(mh % 12, mm, mh > 11 ? PM : AM);
+            return new Hour(mh % 12, mm, mh > 11 ? Hour.PM : Hour.AM);
         }
 
         public int getPeriod() {
@@ -810,7 +827,7 @@ public class TodPickerView extends View {
         }
 
         public boolean contains(Hour hour) {
-            return hour.compare(mStartHour) == 1 && hour.compare(mEndHour) == -1;
+            return hour.compare(mStartHour) > 0 && hour.compare(mEndHour) < 0;
         }
 
         public boolean isAdjacent(ClockArea a) {
