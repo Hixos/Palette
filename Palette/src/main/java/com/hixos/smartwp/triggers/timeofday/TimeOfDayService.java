@@ -12,14 +12,10 @@ import android.os.Build;
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.bitmaps.ImageManager;
-import com.hixos.smartwp.triggers.slideshow.SlideshowData;
-import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 import com.hixos.smartwp.utils.FileUtils;
-import com.hixos.smartwp.utils.Hour;
 import com.hixos.smartwp.wallpaper.OnWallpaperChangedCallback;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by Luca on 27/02/2015.
@@ -88,7 +84,7 @@ public class TimeOfDayService {
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if(Build.VERSION.SDK_INT >= 19){
-            Logger.e(LOGTAG, "First alarm nominal");
+            Logger.w(LOGTAG, "First alarm nominal");
             manager.setExact(AlarmManager.RTC, System.currentTimeMillis() + 1, pi);
         }else{
             manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, pi);
@@ -96,7 +92,7 @@ public class TimeOfDayService {
     }
 
     private static void cancelAlarm(Context context) {
-        Logger.e(LOGTAG, "Alarm canceled");
+        Logger.w(LOGTAG, "Alarm canceled");
         Intent intent = new Intent(ACTION_TIMEOFDAY_SERVICE);
         PendingIntent pi = PendingIntent.getBroadcast(context, 123, intent, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -111,14 +107,14 @@ public class TimeOfDayService {
     public static Uri getBestWallpaperUri(Context context) {
         Calendar calendar = Calendar.getInstance();
         TodDatabase database = new TodDatabase(context);
-        TimeOfDayWallpaper current = database.getCurrentWallpaper(context, calendar);
+        TimeOfDayWallpaper current = database.getCurrentWallpaper(calendar);
         if (current != null) {
-            Logger.e(LOGTAG, "Wallpaper is not null");
+            Logger.w(LOGTAG, "Wallpaper is not null");
             Uri uri = ImageManager.getInstance().getPictureUri(current.getUid());
             if (FileUtils.fileExistance(uri)) return uri;
             else Logger.e(LOGTAG, "Wallpaper file not found");
         }else{
-            Logger.e(LOGTAG, "Wallpaper is null");
+            Logger.w(LOGTAG, "Wallpaper is null");
         }
         Logger.w(LOGTAG + ".getBest", "Wallpaper not found, returning default");
         return Uri.parse("android.resource://" + context.getPackageName() + "/"
@@ -126,31 +122,36 @@ public class TimeOfDayService {
     }
 
     private void updateWallpaper(Context context){
-        Logger.e(LOGTAG, "Updating wallpaper");
+        Logger.w(LOGTAG, "Updating wallpaper");
         Calendar calendar = Calendar.getInstance();
         TodDatabase database = new TodDatabase(context);
-        TimeOfDayWallpaper current = database.getCurrentWallpaper(context, calendar);
-        TimeOfDayWallpaper next = database.getNextWallpaper(context, calendar);
+        TimeOfDayWallpaper current = database.getCurrentWallpaper(calendar);
+        if(current != null){
+            Logger.fileW(context, LOGTAG, "Current: %s", current.getStartHour().toString());
+        }
+        Calendar next = database.getNextWallpaperStart(calendar);
         setWallpaper(context, current);
 
         if(next != null){
-            Calendar cal = next.getStartHour().getCalendar(context);
-
             Intent nextIntent = new Intent(ACTION_TIMEOFDAY_SERVICE);
             PendingIntent pi = PendingIntent.getBroadcast(context, 123, nextIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            Logger.e(LOGTAG, "Next alarm nominal");
-            manager.setExact(AlarmManager.RTC, cal.getTimeInMillis(), pi);
-            database.closeDatabase();
+            Logger.fileW(context, LOGTAG, "Next alarm nominal: %d %d:%d", next.get(Calendar.DAY_OF_MONTH),
+                    next.get(Calendar.HOUR_OF_DAY), next.get(Calendar.MINUTE));
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+                manager.setExact(AlarmManager.RTC, next.getTimeInMillis(), pi);
+            }else{
+                manager.set(AlarmManager.RTC, next.getTimeInMillis(), pi);
+            }
         }
     }
 
     private class TimeOfDayServiceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Logger.e(LOGTAG, "Alarm received");
+            Logger.w(LOGTAG, "Alarm received");
             updateWallpaper(context);
         }
     }
@@ -158,21 +159,20 @@ public class TimeOfDayService {
     private class ReloadWallpaperReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Logger.e(LOGTAG, "Reload received");
+            Logger.w(LOGTAG, "Reload received");
             updateWallpaper(context);
         }
     }
 
     private boolean setWallpaper(Context context, TimeOfDayWallpaper wallpaper) {
         if (wallpaper != null) {
-            Logger.e(LOGTAG, "Callback ok");
             mCallback.onWallpaperChanged(
                     ImageManager.getInstance().getPictureUri(wallpaper.getUid()));
             return true;
         }else{
             Uri def = Uri.parse("android.resource://" + context.getPackageName() + "/"
                     + R.raw.wallpaper);
-            Logger.w(LOGTAG + ".receive", "Wallpaper not found, using default");
+            Logger.e(LOGTAG + ".receive", "Wallpaper not found, using default");
             //TODO: show notification
             mCallback.onWallpaperChanged(def);
         }

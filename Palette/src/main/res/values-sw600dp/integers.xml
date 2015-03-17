@@ -2,4 +2,5 @@
 <resources>
     <integer name="grid_columns_slideshow">2</integer>
     <integer name="grid_columns_geofence">1</integer>
+    <integer name="grid_columns_timofday">1</integer>
 </resources>

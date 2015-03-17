@@ -29,13 +29,14 @@ import android.widget.Toast;
 
 import com.hixos.smartwp.CropperActivity;
 import com.hixos.smartwp.R;
+import com.hixos.smartwp.SetWallpaperActivity;
 import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.BitmapUtils;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
+import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
-import com.hixos.smartwp.triggers.slideshow.SlideshowService;
-import com.hixos.smartwp.utils.Hour;
+import com.hixos.smartwp.utils.Hour24;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;
@@ -50,6 +51,8 @@ import java.util.List;
  * Created by Luca on 11/02/2015.
  */
 public class TodFragment extends Fragment implements UndoBarController.UndoListener, TodDatabase.OnElementRemovedListener {
+    private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
+    private boolean mSetWallpaperActivityVisible = false;
 
     private Handler handler = new Handler();
 
@@ -65,7 +68,16 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mEditor.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case REQUEST_SET_LIVE_WALLPAPER:
+                if (resultCode != Activity.RESULT_OK) {
+                    getActivity().finish();
+                }
+                mSetWallpaperActivityVisible = false;
+                break;
+            default:
+                mEditor.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -113,6 +125,15 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
 
         initEmptyState(view);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(R.string.timeofday_name);
+        if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
+            checkLiveWallpaper();
+        }
     }
 
     @Override
@@ -206,9 +227,9 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                 if(!mDatabase.isFull()){
                     mEditor.beginPickWallpaper(mDatabase.getNewUid());
                 }else {
-                    //TODO: show toast
+                    Toast.makeText(getActivity(),
+                            getResources().getString(R.string.toast_tod_no_space_left), Toast.LENGTH_LONG);
                 }
-
                 break;
             case R.id.action_settings:
                 break;
@@ -269,6 +290,15 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         if (cache != null) {
             cache.remove(uid);
             cache.remove(GeofenceDatabase.getSnapshotUid(uid));
+        }
+    }
+    private void checkLiveWallpaper() {
+        if (!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
+                && mDatabase.getWallpaperCount() > 0
+                && !mSetWallpaperActivityVisible) {
+            startActivityForResult(new Intent(getActivity(), SetWallpaperActivity.class),
+                    REQUEST_SET_LIVE_WALLPAPER);
+            mSetWallpaperActivityVisible = true;
         }
     }
 
@@ -405,12 +435,8 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
          * Stores the wallpaper in the database
          */
         private void finishPickWallpaper(final Intent data) {
-            Hour startHour = new Hour(data.getIntExtra(TimePickerActivity.RESULT_START_HOUR, 0),
-                    data.getIntExtra(TimePickerActivity.RESULT_START_MINUTE, 0),
-                    data.getIntExtra(TimePickerActivity.RESULT_START_PERIOD, Hour.AM));
-            Hour endHour = new Hour(data.getIntExtra(TimePickerActivity.RESULT_END_HOUR, 0),
-                    data.getIntExtra(TimePickerActivity.RESULT_END_MINUTE, 0),
-                    data.getIntExtra(TimePickerActivity.RESULT_END_PERIOD, Hour.AM));
+            Hour24 startHour = new Hour24(data.getIntExtra(TimePickerActivity.RESULT_START_HOUR, 0));
+            Hour24 endHour = new Hour24(data.getIntExtra(TimePickerActivity.RESULT_END_HOUR, 0));
             mDatabase.createWallpaper(mCurrentUid, startHour, endHour, mMutedColor, mVibrantColor);
             isPicking = false;
             hideEmptyState();

@@ -2,74 +2,74 @@
 <items version="2" >
 
     <item
-        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.android.support\palette-v7\21.0.3\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="926692214530f39eaed89159237d26cdc0ae6e48">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-4a881d05e18674d1e1e1a5bb5bab1d3dae847774.jar" />
-    </item>
-    <item
         jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-dabd5ead6c4f7304c086697f216a93c1f49d927d.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-dabd5ead6c4f7304c086697f216a93c1f49d927d.jar" />
     </item>
     <item
         jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-d156c9026b144c10f80ceee1421a1053b2bf93b8.jar" />
-    </item>
-    <item
-        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.google.android.gms\play-services-base\6.5.87\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="95482e7c792a7c0d5a9d5461e97726bd54fe9549">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-24cfee12950c61d0fe25427e2e29c70e2f4c75bc.jar" />
-    </item>
-    <item
-        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.google.android.gms\play-services-maps\6.5.87\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="a75b29dc51b364df032af8bcfcad7e54ccfda28d">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-f570661af3e9e1d76d4c88794d2513dd92be14ab.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\internal_impl-21.0.3-d156c9026b144c10f80ceee1421a1053b2bf93b8.jar" />
     </item>
     <item
         jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.google.android.gms\play-services-location\6.5.87\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="4a568f733067f786d53e191ccf998e7ea3da68cc">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-8aa0c04f401f89a68f7b58ad91cbf4c2b44ee1d3.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-8aa0c04f401f89a68f7b58ad91cbf4c2b44ee1d3.jar" />
+    </item>
+    <item
+        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.android.support\palette-v7\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="926692214530f39eaed89159237d26cdc0ae6e48">
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-4a881d05e18674d1e1e1a5bb5bab1d3dae847774.jar" />
+    </item>
+    <item
+        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.google.android.gms\play-services-maps\6.5.87\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="a75b29dc51b364df032af8bcfcad7e54ccfda28d">
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-f570661af3e9e1d76d4c88794d2513dd92be14ab.jar" />
+    </item>
+    <item
+        jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.google.android.gms\play-services-base\6.5.87\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="95482e7c792a7c0d5a9d5461e97726bd54fe9549">
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-24cfee12950c61d0fe25427e2e29c70e2f4c75bc.jar" />
     </item>
     <item
         jar="E:\Android\Projects\palette\Palette\libs\xmpcore.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="4446353e27911a01e038da46a5a09d5c63af485b">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\xmpcore-6aa1db65303e93b806a00b52082047eb38291b36.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\xmpcore-6aa1db65303e93b806a00b52082047eb38291b36.jar" />
     </item>
     <item
         jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-1a80156e9e7d8b27fc4af0b2cb97fdaba8d6c23b.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\classes-1a80156e9e7d8b27fc4af0b2cb97fdaba8d6c23b.jar" />
     </item>
     <item
         jar="C:\Users\Luca\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\support-annotations-21.0.3-0f0715f20ff3d3c4f98f79be69fcf9a71b30b6b9.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\support-annotations-21.0.3-0f0715f20ff3d3c4f98f79be69fcf9a71b30b6b9.jar" />
     </item>
     <item
         jar="E:\Android\Projects\palette\Palette\libs\metadata-extractor-2.6.4.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="b2fca76b7d5e376786e195ff0bc6e8401025c710">
-        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\metadata-extractor-2.6.4-98cf079949f63bcebce914d32233425f463a7929.jar" />
+        <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\alpha\metadata-extractor-2.6.4-98cf079949f63bcebce914d32233425f463a7929.jar" />
     </item>
 
 </items>

@@ -8,6 +8,7 @@ import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
 import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
 import com.hixos.smartwp.triggers.timeofday.TodDatabase;
 
+
 /**
  * Created by Luca on 22/10/13.
  */
@@ -54,11 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sql = "CREATE TABLE " + TodDatabase.TABLE_DATA + "(";
         sql += TodDatabase.COLUMN_DATA_ID + " TEXT PRIMARY KEY, ";
         sql += TodDatabase.COLUMN_DATA_START_HOUR + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_START_MINUTE + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_START_PERIOD + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_END_MINUTE + " INTEGER, ";
-        sql += TodDatabase.COLUMN_DATA_END_PERIOD + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
         sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
@@ -69,21 +66,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        if (oldVersion <= 10) {
-            String sql = "CREATE TABLE " + TodDatabase.TABLE_DATA + "(";
-            sql += TodDatabase.COLUMN_DATA_ID + " TEXT PRIMARY KEY, ";
-            sql += TodDatabase.COLUMN_DATA_START_HOUR + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_START_MINUTE + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_START_PERIOD + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_END_MINUTE + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_END_PERIOD + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
-            sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
-            sql += ");";
-
-            sqLiteDatabase.execSQL(sql);
+        switch (oldVersion){
+            case 10:
+                String sql = "CREATE TABLE " + TodDatabase.TABLE_DATA + "(";
+                sql += TodDatabase.COLUMN_DATA_ID + " TEXT PRIMARY KEY, ";
+                sql += TodDatabase.COLUMN_DATA_START_HOUR + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
+                sql += ");";
+                sqLiteDatabase.execSQL(sql);
         }
     }
 

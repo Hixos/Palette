@@ -1,19 +1,12 @@
 package com.hixos.smartwp.triggers.timeofday;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.v7.graphics.Palette;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
-import com.hixos.smartwp.bitmaps.BitmapUtils;
-import com.hixos.smartwp.triggers.geofence.GeofenceData;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
-import com.hixos.smartwp.utils.Hour;
 import com.hixos.smartwp.widget.AsyncImageView;
 import com.hixos.smartwp.widget.FontTextView;
 
@@ -147,14 +140,14 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
         }
         imageThumbnail.setImageUID(uid);
         TimeOfDayWallpaper wp = mWallpapers.get(position);
-        String startTime = String.format("%d:%02d", wp.getStartHour().getRealHour(),
+        String startTime = String.format("%d:%02d", wp.getStartHour().getHour(),
                 wp.getStartHour().getMinute());
-        String endTime = String.format("%d:%02d", wp.getEndHour().getRealHour(),
+        String endTime = String.format("%d:%02d", wp.getEndHour().getHour(),
                 wp.getEndHour().getMinute());
         textStartTime.setText(startTime);
         textEndTime.setText(endTime);
-        textStartPeriod.setText(wp.getStartHour().getPeriod() == Hour.AM ? "am" : "pm");
-        textEndPeriod.setText(wp.getEndHour().getPeriod() == Hour.AM ? "am" : "pm");
+        //textStartPeriod.setText(wp.getStartHour().getPeriod() == Hour.AM ? "am" : "pm");
+        //textEndPeriod.setText(wp.getEndHour().getPeriod() == Hour.AM ? "am" : "pm");
         frameTime.setBackgroundColor(wp.getMutedColor());
         return v;
     }

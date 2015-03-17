@@ -5,4 +5,6 @@
 
     <!--GEOFENCE PICKER-->
     <dimen name="geofence_pointer_margin">0dp</dimen>
+
+    <item name="item_ratio_tod" format="float" type="dimen">1.11</item>
 </resources>

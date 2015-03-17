@@ -89,4 +89,15 @@
     <string name="action_crop_mode">Modalità Ritaglio</string>
     <string name="action_search">Cerca luogo</string>
     <string name="toast_add_geofence_wallpaper_success">@string/toast_add_slideshow_wallpaper_success</string>
+    <string name="toast_tod_no_space_left">La giornata è completa!</string>
+    <string name="title_activity_time_picker">Scegli un ora...</string>
+    <string name="next">Next</string>
+    <string name="back">Indietro</string>
+    <string name="error_location_not_found">Impossibile ottenere la posizione. Gli sfondi potrebbero non essere impostati correttamente.</string>
+    <string name="notif_bigtext_play_services_fix">I Google PLay Services non presenti sul tuo dispositivo.\nClicca qui per installarli.</string>
+    <string name="notif_text_play_services_fix">Clicca qui per risolvere il problema</string>
+    <string name="notif_title_play_services_fix">Google Play Services non trovati</string>
+    <string name="timeofday_name">Ora del giorno</string>
+    <string name="to_hour">Alle</string>
+    <string name="from_hour">Dalle</string>
 </resources>

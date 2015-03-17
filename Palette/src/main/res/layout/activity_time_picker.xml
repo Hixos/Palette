@@ -18,7 +18,8 @@
             android:layout_height="wrap_content"
             class="com.hixos.smartwp.widget.TodPickerView"
             android:id="@+id/todStartPickerView"
-            android:layout_above="@+id/buttonDone" />
+            android:layout_above="@+id/buttonDone"
+            android:layout_below="@+id/textTime" />
 
         <view
             android:visibility="gone"
@@ -26,23 +27,55 @@
             android:layout_height="wrap_content"
             class="com.hixos.smartwp.widget.TodPickerView"
             android:id="@+id/todEndPickerView"
-            android:layout_above="@+id/buttonDone" />
+            android:layout_above="@+id/buttonDone"
+            android:layout_below="@+id/textTime"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="64dp"
-            android:text="End hour ->"
+            android:text="@string/next"
+            android:drawableRight="@drawable/ic_action_navigation_arrow_forward"
+            android:drawableEnd="@drawable/ic_action_navigation_arrow_forward"
+            android:background="@drawable/clickable_background"
+            android:id="@+id/buttonNext"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+        <Button
+            android:clickable="false"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/done"
+            android:drawableRight="@drawable/ic_action_navigation_check"
+            android:drawableEnd="@drawable/ic_action_navigation_check"
+            android:background="@drawable/clickable_background"
             android:id="@+id/buttonDone"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
 
         <Button
-            android:visibility="gone"
+            android:clickable="false"
+            android:visibility="invisible"
             android:layout_width="wrap_content"
             android:layout_height="64dp"
-            android:text="(- Back"
+            android:text="@string/back"
+            android:drawableLeft="@drawable/ic_action_navigation_arrow_back"
+            android:drawableStart="@drawable/ic_action_navigation_arrow_back"
+            android:background="@drawable/clickable_background"
             android:id="@+id/buttonBack"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true" />
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_super_xxlarge"
+            android:text="0:00"
+            android:id="@+id/textTime"
+            android:layout_centerHorizontal="true" />
     </RelativeLayout>
 </FrameLayout>

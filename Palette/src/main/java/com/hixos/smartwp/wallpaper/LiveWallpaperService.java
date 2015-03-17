@@ -88,17 +88,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                 switch (activeService) {
                     case ServiceUtils.SERVICE_SLIDESHOW:
                         SlideshowService.startListener(this, LiveWallpaperService.this);
-                        GeofenceService.stopListener(LiveWallpaperService.this);
-                        TimeOfDayService.stopListener(LiveWallpaperService.this);
                         break;
                     case ServiceUtils.SERVICE_GEOFENCE:
                         GeofenceService.startListener(this, LiveWallpaperService.this);
-                        SlideshowService.stopListener(LiveWallpaperService.this);
-                        TimeOfDayService.stopListener(LiveWallpaperService.this);
                         break;
                     case ServiceUtils.SERVICE_TIMEOFDAY:
-                        GeofenceService.stopListener(LiveWallpaperService.this);
-                        SlideshowService.stopListener(LiveWallpaperService.this);
                         TimeOfDayService.startListener(this, LiveWallpaperService.this);
                         break;
                 }

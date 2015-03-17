@@ -75,9 +75,9 @@ public class MainActivity extends ActionBarActivity {
 
         mTimeOfDayBubble
                 .setColor(getResources().getColor(R.color.accent_green))
-                .setText(getString(R.string.name_geofence))
-                .setInnerDrawable(getResources().getDrawable(R.drawable.ic_geofence_dark))
-                .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_orange));
+                .setText(getString(R.string.timeofday_name))
+                .setInnerDrawable(getResources().getDrawable(R.drawable.ic_timeofday_dark))
+                .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_green));
 
         mInitialActiveService = ServiceUtils.getActiveService(this);
 
@@ -322,8 +322,6 @@ public class MainActivity extends ActionBarActivity {
                 Rect scrollRect = new Rect();
                 if (mScrollView != null) {
                     mScrollView.getDrawingRect(scrollRect);
-                    Logger.logRectSides("IXV", "hitRect", hitRect);
-                    Logger.logRectSides("IXV", "scrollRect", scrollRect);
                     if (!scrollRect.contains(hitRect)) {
                         mScrollView.smoothScrollTo(mView.getLeft(), mView.getTop());
                     }

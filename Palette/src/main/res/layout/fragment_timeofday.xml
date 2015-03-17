@@ -15,7 +15,7 @@
         android:paddingLeft="@dimen/grid_horizontal_padding"
         android:paddingRight="@dimen/grid_horizontal_padding"
         android:layout_gravity="center"
-        android:numColumns="1"
+        android:numColumns="@integer/grid_columns_timofday"
         android:clipToPadding="false"
         android:horizontalSpacing="@dimen/item_horizontal_spacing"
         android:verticalSpacing="@dimen/item_vertical_spacing"

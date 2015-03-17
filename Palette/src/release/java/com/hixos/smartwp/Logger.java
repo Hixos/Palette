@@ -47,11 +47,11 @@ public final class Logger {
     }
 
     public static void fileW(Context c, String tag, String text){
-
+        w(tag, text);
     }
 
     public static void fileW(Context c, String tag, String text, Object... args) {
-
+        w(tag, text, args);
     }
 
     public static void fileNewLine(Context c){

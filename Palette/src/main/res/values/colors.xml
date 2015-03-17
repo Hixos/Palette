@@ -16,6 +16,7 @@
     <color name="selector_blue">#55D4E3FF</color>
     <color name="selector_orange">#55FFDECC</color>
     <color name="selector_red">#55FFC2D1</color>
+    <color name="selector_green">#5599FF99</color>
 
     <color name="accent_red">#FFD10236</color>
     <color name="accent_orange">#FFED671F</color>

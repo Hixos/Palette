@@ -52,7 +52,7 @@ public abstract class DatabaseManager {
     /**
      * Closes the database and releases all the resources
      */
-    public synchronized void closeDatabase() {
+    protected synchronized void closeDatabase() {
         if (sOpenCounter.decrementAndGet() == 0) {
             sDatabase.close();
         }

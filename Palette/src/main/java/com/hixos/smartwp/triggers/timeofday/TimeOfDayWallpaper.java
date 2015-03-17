@@ -4,7 +4,7 @@ import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.hixos.smartwp.utils.Hour;
+import com.hixos.smartwp.utils.Hour24;
 
 /**
  * Created by Luca on 19/02/2015.
@@ -13,11 +13,7 @@ public class TimeOfDayWallpaper implements Parcelable {
     public final static String[] DATA_COLUMNS = {
             TodDatabase.COLUMN_DATA_ID,
             TodDatabase.COLUMN_DATA_START_HOUR,
-            TodDatabase.COLUMN_DATA_START_MINUTE,
-            TodDatabase.COLUMN_DATA_START_PERIOD,
             TodDatabase.COLUMN_DATA_END_HOUR,
-            TodDatabase.COLUMN_DATA_END_MINUTE,
-            TodDatabase.COLUMN_DATA_END_PERIOD,
             TodDatabase.COLUMN_DATA_COLOR_MUTED,
             TodDatabase.COLUMN_DATA_COLOR_VIBRANT,
             TodDatabase.COLUMN_DATA_DELETED};
@@ -34,8 +30,8 @@ public class TimeOfDayWallpaper implements Parcelable {
     };
 
     private final String mUid;
-    private Hour mStartHour;
-    private Hour mEndHour;
+    private Hour24 mStartHour;
+    private Hour24 mEndHour;
     private int mMutedColor, mVibrantColor;
     private boolean mDeleted;
 
@@ -43,20 +39,20 @@ public class TimeOfDayWallpaper implements Parcelable {
         return mUid;
     }
 
-    public Hour getStartHour() {
+    public Hour24 getStartHour() {
         return mStartHour;
     }
 
-    public void setStartHour(Hour startHour) {
-        this.mStartHour = startHour;
+    public void setStartHour(Hour24 startHour) {
+        this.mStartHour = new Hour24(startHour);
     }
 
-    public Hour getEndHour() {
+    public Hour24 getEndHour() {
         return mEndHour;
     }
 
-    public void setEndHour(Hour endHour) {
-        this.mEndHour = endHour;
+    public void setEndHour(Hour24 endHour) {
+        this.mEndHour = new Hour24(endHour);
     }
 
     public int getMutedColor() {
@@ -89,16 +85,8 @@ public class TimeOfDayWallpaper implements Parcelable {
 
     public TimeOfDayWallpaper(Parcel in) {
         mUid = in.readString();
-        mStartHour = new Hour(
-                in.readInt(),
-                in.readInt(),
-                in.readInt()
-        );
-        mEndHour = new Hour(
-                in.readInt(),
-                in.readInt(),
-                in.readInt()
-        );
+        mStartHour = new Hour24(in.readInt());
+        mEndHour = new Hour24(in.readInt() );
         mMutedColor = in.readInt();
         mVibrantColor = in.readInt();
         mDeleted = in.readByte() == 1;
@@ -106,17 +94,11 @@ public class TimeOfDayWallpaper implements Parcelable {
 
     public static TimeOfDayWallpaper fromCursor(Cursor cursor){
         TimeOfDayWallpaper data = new TimeOfDayWallpaper(cursor.getString(0));
-        data.mStartHour = new Hour(
-                cursor.getInt(1),
-                cursor.getInt(2),
-                cursor.getInt(3));
-        data.mEndHour = new Hour(
-                cursor.getInt(4),
-                cursor.getInt(5),
-                cursor.getInt(6));
-        data.mMutedColor = cursor.getInt(7);
-        data.mVibrantColor = cursor.getInt(7);
-        data.mDeleted = cursor.getInt(8) == 1;
+        data.mStartHour = new Hour24(cursor.getInt(1));
+        data.mEndHour = new Hour24(cursor.getInt(2));
+        data.mMutedColor = cursor.getInt(3);
+        data.mVibrantColor = cursor.getInt(4);
+        data.mDeleted = cursor.getInt(5) == 1;
         return data;
     }
 
@@ -128,12 +110,8 @@ public class TimeOfDayWallpaper implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mUid);
-        dest.writeInt(mStartHour.getHour());
-        dest.writeInt(mStartHour.getMinute());
-        dest.writeInt(mStartHour.getPeriod());
-        dest.writeInt(mEndHour.getHour());
-        dest.writeInt(mEndHour.getMinute());
-        dest.writeInt(mEndHour.getPeriod());
+        dest.writeInt(mStartHour.getMinutes());
+        dest.writeInt(mEndHour.getMinutes());
         dest.writeInt(mMutedColor);
         dest.writeInt(mVibrantColor);
         dest.writeInt(mDeleted ? 1 : 0);

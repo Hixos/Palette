@@ -7,10 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
 import com.hixos.smartwp.DatabaseManager;
-import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.utils.FileUtils;
-import com.hixos.smartwp.utils.Hour;
+import com.hixos.smartwp.utils.Hour24;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,11 +22,7 @@ public class TodDatabase extends DatabaseManager {
     public final static String TABLE_DATA = "[timeofday_data]";
     public final static String COLUMN_DATA_ID = "[_id]";
     public final static String COLUMN_DATA_START_HOUR = "[start_hour]";
-    public final static String COLUMN_DATA_START_MINUTE = "[start_minute]";
-    public final static String COLUMN_DATA_START_PERIOD = "[start_period]";
     public final static String COLUMN_DATA_END_HOUR = "[end_hour]";
-    public final static String COLUMN_DATA_END_MINUTE = "[end_minute]";
-    public final static String COLUMN_DATA_END_PERIOD = "[end_period]";
     public final static String COLUMN_DATA_COLOR_MUTED = "[color_muted]";
     public final static String COLUMN_DATA_COLOR_VIBRANT = "[color_vibrant]";
     public final static String COLUMN_DATA_DELETED = "[deleted]";
@@ -61,7 +56,7 @@ public class TodDatabase extends DatabaseManager {
         mOnElementRemovedListener = listener;
     }
 
-    public TimeOfDayWallpaper createWallpaper(String uid, Hour startHour, Hour endHour,
+    public TimeOfDayWallpaper createWallpaper(String uid, Hour24 startHour, Hour24 endHour,
                                               int mutedColor, int vibrantColor){
         if(startHour == null || endHour == null || uid == null){
             String param = startHour == null ? "startHour = null" : "";
@@ -72,12 +67,8 @@ public class TodDatabase extends DatabaseManager {
         SQLiteDatabase database = openDatabase();
         ContentValues v = new ContentValues();
         v.put(COLUMN_DATA_ID, uid);
-        v.put(COLUMN_DATA_START_HOUR, startHour.getHour());
-        v.put(COLUMN_DATA_START_MINUTE, startHour.getMinute());
-        v.put(COLUMN_DATA_START_PERIOD, startHour.getPeriod());
-        v.put(COLUMN_DATA_END_HOUR, endHour.getHour());
-        v.put(COLUMN_DATA_END_MINUTE, endHour.getMinute());
-        v.put(COLUMN_DATA_END_PERIOD, endHour.getPeriod());
+        v.put(COLUMN_DATA_START_HOUR, startHour.getMinutes());
+        v.put(COLUMN_DATA_END_HOUR, endHour.getMinutes());
         v.put(COLUMN_DATA_COLOR_MUTED, mutedColor);
         v.put(COLUMN_DATA_COLOR_VIBRANT, vibrantColor);
         v.put(COLUMN_DATA_DELETED, false);
@@ -122,20 +113,19 @@ public class TodDatabase extends DatabaseManager {
     public boolean isFull(){
         List<TimeOfDayWallpaper> wallpapers = getOrderedWallpapers();
         if(wallpapers.size() > 0){
-            if(wallpapers.get(0).getStartHour().equals(0,0,Hour.AM)
-                    && wallpapers.get(wallpapers.size() - 1).getEndHour().equals(11,59,Hour.PM)){
+            if(wallpapers.get(0).getStartHour().equals(Hour24.Hour0000())
+                    && wallpapers.get(wallpapers.size() - 1).getEndHour().equals(Hour24.Hour2400())){
                 for(int i = 1; i < wallpapers.size(); i++){
                     if(!wallpapers.get(i).getStartHour().equals(wallpapers.get(i-1).getEndHour())){
                         return false;
+                    }
                 }
-            }
                 return true;
             }else {
                 return false;
             }
-        }else {
-            return false;
         }
+        return false;
     }
     /**
      * Permanently deletes all the logically deleted geowallpapers and all the files
@@ -146,7 +136,10 @@ public class TodDatabase extends DatabaseManager {
         Cursor c = database.query(TABLE_DATA, new String[]{COLUMN_DATA_ID, COLUMN_DATA_DELETED}, COLUMN_DATA_DELETED + " = 1", null, null, null, null);
         c.moveToFirst();
 
-        if (c.isAfterLast()) return;
+        if (c.isAfterLast()){
+            closeDatabase();
+            return;
+        }
 
         List<String> deletedIds = new ArrayList<>();
 
@@ -156,13 +149,13 @@ public class TodDatabase extends DatabaseManager {
         } while (!c.isAfterLast());
 
         database.delete(TABLE_DATA, COLUMN_DATA_DELETED + " = 1", null);
+        c.close();
+        closeDatabase();
 
         for (String uid : deletedIds) {
             FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
             FileUtils.deleteFile(ImageManager.getInstance().getThumbnailUri(uid));
         }
-        c.close();
-        closeDatabase();
     }
 
     public void clearDeletedWallpapersAsync() {
@@ -176,21 +169,12 @@ public class TodDatabase extends DatabaseManager {
         task.execute();
     }
 
-    public TimeOfDayWallpaper getCurrentWallpaper(Context context, Calendar calendar){
+    public TimeOfDayWallpaper getCurrentWallpaper(Calendar calendar){
         List<TimeOfDayWallpaper> wallpapers = getOrderedWallpapers();
-        for(TimeOfDayWallpaper wp : wallpapers){
-            if(calendar.after(wp.getStartHour().getCalendar(context))
-                    && calendar.before(wp.getEndHour().getCalendar(context))){
-                return wp;
-            }
-        }
-        return null;
-    }
-
-    public TimeOfDayWallpaper getNextWallpaper(Context context, Calendar calendar){
-        List<TimeOfDayWallpaper> wallpapers = getOrderedWallpapers();
-        for(TimeOfDayWallpaper wp : wallpapers){
-            if(wp.getStartHour().getCalendar(context).after(calendar)){
+        Hour24 current = Hour24.fromCalendar(calendar);
+        for(int i = wallpapers.size() - 1; i >= 0; i--){
+            TimeOfDayWallpaper wp = wallpapers.get(i);
+            if(current.compare(wp.getStartHour()) >= 0){
                 return wp;
             }
         }
@@ -201,14 +185,28 @@ public class TodDatabase extends DatabaseManager {
         }
     }
 
+    public Calendar getNextWallpaperStart(Calendar calendar){
+        List<TimeOfDayWallpaper> wallpapers = getOrderedWallpapers();
+        for(TimeOfDayWallpaper wp : wallpapers){
+            if(calendar.before(wp.getStartHour().toCalendar())){
+                return wp.getStartHour().toCalendar();
+            }
+        }
+        if(wallpapers.size() > 0){
+            Calendar out = wallpapers.get(0).getStartHour().toCalendar();
+            out.add(Calendar.DAY_OF_YEAR, 1);
+            return out;
+        }else{
+            return null;
+        }
+    }
+
     public List<TimeOfDayWallpaper> getOrderedWallpapers(){
         SQLiteDatabase database = openDatabase();
         List<TimeOfDayWallpaper> wallpapers = new ArrayList<>();
         Cursor data = database.query(TABLE_DATA, TimeOfDayWallpaper.DATA_COLUMNS,
                 COLUMN_DATA_DELETED + " = " + 0, null, null, null,
-                COLUMN_DATA_START_PERIOD + " ASC, "
-                        + COLUMN_DATA_START_HOUR + " ASC, "
-                        + COLUMN_DATA_START_MINUTE + " ASC");
+                        COLUMN_DATA_START_HOUR + " ASC");
         data.moveToFirst();
 
         while (!data.isAfterLast()) {
@@ -221,6 +219,7 @@ public class TodDatabase extends DatabaseManager {
 
         return wallpapers;
     }
+
 
     /**
      * Return the number of slideshow wallpaper stored in the database
