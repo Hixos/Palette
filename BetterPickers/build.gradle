@@ -1,0 +1,38 @@
+apply plugin: 'com.android.library'
+
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 10
+        versionName "1.5.5"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            assets {
+                srcDir 'assets'
+            }
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile 'org.jraf:android-switch-backport:1.4.0'
+    compile 'com.android.support:support-v4:22.0.+'
+}
