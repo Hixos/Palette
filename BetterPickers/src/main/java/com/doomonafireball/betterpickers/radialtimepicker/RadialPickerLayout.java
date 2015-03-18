@@ -607,7 +607,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                             public void run() {
                                 mDoingMove = true;
                                 int value = reselectSelector(mDownDegrees, isInnerCircle[0],
-                                        false, true);
+                                        true, true);
                                 mLastValueSelected = value;
                                 mListener.onValueSelected(getCurrentItemShowing(), value, false);
                             }
@@ -654,7 +654,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                 mHandler.removeCallbacksAndMessages(null);
                 degrees = getDegreesFromCoords(eventX, eventY, true, isInnerCircle);
                 if (degrees != -1) {
-                    value = reselectSelector(degrees, isInnerCircle[0], false, true);
+                    value = reselectSelector(degrees, isInnerCircle[0], true, true);
                     if (value != mLastValueSelected) {
                         mHapticFeedbackController.tryVibrate();
                         mLastValueSelected = value;
@@ -694,7 +694,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                 if (mDownDegrees != -1) {
                     degrees = getDegreesFromCoords(eventX, eventY, mDoingMove, isInnerCircle);
                     if (degrees != -1) {
-                        value = reselectSelector(degrees, isInnerCircle[0], !mDoingMove, false);
+                        value = reselectSelector(degrees, isInnerCircle[0], true, false);
                         if (getCurrentItemShowing() == HOUR_INDEX && !mIs24HourMode) {
                             int amOrPm = getIsCurrentlyAmOrPm();
                             if (amOrPm == AM && value == 12) {
