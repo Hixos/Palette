@@ -1,6 +1,7 @@
 package com.hixos.smartwp.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -40,14 +41,12 @@ public class TodPickerView extends View {
     private static final double MINUTE_STEP = Math.PI / 6;
 
     //Measures
-    private Point mCenter;
-    private int mMinuteOuterRadius, mMinuteInnerRadius;
-    private int mHourInnerRadius;
-    private int mTouchableAreaWidth;
-    private int mAreaSeparator;
-    private int mCursorRadius;
+    private PointF mCenter;
+    private float mRadius;
+    private float mTouchAreaWidth;
+    private float mCursorRadius;
     private RectF mArcRect;
-    private int mAmPmRadius;
+
     //Numbers
     private List<PointF> mMinuteTextCoords;
     private List<PointF> mHourTextCoords;
@@ -131,6 +130,7 @@ public class TodPickerView extends View {
     }
 
     private void initView() {
+        Resources res = getContext().getResources();
         mHour = new Hour24(0,0);
         mLastHour = new Hour24(0,0);
         mQuadrant = AM;
@@ -138,13 +138,12 @@ public class TodPickerView extends View {
 
         mVibrationStep = getResources().getInteger(R.integer.picker_vibration_step);
 
-        mTouchableAreaWidth = getContext().getResources()
-                .getDimensionPixelSize(R.dimen.picker_touchable_area_width);
-        mCursorRadius = mTouchableAreaWidth / 2;
+        mTouchAreaWidth = res.getDimensionPixelSize(R.dimen.tod_picker_toucharea_width);
+        mCursorRadius = mTouchAreaWidth / 2;
 
         mMinuteTextCoords = new ArrayList<>();
         mHourTextCoords = new ArrayList<>();
-        mCenter = new Point();
+        mCenter = new PointF();
         mMinuteCursorBounds = new Rect();
         mHourCursorBounds = new Rect();
         mHourPointerCoords = new PointF();
@@ -158,7 +157,6 @@ public class TodPickerView extends View {
         mMinuteCursor = getContext().getResources().getDrawable(R.drawable.interval_picker_cursor);
         mHourCursor = getContext().getResources().getDrawable(R.drawable.interval_picker_cursor);
 
-        mAreaSeparator = getResources().getDimensionPixelSize(R.dimen.picker_outer_margin);
         initPaints();
 
         setTime(mHour);
@@ -179,20 +177,20 @@ public class TodPickerView extends View {
 
         mMinuteTextPaint = new Paint();
         if (!isInEditMode()) {
-            mMinuteTextPaint.setTypeface(Fonts.getTypeface(getContext(), Fonts.STYLE_LIGHT | Fonts.STYLE_CONDENSED));
+            mMinuteTextPaint.setTypeface(Fonts.getTypeface(getContext(), Fonts.STYLE_REGULAR));
         }
         mMinuteTextPaint.setAntiAlias(true);
         mMinuteTextPaint.setTextSize(getContext().getResources()
-                .getDimensionPixelSize(R.dimen.picker_text_size));
+                .getDimensionPixelSize(R.dimen.tod_picker_minute_text_size));
         mMinuteTextPaint.setColor(getContext().getResources().getColor(R.color.picker_text));
 
         mHourTextPaint = new Paint();
         if (!isInEditMode()) {
-            mHourTextPaint.setTypeface(Fonts.getTypeface(getContext(), Fonts.STYLE_CONDENSED));
+            mHourTextPaint.setTypeface(Fonts.getTypeface(getContext(), Fonts.STYLE_REGULAR));
         }
         mHourTextPaint.setAntiAlias(true);
         mHourTextPaint.setTextSize(getContext().getResources()
-                .getDimensionPixelSize(R.dimen.picker_text_size));
+                .getDimensionPixelSize(R.dimen.tod_picker_hour_text_size));
         mHourTextPaint.setColor(getContext().getResources().getColor(R.color.picker_text));
 
         mAmPmTextPaint = new Paint();
@@ -353,24 +351,19 @@ public class TodPickerView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        MeasureSpec.getMode(widthMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Resources res = getContext().getResources();
         mCenter.set(getMeasuredWidth() / 2, getMeasuredHeight() / 2);
+        mRadius = Math.min(res.getDimensionPixelSize(R.dimen.tod_picker_max_size) / 2,
+                (getMeasuredWidth() < getMeasuredHeight()
+                        ? getMeasuredWidth() / 2 : getMeasuredHeight() / 2));
 
-        mMinuteOuterRadius = (getMeasuredWidth() < getMeasuredHeight()
-                ? getMeasuredWidth() / 2 : getMeasuredHeight() / 2);
-        mMinuteInnerRadius = mMinuteOuterRadius - mTouchableAreaWidth
-                - (mAreaSeparator * 2);
-        mHourInnerRadius = mMinuteInnerRadius - mTouchableAreaWidth
-                - (mAreaSeparator * 2);
+        float rectRadius = mRadius - mTouchAreaWidth;
+        mArcRect.set(mCenter.x - rectRadius, mCenter.y - rectRadius,
+                mCenter.x + rectRadius, mCenter.y + rectRadius);
 
-        mArcRect.set(mCenter.x - mMinuteInnerRadius, mCenter.y - mMinuteInnerRadius,
-                mCenter.x + mMinuteInnerRadius, mCenter.y + mMinuteInnerRadius);
 
-        mAmPmRadius = Math.max(mHourInnerRadius - (mTouchableAreaWidth / 2),
-                mTouchableAreaWidth / 2);
-
-        int dashSize = mMinuteInnerRadius / 30;
+        float dashSize = mRadius / 30;
         mDashEffect = new DashPathEffect(new float[]{dashSize, dashSize}, 0);
         calculateNumberPositions();
 
@@ -381,9 +374,9 @@ public class TodPickerView extends View {
     private void calculateNumberPositions() {
         //Minutes
         mMinuteTextCoords.clear();
-        float stepDegrees = 360f * 5 / 60;
+        float stepDegrees = 360f / 12;
         for (int i = 0; i < 12; i++) {
-            PointF point = getCirclePointDegrees((int) ((mMinuteInnerRadius + mMinuteOuterRadius) / 2f),
+            PointF point = getCirclePointDegrees((int)(mRadius - mTouchAreaWidth / 2),
                     stepDegrees * i);
             point.x = point.x - (int) (mMinuteTextPaint.measureText(Integer.toString(i * 5)) / 2f);
             point.y = point.y + (int) (mMinuteTextPaint.getTextSize() * 0.35f);
@@ -391,9 +384,8 @@ public class TodPickerView extends View {
         }
         //Hours
         mHourTextCoords.clear();
-        stepDegrees = 360f / 12;
         for (int i = 1; i <= 12; i++) {
-            PointF point = getCirclePointDegrees((int) ((mHourInnerRadius + mMinuteInnerRadius) / 2f),
+            PointF point = getCirclePointDegrees((int) (mRadius - mTouchAreaWidth * 1.5),
                     stepDegrees * i);
             point.x = point.x - (int) (mHourTextPaint.measureText(Integer.toString(i)) / 2);
             point.y = point.y + (int) (mHourTextPaint.getTextSize() * 0.35f);
@@ -408,9 +400,7 @@ public class TodPickerView extends View {
         float distance = getDistance(mCenter.x, mCenter.y, x, y);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (distance < mAmPmRadius) {
-                    //TODO: Ripple!
-                } else if(mCursorsEnabled){
+                if(mCursorsEnabled){
                     mActiveCursor = getTouchedArea(distance);
                     if (mActiveCursor != NONE) {
                         onTouch(x, y, event.getAction());
@@ -428,9 +418,7 @@ public class TodPickerView extends View {
                 }
                 return true;
             case MotionEvent.ACTION_UP:
-                if (distance < mAmPmRadius) {
-                    toggleQuadrant();
-                }else if (mActiveCursor != NONE && mCursorsEnabled) {
+                if (mActiveCursor != NONE && mCursorsEnabled) {
                     onTouch(x, y, event.getAction());
                     mActiveCursor = NONE;
                     mMinuteCursor.setState(new int[]{});
@@ -448,9 +436,10 @@ public class TodPickerView extends View {
     }
 
     private int getTouchedArea(float distance) {
-        if (distance > mMinuteInnerRadius && distance <= mMinuteOuterRadius) {
+        if (distance > mRadius - mTouchAreaWidth && distance <= mRadius) {
             return MINUTE;
-        } else if (distance >= mHourInnerRadius && distance <= mMinuteInnerRadius) {
+        } else if (distance >= mRadius - mTouchAreaWidth * 2
+                && distance <= mRadius - mTouchAreaWidth) {
             return HOUR;
         } else {
             return NONE;
@@ -576,8 +565,8 @@ public class TodPickerView extends View {
 
     private void moveHourCursor(float radians) {
         mHourPointerCoords.set(
-                getCirclePointRadians(mHourInnerRadius + mAreaSeparator, radians));
-        PointF ch = getCirclePointRadians((mHourInnerRadius + mMinuteInnerRadius) / 2,
+                getCirclePointRadians((int)(mRadius - mTouchAreaWidth * 2), radians));
+        PointF ch = getCirclePointRadians(mRadius - mTouchAreaWidth * 1.5f,
                 radians);
         mHourCursorBounds.set((int) (ch.x - mCursorRadius), (int) (ch.y - mCursorRadius),
                 (int) (ch.x + mCursorRadius), (int) (ch.y + mCursorRadius));
@@ -585,8 +574,8 @@ public class TodPickerView extends View {
 
     private void moveMinuteCursor(float radians) {
         mMinutePointerCoords.set(
-                getCirclePointRadians(mMinuteInnerRadius + mAreaSeparator, radians));
-        PointF cm = getCirclePointRadians((mMinuteInnerRadius + mMinuteOuterRadius) / 2,
+                getCirclePointRadians(mRadius - mTouchAreaWidth, radians));
+        PointF cm = getCirclePointRadians(mRadius - mTouchAreaWidth / 2,
                 radians);
         mMinuteCursorBounds.set((int) (cm.x - mCursorRadius), (int) (cm.y - mCursorRadius),
                 (int) (cm.x + mCursorRadius), (int) (cm.y + mCursorRadius));
@@ -613,8 +602,7 @@ public class TodPickerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawCircle(mCenter.x, mCenter.y, mMinuteOuterRadius, mMinuteBgPaint);
-        canvas.drawCircle(mCenter.x, mCenter.y, mMinuteInnerRadius, mHourBgPaint);
+        canvas.drawCircle(mCenter.x, mCenter.y, mRadius, mMinuteBgPaint);
         drawUsedIntervals(canvas);
 
         if (mActiveInterval != null) {
@@ -692,9 +680,9 @@ public class TodPickerView extends View {
         canvas.drawArc(mArcRect, (float)(startAngle - 90), (float)(getDegrees(end) - startAngle), true, mArcPaint); //Fill the arc
 
         PointF c;
-        c = getCirclePointDegrees(mMinuteInnerRadius, getDegrees(start));
+        c = getCirclePointDegrees(mRadius - mTouchAreaWidth, getDegrees(start));
         drawLine(canvas, mCenter.x, mCenter.y, c.x, c.y, cut == 1, mArcBorderPaint);
-        c = getCirclePointDegrees(mMinuteInnerRadius, getDegrees(end));
+        c = getCirclePointDegrees(mRadius - mTouchAreaWidth, getDegrees(end));
         drawLine(canvas, mCenter.x, mCenter.y, c.x, c.y, cut == 2, mArcBorderPaint);
     }
 
@@ -713,24 +701,24 @@ public class TodPickerView extends View {
 
 
     private void drawAmPmSwitch(Canvas canvas) {
-        canvas.drawCircle(mCenter.x, mCenter.y, mAmPmRadius, mMinuteBgPaint);
+       /* canvas.drawCircle(mCenter.x, mCenter.y, mAmPmRadius, mMinuteBgPaint);
         String text;
        /* if(mActiveArea != null){
             
-        }else{*/
+        }else{
             text = mQuadrant == PM ? "PM" : "AM";
         //}
         int x = mCenter.x - (int) (mAmPmTextPaint.measureText(text) / 2f);
         int y = mCenter.y + (int) (mAmPmTextPaint.getTextSize() * 0.35f);
-        canvas.drawText(text, x, y, mAmPmTextPaint);
+        canvas.drawText(text, x, y, mAmPmTextPaint);*/
     }
 
-    private PointF getCirclePointDegrees(int radius, double degrees) {
+    private PointF getCirclePointDegrees(float radius, double degrees) {
         return getCirclePointRadians(radius, (float)Math.toRadians(degrees));
     }
 
-    private PointF getCirclePointRadians(int radius, float radians) {
-        radians = radians - (float) Math.PI / 2;
+    private PointF getCirclePointRadians(float radius, double radians) {
+        radians = radians - Math.PI / 2;
         return new PointF((float) (mCenter.x + radius * Math.cos(radians)),
                 (float) (mCenter.y + radius * Math.sin(radians)));
     }

@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -44,16 +45,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RadialTimePickerDialog dialog = RadialTimePickerDialog.newInstance(
-                new RadialTimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(RadialTimePickerDialog dialog, int hourOfDay, int minute) {
-
-                    }
-                }, 1, 0, false);
-        dialog.setThemeDark(true);
-        dialog.show(getSupportFragmentManager(), "lol");
-        /*setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawable(null);
 
         if (MiscUtils.UI.hasTranslucentStatus(this) && Build.VERSION.SDK_INT < 21) {
@@ -99,7 +91,7 @@ public class MainActivity extends ActionBarActivity {
             case ServiceUtils.SERVICE_TIMEOFDAY:
                 mTimeOfDayBubble.activate(false);
                 break;
-        }*/
+        }
     }
 
     @Override

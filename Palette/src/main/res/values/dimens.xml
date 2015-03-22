@@ -42,8 +42,8 @@
 
     <!--INTERVAL PICKER-->
     <dimen name="picker_outer_margin">4dp</dimen>
-    <dimen name="picker_touchable_area_width">48dp</dimen>
-    <dimen name="picker_text_size">24dp</dimen>
+    <dimen name="picker_touchable_area_width">32dp</dimen>
+    <dimen name="picker_text_size">18dp</dimen>
     <dimen name="picker_cursor_outer_circle_thickness">12dp</dimen>
     <dimen name="picker_max_width">280dp</dimen>
 
@@ -74,4 +74,11 @@
     <item name="thumbnail_geofence_factor" type="dimen">2.0</item>
     <item name="thumbnail_slideshow_factor" type="dimen">3.0</item>
     <item name="thumbnail_snapshot_factor" type="dimen">3.8</item>
+
+    <!--TOD PICKER-->
+    <dimen name="tod_picker_max_size">250dp</dimen>
+    <dimen name="tod_picker_toucharea_width">36dp</dimen>
+    <dimen name="tod_picker_hour_text_size">20sp</dimen>
+    <dimen name="tod_picker_minute_text_size">14sp</dimen>
+
 </resources>
