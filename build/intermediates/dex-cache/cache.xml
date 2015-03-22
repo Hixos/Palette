@@ -33,7 +33,11 @@
         jar="E:\Android\Projects\palette\Palette\build\intermediates\exploded-aar\palette\BetterPickers\unspecified\classes.jar"
         jumboMode="false"
         revision="21.1.2"
+<<<<<<< HEAD
         sha1="bf706037817d08d0813940a4de93b10d81384b4b">
+=======
+        sha1="63f6ad1e7564735839d166fd0149a4849911945b">
+>>>>>>> parent of bad8612... Snap minutes in radialpicker to multiples of 5
         <dex dex="E:\Android\Projects\palette\Palette\build\intermediates\pre-dexed\debug\classes-f97c14df3fcab0473ceb6f87b568e81accb04cc6.jar" />
     </item>
     <item
