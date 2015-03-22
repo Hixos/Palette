@@ -22,11 +22,11 @@ import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.doomonafireball.betterpickers.radialtimepicker.RadialTimePickerDialog;
 import com.hixos.smartwp.triggers.ServiceUtils;
 import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
 import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.timeofday.TimeOfDayWallpaper;
 import com.hixos.smartwp.triggers.timeofday.TodDatabase;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;

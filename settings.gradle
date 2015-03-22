@@ -1,1 +1,1 @@
-include ':Palette', ':BetterPickers'
+include ':Palette'
