@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hixos.smartwp.CropperActivity;
+import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SetWallpaperActivity;
 import com.hixos.smartwp.bitmaps.BitmapIO;
@@ -36,6 +37,7 @@ import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.Hour24;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
@@ -134,6 +136,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
             checkLiveWallpaper();
         }
+        mEditor.onResume();
     }
 
     @Override
@@ -228,7 +231,8 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                     mEditor.beginPickWallpaper(mDatabase.getNewUid());
                 }else {
                     Toast.makeText(getActivity(),
-                            getResources().getString(R.string.toast_tod_no_space_left), Toast.LENGTH_LONG);
+                            getResources().getString(R.string.toast_tod_no_space_left),
+                            Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.action_settings:
@@ -302,16 +306,24 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         }
     }
 
-    private class TimeOfDayEditor implements BitmapIO.OnImageCroppedCallback {
+    private class TimeOfDayEditor implements BitmapIO.OnImageCroppedCallback,
+            TodPickerDialog.TodPickerDialogListener {
         private static final int REQUEST_PICK_WALLPAPER = 0;
         private static final int REQUEST_PICK_CROP_WALLPAPER = 1;
-        private static final int REQUEST_PICK_TIMEOFDAY = 2;
 
         public boolean isPicking = false;
 
         private String mCurrentUid;
         private int mAutoCropRequest;
         private int mMutedColor, mVibrantColor;
+
+        private void onResume(){
+            TodPickerDialog dialog = (TodPickerDialog)getFragmentManager()
+                    .findFragmentByTag("todpicker");
+            if(dialog != null){
+                dialog.setListener(TimeOfDayEditor.this);
+            }
+        }
 
         private void onActivityResult(int requestCode, int resultCode, final Intent data) {
             switch (requestCode) {
@@ -329,12 +341,6 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                         isPicking = false;
                     }
                     break;
-                case REQUEST_PICK_TIMEOFDAY:
-                    if(resultCode == Activity.RESULT_OK){
-                        finishPickWallpaper(data);
-                    }else {
-                        isPicking = false;
-                    }
             }
         }
 
@@ -417,15 +423,12 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                     mMutedColor = mutedColor;
                     mVibrantColor = vibrantColor;
 
-                    Intent intent = new Intent(getActivity(),TimePickerActivity.class);
-                    List<TimeOfDayWallpaper> wallpapers = mDatabase.getOrderedWallpapers();
-                    ArrayList<Parcelable> wallpapersParc = new ArrayList<>();
-                    for(TimeOfDayWallpaper wp : wallpapers){
-                        wallpapersParc.add(wp);
-                    }
-                    intent.putExtra(TimePickerActivity.EXTRA_WALLPAPERS, wallpapersParc);
-                    intent.putExtra(TimePickerActivity.EXTRA_COLOR, mVibrantColor);
-                    startActivityForResult(intent, REQUEST_PICK_TIMEOFDAY);
+                    ArrayList<TimeOfDayWallpaper> wallpapers = mDatabase.getOrderedWallpapers();
+
+                    DialogFragment dialog = TodPickerDialog.getInstance(wallpapers, vibrantColor,
+                            TimeOfDayEditor.this);
+                    dialog.show(getFragmentManager(), "todpicker");
+
                 }
             });
         }
@@ -434,13 +437,11 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
          * Last part of the wallpaper picking procedure
          * Stores the wallpaper in the database
          */
-        private void finishPickWallpaper(final Intent data) {
-            Hour24 startHour = new Hour24(data.getIntExtra(TimePickerActivity.RESULT_START_HOUR, 0));
-            Hour24 endHour = new Hour24(data.getIntExtra(TimePickerActivity.RESULT_END_HOUR, 0));
+        private void finishPickWallpaper(Hour24 startHour, Hour24 endHour) {
             mDatabase.createWallpaper(mCurrentUid, startHour, endHour, mMutedColor, mVibrantColor);
             isPicking = false;
             hideEmptyState();
-            //checkLiveWallpaper();
+            checkLiveWallpaper();
         }
 
         @Override
@@ -468,6 +469,17 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                     break;
             }
             isPicking = false;
+        }
+
+        @Override
+        public void onTimePicked(Hour24 startHour, Hour24 endHour) {
+            finishPickWallpaper(startHour, endHour);
+        }
+
+        @Override
+        public void onCancel() {
+            isPicking = false;
+            FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(mCurrentUid));
         }
     }
 }

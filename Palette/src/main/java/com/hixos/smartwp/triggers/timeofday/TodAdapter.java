@@ -9,6 +9,7 @@ import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.widget.AsyncImageView;
 import com.hixos.smartwp.widget.FontTextView;
+import com.hixos.smartwp.widget.TimeDisplay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,10 +99,7 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
     public View getView(int position, View convertView, ViewGroup parent) {
         View v;
         AsyncImageView imageThumbnail;
-        FontTextView textStartTime;
-        FontTextView textEndTime;
-        FontTextView textStartPeriod;
-        FontTextView textEndPeriod;
+        TimeDisplay timeDisplayStart, timeDisplayEnd;
         FrameLayout frameTime;
 
         String uid = mWallpapers.get(position).getUid();
@@ -116,36 +114,26 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
 
         if (holder == null) {
             imageThumbnail = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
-            textStartTime = (FontTextView)v.findViewById(R.id.textview_starttime);
-            textEndTime = (FontTextView)v.findViewById(R.id.textview_endtime);
-            textStartPeriod = (FontTextView)v.findViewById(R.id.textview_starttimeperiod);
-            textEndPeriod = (FontTextView)v.findViewById(R.id.textview_endtimeperiod);
+            timeDisplayStart = (TimeDisplay)v.findViewById(R.id.timedisplay_start);
+            timeDisplayEnd = (TimeDisplay)v.findViewById(R.id.timedisplay_end);
             frameTime = (FrameLayout)v.findViewById(R.id.frameTime);
 
             holder = new ViewHolder();
             holder.imageThumbnail = imageThumbnail;
-            holder.textStartTime = textStartTime;
-            holder.textEndTime = textEndTime;
-            holder.textStartPeriod = textStartPeriod;
-            holder.textEndPeriod = textEndPeriod;
+            holder.timeDisplayStart = timeDisplayStart;
+            holder.timeDisplayEnd = timeDisplayEnd;
             holder.frameTime = frameTime;
             v.setTag(holder);
         } else {
             imageThumbnail = holder.imageThumbnail;
-            textStartTime = holder.textStartTime;
-            textEndTime = holder.textEndTime;
-            textEndPeriod = holder.textEndPeriod;
-            textStartPeriod = holder.textStartPeriod;
+            timeDisplayStart = holder.timeDisplayStart;
+            timeDisplayEnd = holder.timeDisplayEnd;
             frameTime = holder.frameTime;
         }
         imageThumbnail.setImageUID(uid);
         TimeOfDayWallpaper wp = mWallpapers.get(position);
-        String startTime = String.format("%d:%02d", wp.getStartHour().getHour(),
-                wp.getStartHour().getMinute());
-        String endTime = String.format("%d:%02d", wp.getEndHour().getHour(),
-                wp.getEndHour().getMinute());
-        textStartTime.setText(startTime);
-        textEndTime.setText(endTime);
+        timeDisplayStart.setTime(wp.getStartHour());
+        timeDisplayEnd.setTime(wp.getEndHour());
         //textStartPeriod.setText(wp.getStartHour().getPeriod() == Hour.AM ? "am" : "pm");
         //textEndPeriod.setText(wp.getEndHour().getPeriod() == Hour.AM ? "am" : "pm");
         frameTime.setBackgroundColor(wp.getMutedColor());
@@ -181,10 +169,7 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
 
     private class ViewHolder {
         AsyncImageView imageThumbnail;
-        FontTextView textStartTime;
-        FontTextView textEndTime;
-        FontTextView textStartPeriod;
-        FontTextView textEndPeriod;
+        TimeDisplay timeDisplayStart, timeDisplayEnd;
         FrameLayout frameTime;
     }
 }

@@ -1,6 +1,7 @@
 package com.hixos.smartwp.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -147,32 +148,21 @@ public class IntervalPicker extends View {
 
         mClockTextPaint = new Paint();
         if (!isInEditMode()) {
-            mClockTextPaint.setTypeface(Fonts.getTypeface(mContext, Fonts.STYLE_LIGHT | Fonts.STYLE_CONDENSED));
+            mClockTextPaint.setTypeface(Fonts.getTypeface(mContext, Fonts.STYLE_REGULAR));
         }
         mClockTextPaint.setAntiAlias(true);
-        mClockTextPaint.setTextSize(mContext.getResources().getDimensionPixelSize(R.dimen.picker_text_size));
+        mClockTextPaint.setTextSize(mContext.getResources().getDimensionPixelSize(R.dimen.tod_picker_hour_text_size));
         mClockTextPaint.setColor(mContext.getResources().getColor(R.color.picker_text));
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Resources res = getContext().getResources();
+        int maxSize = res.getDimensionPixelSize(R.dimen.picker_max_width);
+        int size = Math.min(maxSize, Math.min(MeasureSpec.getSize(widthMeasureSpec),
+                MeasureSpec.getSize(heightMeasureSpec)));
 
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        mWidth = widthSize;
-
-        //Measure Height
-        if (heightMode == MeasureSpec.EXACTLY) {
-            //Must be this size
-            mHeight = heightSize;
-        } else if (heightMode == MeasureSpec.AT_MOST) {
-            mHeight = Math.min(mWidth, heightSize);
-        } else {
-            mHeight = mWidth;
-        }
+        mWidth = mHeight = size;
 
         initDimensions();
 

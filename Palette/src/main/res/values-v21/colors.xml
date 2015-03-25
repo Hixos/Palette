@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="selector">#6FFF</color>
     <color name="selector_blue">#88D4E3FF</color>
     <color name="selector_orange">#88FFDECC</color>
     <color name="selector_green">#8899FF99</color>

@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/selector" />
+            <solid android:color="@color/selector_white" />
             <corners android:topLeftRadius="1.0dip"
                 android:topRightRadius="1.0dip"
                 android:bottomLeftRadius="1.0dip"

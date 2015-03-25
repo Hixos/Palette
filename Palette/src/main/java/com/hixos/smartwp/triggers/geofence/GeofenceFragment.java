@@ -35,6 +35,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.hixos.smartwp.CropperActivity;
+import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SetWallpaperActivity;
 import com.hixos.smartwp.bitmaps.BitmapIO;
@@ -649,6 +650,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
          * Called when the geofence picking failed
          */
         private void failedPickGeowallpaper() {
+            Logger.w("GEO","Deleting unused picture " + mCurrentUid);
             FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(mCurrentUid));
         }
 

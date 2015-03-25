@@ -6,13 +6,13 @@
 
     <!--TEXT-->
 
-    <dimen name="text_xsmall">16sp</dimen>
-    <dimen name="text_small">20sp</dimen>
-    <dimen name="text_medium">24sp</dimen>
-    <dimen name="text_large">28sp</dimen>
-    <dimen name="text_xlarge">34sp</dimen>
-    <dimen name="text_xxlarge">42sp</dimen>
-    <dimen name="text_super_xxlarge">56sp</dimen>
+    <dimen name="text_xsmall">14sp</dimen>
+    <dimen name="text_small">18sp</dimen>
+    <dimen name="text_medium">22sp</dimen>
+    <dimen name="text_large">26sp</dimen>
+    <dimen name="text_xlarge">32sp</dimen>
+    <dimen name="text_xxlarge">40sp</dimen>
+    <dimen name="text_super_xxlarge">50sp</dimen>
 
     <dimen name="clickable_text">@dimen/text_small</dimen>
     <!--END TEXT-->
@@ -45,7 +45,12 @@
     <dimen name="picker_touchable_area_width">32dp</dimen>
     <dimen name="picker_text_size">18dp</dimen>
     <dimen name="picker_cursor_outer_circle_thickness">12dp</dimen>
-    <dimen name="picker_max_width">280dp</dimen>
+    <dimen name="picker_max_width">240dp</dimen>
+    <!--TOD PICKER-->
+    <dimen name="tod_picker_max_size">240dp</dimen>
+    <dimen name="tod_picker_toucharea_width">32dp</dimen>
+    <dimen name="tod_picker_hour_text_size">18sp</dimen>
+    <dimen name="tod_picker_minute_text_size">14sp</dimen>
 
     <!--EMPTY STATE-->
     <dimen name="empty_state_line_width">2dp</dimen>
@@ -74,11 +79,4 @@
     <item name="thumbnail_geofence_factor" type="dimen">2.0</item>
     <item name="thumbnail_slideshow_factor" type="dimen">3.0</item>
     <item name="thumbnail_snapshot_factor" type="dimen">3.8</item>
-
-    <!--TOD PICKER-->
-    <dimen name="tod_picker_max_size">250dp</dimen>
-    <dimen name="tod_picker_toucharea_width">36dp</dimen>
-    <dimen name="tod_picker_hour_text_size">20sp</dimen>
-    <dimen name="tod_picker_minute_text_size">14sp</dimen>
-
 </resources>

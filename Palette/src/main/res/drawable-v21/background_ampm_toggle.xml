@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+<item android:state_checked="true">
+    <ripple android:color="@color/picker_selector_checked">
+        <item>
+            <shape android:shape="oval">
+                <solid android:color="@color/picker_background_checked" />
+            </shape>
+        </item>
+    </ripple>
+</item>
+
+<item>
+    <ripple android:color="@color/picker_selector">
+        <item>
+            <shape android:shape="oval">
+                <solid android:color="@color/picker_background" />
+            </shape>
+        </item>
+    </ripple>
+</item>
+
+</selector>

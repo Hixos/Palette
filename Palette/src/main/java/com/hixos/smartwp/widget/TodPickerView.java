@@ -18,6 +18,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.utils.Hour24;
 
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class TodPickerView extends View {
     private static final int NONE = 0;
-    private static final int AM = 0, PM = 1;
+    public static final int AM = 0, PM = 1;
 
     private static final int DIR_NONE = 0;
     private static final int DIR_CW = 1;
@@ -68,14 +69,13 @@ public class TodPickerView extends View {
     private Interval mQuadrantInterval;
 
     //Paints
-    private Paint mMinuteBgPaint;
-    private Paint mHourBgPaint;
+    private Paint mBgPaint;
+    private Paint mSmallDotPaint;
 
     private Paint mMinuteTextPaint;
     private Paint mHourTextPaint;
-    private Paint mAmPmTextPaint;
 
-    private Paint mMinutePointerPaint, mHourPointerPaint;
+    private Paint mPointerPaint;
 
     private Paint mArcPaint;
     private Paint mArcBorderPaint;
@@ -90,8 +90,6 @@ public class TodPickerView extends View {
     //Alterady used hours
     private List<Interval> mUsedIntervals;
     private List<Interval> mIntervalMasks;
-
-    private int mZeroPeriod = AM;
 
     //Active area
     private Interval mActiveInterval;
@@ -167,13 +165,13 @@ public class TodPickerView extends View {
     }
 
     private void initPaints() {
-        mMinuteBgPaint = new Paint();
-        mMinuteBgPaint.setColor(getContext().getResources().getColor(R.color.picker_background));
-        mMinuteBgPaint.setAntiAlias(true);
+        mBgPaint = new Paint();
+        mBgPaint.setColor(getContext().getResources().getColor(R.color.picker_background));
+        mBgPaint.setAntiAlias(true);
 
-        mHourBgPaint = new Paint();
-        mHourBgPaint.setColor(getContext().getResources().getColor(R.color.picker_background_light));
-        mHourBgPaint.setAntiAlias(true);
+        mSmallDotPaint = new Paint();
+        mSmallDotPaint.setColor(Color.BLACK);
+        mSmallDotPaint.setAntiAlias(true);
 
         mMinuteTextPaint = new Paint();
         if (!isInEditMode()) {
@@ -193,26 +191,11 @@ public class TodPickerView extends View {
                 .getDimensionPixelSize(R.dimen.tod_picker_hour_text_size));
         mHourTextPaint.setColor(getContext().getResources().getColor(R.color.picker_text));
 
-        mAmPmTextPaint = new Paint();
-        if (!isInEditMode()) {
-            mHourTextPaint.setTypeface(Fonts.getTypeface(getContext(), Fonts.STYLE_REGULAR));
-        }
-        mAmPmTextPaint.setAntiAlias(true);
-        mAmPmTextPaint.setTextSize(getContext().getResources()
-                .getDimensionPixelSize(R.dimen.picker_text_size));
-        mAmPmTextPaint.setColor(getContext().getResources().getColor(R.color.picker_text));
-
-        mHourPointerPaint = new Paint();
-        mHourPointerPaint.setAntiAlias(true);
-        mHourPointerPaint.setColor(getContext().getResources().getColor(R.color.picker_cursor_accent));
-        mHourPointerPaint.setStyle(Paint.Style.STROKE);
-        mHourPointerPaint.setStrokeWidth(4);
-
-        mMinutePointerPaint = new Paint();
-        mMinutePointerPaint.setAntiAlias(true);
-        mMinutePointerPaint.setColor(getContext().getResources().getColor(R.color.picker_cursor_accent));
-        mMinutePointerPaint.setStyle(Paint.Style.STROKE);
-        mMinutePointerPaint.setStrokeWidth(4);
+        mPointerPaint = new Paint();
+        mPointerPaint.setAntiAlias(true);
+        mPointerPaint.setColor(getContext().getResources().getColor(R.color.picker_cursor_accent));
+        mPointerPaint.setStyle(Paint.Style.STROKE);
+        mPointerPaint.setStrokeWidth(4);
 
         mArcPaint = new Paint();
         mArcPaint.setAntiAlias(true);
@@ -230,14 +213,20 @@ public class TodPickerView extends View {
         newHour.add(5);
 
         mActiveInterval = new Interval(startHour, newHour, color);
-        mMaxHour.set(Hour24.Hour2400());
-        for(Interval i : mUsedIntervals){
-            if(i.getStartHour().compare(startHour) > 0){
-                mMaxHour.set(i.getStartHour());
-                break;
+        calculateMaxHour();
+        setTime(newHour);
+    }
+
+    private void calculateMaxHour(){
+        if(mActiveInterval != null){
+            mMaxHour.set(Hour24.Hour2400());
+            for(Interval i : mUsedIntervals){
+                if(i.getStartHour().compare(mActiveInterval.getStartHour()) > 0){
+                    mMaxHour.set(i.getStartHour());
+                    break;
+                }
             }
         }
-        setTime(newHour);
     }
 
     public void addUsedInterval(Interval interval){
@@ -252,6 +241,7 @@ public class TodPickerView extends View {
         if (!added) mUsedIntervals.add(interval);
 
         updateIntervalMasks();
+        calculateMaxHour();
         setTime(getTime()); //Reset the time to avoid overlap with the newly added interval
         if(isFull(mQuadrant)){
             toggleQuadrant();
@@ -262,7 +252,7 @@ public class TodPickerView extends View {
         mIntervalMasks.clear();
         if(mUsedIntervals.size() > 0){
             List<Interval> masks = new ArrayList<>();
-            Hour24 startHour = mUsedIntervals.get(0).getStartHour();
+            Hour24 startHour = null;
             for(int i = 0; i < mUsedIntervals.size(); i++) {
                 Interval current = mUsedIntervals.get(i);
                 Interval next = i == mUsedIntervals.size() - 1 ? null : mUsedIntervals.get(i + 1);
@@ -278,7 +268,7 @@ public class TodPickerView extends View {
             for(Interval mask : masks){
                   if(mask.getStartHour().compare(mQuadrantInterval.getEndHour()) > 0){
                       break;
-                  } else if(mask.getEndHour().compare(mQuadrantInterval.getStartHour()) >= 0){
+                  } else if(mask.getEndHour().compare(mQuadrantInterval.getStartHour()) > 0){
                       Hour24 maskStart = new Hour24(mask.getStartHour()
                               .compare(mQuadrantInterval.getStartHour()) <= 0
                               ? mQuadrantInterval.getStartHour() : mask.getStartHour());
@@ -291,7 +281,28 @@ public class TodPickerView extends View {
         }
     }
 
+    public void forceSetTime(Hour24 hour){
+        mLastHour.set(mHour);
+        mHour.set(hour);
+        if(mActiveInterval != null){
+            mActiveInterval.getEndHour().set(mHour);
+        }
+
+        if(mListener != null){
+            mListener.onTimeChanged(this, getTime());
+        }
+
+        moveHourCursor((float)(HOUR_CURSOR_STEP * (mHour.getMinutes() / 5)));
+        moveMinuteCursor((float)(MINUTE_STEP * (mHour.getMinute() / 5)));
+
+        invalidate();
+    }
+
     public boolean setTime(Hour24 hour){
+        return setTime(hour, false);
+    }
+
+    private boolean setTime(Hour24 hour, boolean vibrate){
         if(!mCursorsEnabled){
             return false;
         }
@@ -334,12 +345,17 @@ public class TodPickerView extends View {
 
         mLastHour.set(mHour);
         mHour.set(hour);
+        if(mActiveCursor == MINUTE && mHour.getMinute() != mLastHour.getMinute()){
+            vibrate();
+        }else if(mActiveCursor == HOUR && mHour.getHour() != mLastHour.getHour()){
+            vibrate();
+        }
         if(mActiveInterval != null){
             mActiveInterval.getEndHour().set(mHour);
         }
 
         if(mListener != null){
-            mListener.onTimeChanged(getTime());
+            mListener.onTimeChanged(this, getTime());
         }
 
         moveHourCursor((float)(HOUR_CURSOR_STEP * (mHour.getMinutes() / 5)));
@@ -351,12 +367,15 @@ public class TodPickerView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         Resources res = getContext().getResources();
-        mCenter.set(getMeasuredWidth() / 2, getMeasuredHeight() / 2);
-        mRadius = Math.min(res.getDimensionPixelSize(R.dimen.tod_picker_max_size) / 2,
-                (getMeasuredWidth() < getMeasuredHeight()
-                        ? getMeasuredWidth() / 2 : getMeasuredHeight() / 2));
+        int maxSize = res.getDimensionPixelSize(R.dimen.tod_picker_max_size);
+        int size = Math.min(maxSize,Math.min(MeasureSpec.getSize(widthMeasureSpec),
+                MeasureSpec.getSize(heightMeasureSpec)));
+
+
+        mCenter.set(size / 2, size / 2);
+        mRadius = size / 2f;
+        setMeasuredDimension(size, size);
 
         float rectRadius = mRadius - mTouchAreaWidth;
         mArcRect.set(mCenter.x - rectRadius, mCenter.y - rectRadius,
@@ -558,8 +577,7 @@ public class TodPickerView extends View {
 
         Hour24 hour = getTime(hourRadians);
         if(!hour.equals(getTime())){
-            //vibrate();
-            setTime(hour);
+            setTime(hour, true);
         }
     }
 
@@ -602,17 +620,16 @@ public class TodPickerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawCircle(mCenter.x, mCenter.y, mRadius, mMinuteBgPaint);
+        canvas.drawCircle(mCenter.x, mCenter.y, mRadius, mBgPaint);
         drawUsedIntervals(canvas);
 
         if (mActiveInterval != null) {
             drawInterval(canvas, mActiveInterval);
         }
 
+        canvas.drawCircle(mCenter.x, mCenter.y, mRadius - mTouchAreaWidth * 2, mBgPaint);
         drawNumbers(canvas);
         drawCursors(canvas);
-
-        drawAmPmSwitch(canvas);
     }
 
     private void drawNumbers(Canvas canvas) {
@@ -627,15 +644,16 @@ public class TodPickerView extends View {
     private void drawCursors(Canvas canvas) {
         if(mCursorsEnabled){
             canvas.drawLine(mCenter.x, mCenter.y, mMinutePointerCoords.x, mMinutePointerCoords.y,
-                    mMinutePointerPaint);
+                    mPointerPaint);
             canvas.drawLine(mCenter.x, mCenter.y, mHourPointerCoords.x, mHourPointerCoords.y,
-                    mHourPointerPaint);
+                    mPointerPaint);
 
             mMinuteCursor.setBounds(mMinuteCursorBounds);
             mMinuteCursor.draw(canvas);
 
             mHourCursor.setBounds(mHourCursorBounds);
             mHourCursor.draw(canvas);
+            canvas.drawCircle(mCenter.x, mCenter.y, mRadius / 50, mSmallDotPaint);
         }
     }
 
@@ -673,8 +691,8 @@ public class TodPickerView extends View {
 
         mArcPaint.setColor(interval.getColor());
         mArcBorderPaint.setColor(interval.getColor());
-        mArcPaint.setAlpha(150);
-        mArcBorderPaint.setAlpha(220);
+        mArcPaint.setAlpha(80);
+        mArcBorderPaint.setAlpha(110);
 
         double startAngle = getDegrees(start);
         canvas.drawArc(mArcRect, (float)(startAngle - 90), (float)(getDegrees(end) - startAngle), true, mArcPaint); //Fill the arc
@@ -699,20 +717,6 @@ public class TodPickerView extends View {
         canvas.drawPath(mPath, paint);
     }
 
-
-    private void drawAmPmSwitch(Canvas canvas) {
-       /* canvas.drawCircle(mCenter.x, mCenter.y, mAmPmRadius, mMinuteBgPaint);
-        String text;
-       /* if(mActiveArea != null){
-            
-        }else{
-            text = mQuadrant == PM ? "PM" : "AM";
-        //}
-        int x = mCenter.x - (int) (mAmPmTextPaint.measureText(text) / 2f);
-        int y = mCenter.y + (int) (mAmPmTextPaint.getTextSize() * 0.35f);
-        canvas.drawText(text, x, y, mAmPmTextPaint);*/
-    }
-
     private PointF getCirclePointDegrees(float radius, double degrees) {
         return getCirclePointRadians(radius, (float)Math.toRadians(degrees));
     }
@@ -730,9 +734,11 @@ public class TodPickerView extends View {
         }
     }
 
-    private void setQuadrant(int quadrant){
-        if(mQuadrant == quadrant) return;
+    public int getQuadrant(){
+        return mQuadrant;
+    }
 
+    public void setQuadrant(int quadrant){
         mQuadrant = quadrant;
         if(mQuadrant == AM){
             mQuadrantInterval = new Interval(Hour24.Hour0000(), Hour24.Hour1200());
@@ -740,6 +746,12 @@ public class TodPickerView extends View {
             mQuadrantInterval = new Interval(Hour24.Hour1200(), Hour24.Hour2400());
         }
         mCursorsEnabled = !isFull(mQuadrant);
+        if(mActiveInterval != null){
+            mCursorsEnabled = mCursorsEnabled
+                    && mActiveInterval.getStartHour().compare(mQuadrantInterval.getEndHour()) < 0
+                    && mMaxHour.compare(mQuadrantInterval.getStartHour()) >= 0;
+        }
+
         if(mCursorsEnabled && !mQuadrantInterval.contains(getTime())) {
             Hour24 hour;
             switch (getTime().getMinutes()) {
@@ -756,11 +768,14 @@ public class TodPickerView extends View {
             }
             updateIntervalMasks();
             setTime(hour);
+        }else if(mCursorsEnabled){
+            updateIntervalMasks();
+            setTime(mHour);
         }else{
             invalidate();
         }
     }
-    private void toggleQuadrant() {
+    public void toggleQuadrant() {
         if (mQuadrant == AM) {
             setQuadrant(PM);
         } else {
@@ -783,10 +798,10 @@ public class TodPickerView extends View {
                         return false;
                     }
                     if(mUsedIntervals.get(i).getEndHour().compare(Hour24.Hour1200()) >= 0){
-                        break;
+                        return true;
                     }
                 }
-                return true;
+                return false;
             }
         }else{
             if(mUsedIntervals.get(mUsedIntervals.size() - 1)
@@ -855,9 +870,14 @@ public class TodPickerView extends View {
             return Math.abs(getStartHour().compare(hour)) < Math.abs(getEndHour().compare(hour))
                     ? getStartHour() : getEndHour();
         }
+
+        @Override
+        public String toString(){
+            return String.format("Interval{%s - %s : %d}", mStartHour.toString(), mEndHour.toString(), mColor);
+        }
     }
 
     public interface OnTimeChangedListener{
-        public void onTimeChanged(Hour24 time);
+        public void onTimeChanged(TodPickerView picker, Hour24 time);
     }
 }

@@ -101,6 +101,10 @@
     <string name="timeofday_name">Time of day</string>
     <string name="from_hour">From</string>
     <string name="to_hour">To</string>
+    <string name="am" translatable="false">am</string>
+    <string name="pm">pm</string>
+    <string name="dialog_tod_picker_title_start">Pick starting time</string>
+    <string name="dialog_tod_picker_title_end">Pick ending time</string>
 
 
 </resources>

@@ -121,10 +121,6 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".triggers.timeofday.TimePickerActivity"
-            android:label="@string/title_activity_time_picker" >
-        </activity>
     </application>
 
 </manifest>

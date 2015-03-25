@@ -201,9 +201,9 @@ public class TodDatabase extends DatabaseManager {
         }
     }
 
-    public List<TimeOfDayWallpaper> getOrderedWallpapers(){
+    public ArrayList<TimeOfDayWallpaper> getOrderedWallpapers(){
         SQLiteDatabase database = openDatabase();
-        List<TimeOfDayWallpaper> wallpapers = new ArrayList<>();
+        ArrayList<TimeOfDayWallpaper> wallpapers = new ArrayList<>();
         Cursor data = database.query(TABLE_DATA, TimeOfDayWallpaper.DATA_COLUMNS,
                 COLUMN_DATA_DELETED + " = " + 0, null, null, null,
                         COLUMN_DATA_START_HOUR + " ASC");
