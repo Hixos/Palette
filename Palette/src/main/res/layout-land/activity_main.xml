@@ -26,7 +26,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_margin="4dp" />
+                android:layout_margin="16dp" />
 
             <include
                 android:id="@+id/bubble_geofence"
@@ -34,7 +34,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_margin="4dp" />
+                android:layout_margin="16dp" />
 
             <include
                 android:id="@+id/bubble_timeofday"
@@ -42,7 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_margin="4dp" />
+                android:layout_margin="16dp" />
         </LinearLayout>
     </HorizontalScrollView>
 

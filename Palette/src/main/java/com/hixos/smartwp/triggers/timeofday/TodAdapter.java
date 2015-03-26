@@ -134,8 +134,6 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
         TimeOfDayWallpaper wp = mWallpapers.get(position);
         timeDisplayStart.setTime(wp.getStartHour());
         timeDisplayEnd.setTime(wp.getEndHour());
-        //textStartPeriod.setText(wp.getStartHour().getPeriod() == Hour.AM ? "am" : "pm");
-        //textEndPeriod.setText(wp.getEndHour().getPeriod() == Hour.AM ? "am" : "pm");
         frameTime.setBackgroundColor(wp.getMutedColor());
         return v;
     }
