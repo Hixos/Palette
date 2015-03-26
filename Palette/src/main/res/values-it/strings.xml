@@ -100,7 +100,7 @@
     <string name="timeofday_name">Ora del giorno</string>
     <string name="to_hour">Alle</string>
     <string name="from_hour">Dalle</string>
-    <string name="dialog_tod_picker_title_end">Scegli l\'ora di inizio</string>
-    <string name="dialog_tod_picker_title_start">Scegli l\'ora di fine</string>
+    <string name="dialog_tod_picker_title_end">Scegli l\'ora di fine</string>
+    <string name="dialog_tod_picker_title_start">Scegli l\'ora di inizio</string>
     <string name="pm">pm</string>
 </resources>
