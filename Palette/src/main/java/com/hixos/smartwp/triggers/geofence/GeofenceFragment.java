@@ -42,6 +42,7 @@ import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
@@ -55,8 +56,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GeofenceFragment extends Fragment implements UndoBarController.UndoListener,
-        GeofenceDatabase.OnElementRemovedListener, GeofenceDatabaseAdapter.OnEmptyStateClickListener,
-        GeofenceDatabaseAdapter.OnCardOverflowClickListener, PopupMenu.OnMenuItemClickListener,
+        GeofenceDatabase.OnElementRemovedListener, DefaultWallpaperTile.DefaultWallpaperTileListener,
         View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
@@ -342,7 +342,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 break;
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
                 if (resultCode != Activity.RESULT_OK) {
-                    Toast.makeText(getActivity(), R.string.error_location_not_found, Toast.LENGTH_LONG);
+                    Toast.makeText(getActivity(), R.string.error_location_not_found, Toast.LENGTH_LONG).show();
                 }
                 break;
             default:
@@ -356,8 +356,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     }
 
     public void setAdapter() {
-        GeofenceDatabaseAdapter adapter = new GeofenceDatabaseAdapter(getActivity(), mDatabase, this, this
-        );
+        GeofenceDatabaseAdapter adapter = new GeofenceDatabaseAdapter(getActivity(), mDatabase, this);
         mGridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -417,31 +416,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     }
 
     @Override
-    public void onCardOverflowClick(String uid, View view) {
-        PopupMenu popup = new PopupMenu(getActivity().getApplicationContext(), view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.popup_default_geofence, popup.getMenu());
-        popup.setOnMenuItemClickListener(this);
-        popup.show();
-    }
-
-    @Override
-    public void onEmptyStateClick(View view) {
-        mEditor.pickDefaultWallpaper();
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.action_change_wallpaper:
-                mEditor.pickDefaultWallpaper();
-                break;
-        }
-        return false;
-    }
-
-
-    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_error_wifi:
@@ -471,6 +445,16 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
             errorFragment.show(getFragmentManager(), "services_error");
 
         }
+    }
+
+    @Override
+    public void onDefaultWallpaperEmptyStateClick(View view) {
+        mEditor.pickDefaultWallpaper();
+    }
+
+    @Override
+    public void changeDefaultWallpaper() {
+        mEditor.pickDefaultWallpaper();
     }
 
     private class GeofenceEditor implements BitmapIO.OnImageCroppedCallback {

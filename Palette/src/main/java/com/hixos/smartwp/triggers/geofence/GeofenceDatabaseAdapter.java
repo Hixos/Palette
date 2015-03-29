@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
+import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.widget.AsyncImageView;
 
 import java.util.ArrayList;
@@ -16,18 +17,15 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     private final static int VIEW_TYPE_GEOFENCE = 1;
     private GeofenceDatabase mDatabase;
     private List<GeofenceData> mData;
-    private OnEmptyStateClickListener mEmptyStateListener;
-    private OnCardOverflowClickListener mCardOverflowListener;
+    private DefaultWallpaperTile.DefaultWallpaperTileListener mListener;
     private Context mContext;
 
-    public GeofenceDatabaseAdapter(Context context, GeofenceDatabase database, OnCardOverflowClickListener cardListener,
-                                   OnEmptyStateClickListener emptyStateListener) {
-        this.mDatabase = database;
+    public GeofenceDatabaseAdapter(Context context, GeofenceDatabase database,
+                                   DefaultWallpaperTile.DefaultWallpaperTileListener listener){
         this.mContext = context;
 
-        mEmptyStateListener = emptyStateListener;
-        mCardOverflowListener = cardListener;
-
+        mDatabase = database;
+        mListener = listener;
         mDatabase.setDatabaseObserver(this);
 
         mData = new ArrayList<>();
@@ -137,32 +135,8 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         switch (getItemViewType(i)) {
             case VIEW_TYPE_DEFAULT: {
-                View v = View.inflate(mContext, R.layout.grid_item_default_wallpaper, null);
-
-                if (GeofenceDatabase.hasDefaultWallpaper()) {
-                    AsyncImageView thumb = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
-                    thumb.setImageUID(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
-
-                    final View overflow = v.findViewById(R.id.button_overflow);
-                    overflow.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mCardOverflowListener.onCardOverflowClick(
-                                    GeofenceDatabase.DEFAULT_WALLPAPER_UID, overflow);
-                        }
-                    });
-                } else {
-                    View emptyState = v.findViewById(R.id.emptyState);
-                    emptyState.setVisibility(View.VISIBLE);
-                    v.findViewById(R.id.frame_thumbnail).setVisibility(View.INVISIBLE);
-                    emptyState.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mEmptyStateListener.onEmptyStateClick(view);
-                        }
-                    });
-                }
-                return v;
+                return DefaultWallpaperTile
+                        .inflate(mContext, GeofenceDatabase.hasDefaultWallpaper(), mListener);
             }
             default: {
                 i -= 1;
@@ -219,14 +193,6 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     @Override
     public int getViewTypeCount() {
         return 2;
-    }
-
-    public interface OnEmptyStateClickListener {
-        public void onEmptyStateClick(View view);
-    }
-
-    public interface OnCardOverflowClickListener {
-        public void onCardOverflowClick(String uid, View view);
     }
 
     private class ViewHolder {
