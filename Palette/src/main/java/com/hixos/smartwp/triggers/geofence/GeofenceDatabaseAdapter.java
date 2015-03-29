@@ -137,7 +137,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         switch (getItemViewType(i)) {
             case VIEW_TYPE_DEFAULT: {
-                View v = View.inflate(mContext, R.layout.grid_item_geofence_def, null);
+                View v = View.inflate(mContext, R.layout.grid_item_default_wallpaper, null);
 
                 if (GeofenceDatabase.hasDefaultWallpaper()) {
                     AsyncImageView thumb = (AsyncImageView) v.findViewById(R.id.image_thumbnail);
