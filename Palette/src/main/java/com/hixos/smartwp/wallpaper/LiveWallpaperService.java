@@ -100,13 +100,13 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             switch (activeService) {
                 case ServiceUtils.SERVICE_SLIDESHOW:
-                    setWallpaper(SlideshowService.getBestWallpaperUri(LiveWallpaperService.this));
+                    setWallpaper(SlideshowService.getBestWallpaperUri(LiveWallpaperService.this), true);
                     break;
                 case ServiceUtils.SERVICE_GEOFENCE:
-                    setWallpaper(GeofenceService.getBestWallpaperUri(LiveWallpaperService.this));
+                    setWallpaper(GeofenceService.getBestWallpaperUri(LiveWallpaperService.this), true);
                     break;
                 case ServiceUtils.SERVICE_TIMEOFDAY:
-                    setWallpaper(TimeOfDayService.getBestWallpaperUri(LiveWallpaperService.this));
+                    setWallpaper(TimeOfDayService.getBestWallpaperUri(LiveWallpaperService.this), true);
                     break;
             }
         }
@@ -135,7 +135,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             super.onVisibilityChanged(visible);
             mVisible = visible;
             if (mVisible && mQueuedWallpaper != null) {
-                setWallpaper(mQueuedWallpaper);
+                setWallpaper(mQueuedWallpaper, true);
             } else if (!mVisible && mTask != null && !mTask.isCancelled()) {
                 mTask.cancel(true);
             }
@@ -150,9 +150,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             requestRender();
         }
 
-        public void setWallpaper(Uri wallpaper) {
+        public void setWallpaper(Uri wallpaper, boolean forceLoad) {
             if (mVisible) {
-                if (mCurrentWallaper == null || wallpaper.compareTo(mCurrentWallaper) != 0) {
+                if (mCurrentWallaper == null || !wallpaper.equals(mCurrentWallaper) || forceLoad) {
                     if (mTask != null && !mTask.isCancelled()) {
                         mTask.cancel(true);
                     }
@@ -173,7 +173,16 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onWallpaperChanged(Uri wallpaper) {
             if (wallpaper != null) {
-                setWallpaper(wallpaper);
+                setWallpaper(wallpaper, false);
+            } else {
+                Logger.e(LOGTAG, "Wallpaper uri is null");
+            }
+        }
+
+        @Override
+        public void onWallpaperChanged(Uri wallpaper, boolean forceLoad) {
+            if (wallpaper != null) {
+                setWallpaper(wallpaper, forceLoad);
             } else {
                 Logger.e(LOGTAG, "Wallpaper uri is null");
             }

@@ -114,7 +114,11 @@ public class TimeOfDayService {
             if (FileUtils.fileExistance(uri)) return uri;
             else Logger.e(LOGTAG, "Wallpaper file not found");
         }else{
-            Logger.w(LOGTAG, "Wallpaper is null");
+            Uri def = ImageManager.getInstance().getPictureUri(TodDatabase.DEFAULT_WALLPAPER_UID);
+            if(FileUtils.fileExistance(def)) {
+                Logger.w(LOGTAG, "Returning default wallpaper");
+                return def;
+            }
         }
         Logger.w(LOGTAG + ".getBest", "Wallpaper not found, returning default");
         return Uri.parse("android.resource://" + context.getPackageName() + "/"
@@ -126,10 +130,14 @@ public class TimeOfDayService {
         Calendar calendar = Calendar.getInstance();
         TodDatabase database = new TodDatabase(context);
         TimeOfDayWallpaper current = database.getCurrentWallpaper(calendar);
+        Calendar next;
         if(current != null){
             Logger.fileW(context, LOGTAG, "Current: %s", current.getStartHour().toString());
+            next = current.getEndHour().toCalendar();
+        }else{
+            next = database.getNextWallpaperStart(calendar);
         }
-        Calendar next = database.getNextWallpaperStart(calendar);
+
         setWallpaper(context, current);
 
         if(next != null){
@@ -170,11 +178,17 @@ public class TimeOfDayService {
                     ImageManager.getInstance().getPictureUri(wallpaper.getUid()));
             return true;
         }else{
-            Uri def = Uri.parse("android.resource://" + context.getPackageName() + "/"
-                    + R.raw.wallpaper);
-            Logger.e(LOGTAG + ".receive", "Wallpaper not found, using default");
-            //TODO: show notification
-            mCallback.onWallpaperChanged(def);
+            Uri def = ImageManager.getInstance().getPictureUri(TodDatabase.DEFAULT_WALLPAPER_UID);
+            if(FileUtils.fileExistance(def)){
+                Logger.w(LOGTAG, "Setting default wallpaper");
+                mCallback.onWallpaperChanged(def, true);
+            }else {
+                Uri bck = Uri.parse("android.resource://" + context.getPackageName() + "/"
+                        + R.raw.wallpaper);
+                Logger.e(LOGTAG + ".receive", "Wallpaper not found, using default");
+                //TODO: show notification
+                mCallback.onWallpaperChanged(bck, true);
+            }
         }
         return false;
     }

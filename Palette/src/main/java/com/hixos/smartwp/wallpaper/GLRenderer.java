@@ -5,6 +5,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
+import com.hixos.smartwp.Logger;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -91,8 +93,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     }
 
     private void loadWallpaper(Bitmap wallpaper, int crossFadeDuration) {
+        Logger.w(LOGTAG, "Loading");
         if (mNextWallpaper != null) {
             mCrossfadeAnimator.cancel();
+            Logger.w(LOGTAG, "Killing");
             swapWallpapers();
         }
 

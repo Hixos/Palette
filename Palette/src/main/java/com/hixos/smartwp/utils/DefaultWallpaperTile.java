@@ -22,18 +22,16 @@ public class DefaultWallpaperTile{
     public static View inflate(Context context, final boolean emptyStateVisible,
                                final DefaultWallpaperTileListener listener){
         View tileView = LayoutInflater.from(context).inflate(R.layout.grid_item_default_wallpaper, null);
-        final AsyncImageView thumbnail =  (AsyncImageView)tileView.findViewById(R.id.image_thumbnail);
+        final View frame_thumbnail =  tileView.findViewById(R.id.frame_thumbnail);
         final View overflowButton = tileView.findViewById(R.id.button_overflow);
         final View emptyState = tileView.findViewById(R.id.emptyState);
 
         if(emptyStateVisible){
             emptyState.setVisibility(View.VISIBLE);
-            thumbnail.setVisibility(View.GONE);
-            overflowButton.setVisibility(View.GONE);
+            frame_thumbnail.setVisibility(View.INVISIBLE);
         }else{
-            emptyState.setVisibility(View.GONE);
-            thumbnail.setVisibility(View.VISIBLE);
-            overflowButton.setVisibility(View.VISIBLE);
+            emptyState.setVisibility(View.INVISIBLE);
+            frame_thumbnail.setVisibility(View.VISIBLE);
         }
 
         overflowButton.setOnClickListener(new View.OnClickListener() {
@@ -59,5 +57,10 @@ public class DefaultWallpaperTile{
             }
         });
         return tileView;
+    }
+
+    public static void setThumbnail(View tile, String uid){
+        AsyncImageView imageView = (AsyncImageView)tile.findViewById(R.id.image_thumbnail);
+        imageView.setImageUID(uid);
     }
 }

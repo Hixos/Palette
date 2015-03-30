@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,7 +37,7 @@ import com.hixos.smartwp.bitmaps.BitmapUtils;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.Hour24;
 import com.hixos.smartwp.utils.MiscUtils;
@@ -52,7 +53,8 @@ import java.util.List;
 /**
  * Created by Luca on 11/02/2015.
  */
-public class TodFragment extends Fragment implements UndoBarController.UndoListener, TodDatabase.OnElementRemovedListener {
+public class TodFragment extends Fragment implements UndoBarController.UndoListener,
+        TodDatabase.OnElementRemovedListener, DefaultWallpaperTile.DefaultWallpaperTileListener{
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
     private boolean mSetWallpaperActivityVisible = false;
 
@@ -146,7 +148,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void initEmptyState(View view) {
-       if (mDatabase.getWallpaperCount() != 0) {
+       if (mDatabase.getWallpaperCount() != 0 || TodDatabase.hasDefaultWallpaper()) {
             mArrowView = null;
             mEmptyState = null;
             return;
@@ -208,7 +210,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void setAdapter() {
-        TodAdapter adapter = new TodAdapter(getActivity(), mDatabase);
+        TodAdapter adapter = new TodAdapter(getActivity(), mDatabase, this);
         mGridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -293,7 +295,6 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
         if (cache != null) {
             cache.remove(uid);
-            cache.remove(GeofenceDatabase.getSnapshotUid(uid));
         }
     }
     private void checkLiveWallpaper() {
@@ -306,11 +307,20 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         }
     }
 
+    @Override
+    public void onDefaultWallpaperEmptyStateClick(View view) {
+        mEditor.pickDefaultWallpaper();
+    }
+
+    @Override
+    public void changeDefaultWallpaper() {
+        mEditor.pickDefaultWallpaper();
+    }
+
     private class TimeOfDayEditor implements BitmapIO.OnImageCroppedCallback,
             TodPickerDialog.TodPickerDialogListener {
         private static final int REQUEST_PICK_WALLPAPER = 0;
         private static final int REQUEST_PICK_CROP_WALLPAPER = 1;
-
         public boolean isPicking = false;
 
         private String mCurrentUid;
@@ -336,12 +346,36 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                     break;
                 case REQUEST_PICK_CROP_WALLPAPER:
                     if (resultCode == Activity.RESULT_OK) {
-                        pickTimeOfDay();
+                        if(mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)){
+                            finishPickDefaultWallpaper();
+                        }else{
+                            pickTimeOfDay();
+                        }
+
                     }else {
                         isPicking = false;
                     }
                     break;
             }
+        }
+
+        private void pickDefaultWallpaper(){
+            if (isPicking)
+                return;
+            isPicking = true;
+            Intent i = MiscUtils.Activity.galleryPickerIntent();
+            startActivityForResult(i, REQUEST_PICK_WALLPAPER);
+            mCurrentUid = TodDatabase.DEFAULT_WALLPAPER_UID;
+        }
+
+        private void finishPickDefaultWallpaper(){
+            LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+            if (cache != null) {
+                cache.remove(TodDatabase.DEFAULT_WALLPAPER_UID);
+            }
+            ((BaseAdapter) mGridView.getAdapter()).notifyDataSetChanged();
+            checkLiveWallpaper();
+            isPicking = false;
         }
 
         /**
@@ -373,7 +407,9 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                 return;
             }
             Uri image = data.getData();
-
+            if (mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)) {
+                TodDatabase.deleteDefaultWallpaper();
+            }
             if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
                     getResources().getBoolean(R.bool.auto_crop_default_val))) {
                 //Manual cropping
@@ -452,7 +488,11 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
             }
             switch (mAutoCropRequest) {
                 case REQUEST_PICK_CROP_WALLPAPER:
-                    pickTimeOfDay();
+                    if(mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)){
+                        finishPickDefaultWallpaper();
+                    }else{
+                        pickTimeOfDay();
+                    }
                     break;
             }
         }

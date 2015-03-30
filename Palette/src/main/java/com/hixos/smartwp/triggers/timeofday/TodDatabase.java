@@ -28,6 +28,7 @@ public class TodDatabase extends DatabaseManager {
     public final static String COLUMN_DATA_DELETED = "[deleted]";
 
     public static final String TOD_ID_PREFIX = "tod-";
+    public static final String DEFAULT_WALLPAPER_UID = TOD_ID_PREFIX + "1337";
     private static final String TAG = "timeofday";
     private static final String LOGTAG = "TodDatabase";
 
@@ -55,6 +56,17 @@ public class TodDatabase extends DatabaseManager {
     public void setOnElementRemovedListener(OnElementRemovedListener listener){
         mOnElementRemovedListener = listener;
     }
+
+    public static boolean hasDefaultWallpaper() {
+        return FileUtils.fileExistance(ImageManager.getInstance()
+                .getPictureUri(DEFAULT_WALLPAPER_UID));
+    }
+
+    public static void deleteDefaultWallpaper() {
+        FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(DEFAULT_WALLPAPER_UID));
+        FileUtils.deleteFile(ImageManager.getInstance().getThumbnailUri(DEFAULT_WALLPAPER_UID));
+    }
+
 
     public TimeOfDayWallpaper createWallpaper(String uid, Hour24 startHour, Hour24 endHour,
                                               int mutedColor, int vibrantColor){
@@ -172,17 +184,12 @@ public class TodDatabase extends DatabaseManager {
     public TimeOfDayWallpaper getCurrentWallpaper(Calendar calendar){
         List<TimeOfDayWallpaper> wallpapers = getOrderedWallpapers();
         Hour24 current = Hour24.fromCalendar(calendar);
-        for(int i = wallpapers.size() - 1; i >= 0; i--){
-            TimeOfDayWallpaper wp = wallpapers.get(i);
-            if(current.compare(wp.getStartHour()) >= 0){
+        for(TimeOfDayWallpaper wp : wallpapers){
+            if(current.compare(wp.getStartHour()) >= 0 && current.compare(wp.getEndHour()) < 0){
                 return wp;
             }
         }
-        if(wallpapers.size() > 0){
-            return wallpapers.get(0);
-        }else{
-            return null;
-        }
+        return null;
     }
 
     public Calendar getNextWallpaperStart(Calendar calendar){
