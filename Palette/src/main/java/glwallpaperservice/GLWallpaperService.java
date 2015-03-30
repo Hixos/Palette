@@ -366,7 +366,7 @@ class EglHelper {
                 if (mEglConfig == null) {
                         // Log.d("EglHelper" + instanceId, "getting new config");
                         /*
-                         * We can now initialize EGL for that display
+                         * We can now inflate EGL for that display
                          */
                         int[] version = new int[2];
                         mEgl.eglInitialize(mEglDisplay, version);

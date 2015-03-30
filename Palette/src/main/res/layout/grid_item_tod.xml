@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false">
+    <FrameLayout
+        android:id="@+id/frameTime"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <com.hixos.smartwp.widget.TimeDisplay
+                android:id="@+id/timedisplay_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                custom:textColor="@color/accent_green"
+                custom:textTimeSize="@dimen/text_large"
+                custom:textPeriodSize="@dimen/text_xsmall"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_navigation_arrow_forward"
+                android:id="@+id/imageview_time_arrow"
+                android:layout_gravity="center_horizontal" />
+
+            <com.hixos.smartwp.widget.TimeDisplay
+                android:id="@+id/timedisplay_end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                custom:textTimeSize="@dimen/text_large"
+                custom:textPeriodSize="@dimen/text_xsmall"
+                custom:textColor="@color/accent_red"/>
+        </LinearLayout>
+    </FrameLayout>
+
+
+    <view
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        custom:ratio="@dimen/item_ratio_tod"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        class="com.hixos.smartwp.widget.AsyncImageView"
+        android:id="@+id/image_thumbnail"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+        android:layout_weight="1.5"/>
+</LinearLayout>

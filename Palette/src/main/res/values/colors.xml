@@ -9,13 +9,17 @@
     <color name="palette_primary">#C111</color>
     <color name="palette_primary_ultra_translucent">#8111</color>
 
+    <color name="background_brightdark">#FF181818</color>
     <color name="background_translucentwindow">#D111</color>
 
-    <color name="selector">#3FFF</color>
+    <color name="selector_white">#3FFF</color>
     <color name="selector_gray">#C333</color>
     <color name="selector_blue">#55D4E3FF</color>
     <color name="selector_orange">#55FFDECC</color>
     <color name="selector_red">#55FFC2D1</color>
+    <color name="selector_green">#5599FF99</color>
+
+    <color name="checked_white">#2FFF</color>
 
     <color name="accent_red">#FFD10236</color>
     <color name="accent_orange">#FFED671F</color>
@@ -43,7 +47,11 @@
 
     <!--INTERVAL PICKER-->
     <color name="picker_outer_stroke">#FFFF</color>
-    <color name="picker_background">#F222</color>
+    <color name="picker_background">@color/background_brightdark</color>
+    <color name="picker_background_checked">#555</color>
+    <color name="picker_selector">#777</color>
+    <color name="picker_selector_checked">#333</color>
+    <color name="picker_background_light">#F333</color>
     <color name="picker_inner_circle">#FFFF</color>
 
     <color name="picker_cursor_background">#5FFF</color>

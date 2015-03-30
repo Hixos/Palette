@@ -50,7 +50,7 @@
     <string name="notif_bigtext_play_services_fix">Google Play Services are not installed on your device.\nClick here to solve the problem.</string>
     <string name="notif_text_play_services_fix">Click here to solve the problem.</string>
     <string name="donot_show_again">Don\'t show this again</string>
-
+    <string name="toast_tod_no_space_left">The day is full!</string>
 
     <!-- PLURALS -->
     <plurals name="second">
@@ -95,5 +95,16 @@
     <string name="title_activity_provider_fix" translatable="false">Provider Fix</string>
     <string name="title_activity_wallpaper_settings">Live Wallpaper Settings</string>
     <string name="title_activity_receive_wallpaper">Add wallpaper</string>
+    <string name="title_activity_time_picker">Pick a time&#8230;</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="timeofday_name">Time of day</string>
+    <string name="from_hour">From</string>
+    <string name="to_hour">To</string>
+    <string name="am" translatable="false">am</string>
+    <string name="pm">pm</string>
+    <string name="dialog_tod_picker_title_start">Pick starting time</string>
+    <string name="dialog_tod_picker_title_end">Pick ending time</string>
+
 
 </resources>

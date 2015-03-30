@@ -4,8 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.timeofday.TodDatabase;
+
 
 /**
  * Created by Luca on 22/10/13.
@@ -13,7 +15,7 @@ import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public final static String DATABASE_NAME = "SmartWallpaper";
-    public final static int DATABASE_VERSION = 10;
+    public final static int DATABASE_VERSION = 11;
 
     private Context mContext;
 
@@ -49,11 +51,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sql += ");";
 
         sqLiteDatabase.execSQL(sql);
+
+        sql = "CREATE TABLE " + TodDatabase.TABLE_DATA + "(";
+        sql += TodDatabase.COLUMN_DATA_ID + " TEXT PRIMARY KEY, ";
+        sql += TodDatabase.COLUMN_DATA_START_HOUR + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
+        sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
+        sql += ");";
+
+        sqLiteDatabase.execSQL(sql);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-
+        switch (oldVersion){
+            case 10:
+                String sql = "CREATE TABLE " + TodDatabase.TABLE_DATA + "(";
+                sql += TodDatabase.COLUMN_DATA_ID + " TEXT PRIMARY KEY, ";
+                sql += TodDatabase.COLUMN_DATA_START_HOUR + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_END_HOUR + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_COLOR_MUTED + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_COLOR_VIBRANT + " INTEGER, ";
+                sql += TodDatabase.COLUMN_DATA_DELETED + " INTEGER";
+                sql += ");";
+                sqLiteDatabase.execSQL(sql);
+        }
     }
 
     @Override

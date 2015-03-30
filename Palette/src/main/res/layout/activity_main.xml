@@ -29,7 +29,8 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
 
             <include
                 android:id="@+id/bubble_geofence"
@@ -39,7 +40,8 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
 
             <include
                 android:id="@+id/bubble_timeofday"
@@ -47,10 +49,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_gravity="center"
-                android:layout_marginBottom="4dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
         </LinearLayout>
     </ScrollView>
 

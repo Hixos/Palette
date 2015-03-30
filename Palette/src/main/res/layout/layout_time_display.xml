@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="11:22"
+        android:id="@+id/textViewTime"
+        android:gravity="center_vertical|start" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="am"
+        android:layout_marginLeft="4dp"
+        android:textAllCaps="true"
+        android:id="@+id/textViewPeriod"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical|start" />
+</merge>

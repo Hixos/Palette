@@ -33,8 +33,9 @@ import com.hixos.smartwp.widget.CropView;
 
 
 public class CropperActivity extends ActionBarActivity implements BitmapIO.OnImageCroppedCallback, ImageManager.OnImageLoadedListener {
-    public final static String EXTRA_IMAGE = "com.hixos.smartwp.EXTRA_IMAGE";
-    public final static String EXTRA_OUTPUT = "com.hixos.smartwp.EXTRA_OUTPUT";
+    public final static String EXTRA_IMAGE = "extra_image";
+    public final static String EXTRA_OUTPUT = "extra_output";
+
     public static final int RESULT_ERROR = 2;
     private CropView mCropView;
     private CropModeSpinnerAdapter mSpinnerAdapter;

@@ -7,7 +7,6 @@ import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -16,16 +15,19 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.hixos.smartwp.services.ServiceUtils;
-import com.hixos.smartwp.services.ServicesActivity;
-import com.hixos.smartwp.services.geofence.GeofenceDatabase;
-import com.hixos.smartwp.services.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.ServiceUtils;
+import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.timeofday.TodDatabase;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;
 
@@ -37,8 +39,11 @@ public class MainActivity extends ActionBarActivity {
 
     private int mInitialActiveService;
 
+    private LinearLayout mRoot;
     private ScrollView mScrollView;
     private HorizontalScrollView mHorizScrollView;
+
+    private boolean mPaddingAdded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,7 @@ public class MainActivity extends ActionBarActivity {
 
         mScrollView = (ScrollView) findViewById(R.id.scrollView);
         mHorizScrollView = (HorizontalScrollView) findViewById(R.id.horizontalScrollView);
+        mRoot = (LinearLayout) findViewById(R.id.root);
 
         mSlideshowBubble
                 .setColor(getResources().getColor(R.color.accent_blue))
@@ -73,9 +79,9 @@ public class MainActivity extends ActionBarActivity {
 
         mTimeOfDayBubble
                 .setColor(getResources().getColor(R.color.accent_green))
-                .setText(getString(R.string.name_geofence))
-                .setInnerDrawable(getResources().getDrawable(R.drawable.ic_geofence_dark))
-                .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_orange));
+                .setText(getString(R.string.timeofday_name))
+                .setInnerDrawable(getResources().getDrawable(R.drawable.ic_timeofday_dark))
+                .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_green));
 
         mInitialActiveService = ServiceUtils.getActiveService(this);
 
@@ -90,6 +96,57 @@ public class MainActivity extends ActionBarActivity {
                 mTimeOfDayBubble.activate(false);
                 break;
         }
+
+        mRoot.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if(!mPaddingAdded){
+                    View child = mRoot.getChildAt(0);
+                    if(mScrollView != null){
+                        int sh = mScrollView.getHeight() - mScrollView.getPaddingBottom() - mScrollView.getPaddingTop();
+                        int paddingTop = Math.abs(child.getTop() + (child.getHeight() - sh) / 2);
+                        child = mRoot.getChildAt(mRoot.getChildCount() - 1);
+                        int paddingBottom = (child.getTop() + (child.getHeight() - sh) / 2) + sh - mRoot.getHeight();
+                        mRoot.setPadding(mRoot.getPaddingLeft(), paddingTop, mRoot.getPaddingRight(), paddingBottom);
+                    }else if(mHorizScrollView != null){
+                        int sw = mHorizScrollView.getWidth() - mHorizScrollView.getPaddingRight() - mHorizScrollView.getPaddingLeft();
+                        int paddingLeft = Math.abs(child.getLeft() + (child.getWidth() - sw) / 2);
+                        child = mRoot.getChildAt(mRoot.getChildCount() - 1);
+                        int paddingRight = (child.getLeft() + (child.getWidth() - sw) / 2) + sw - mRoot.getWidth();
+                        mRoot.setPadding(paddingLeft, mRoot.getPaddingTop(), paddingRight, mRoot.getPaddingBottom());
+                    }
+
+                    mPaddingAdded = true;
+                }else{
+                    scrollToActiveBubble();
+                    if(Build.VERSION.SDK_INT >= 16){
+                        mRoot.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }else{
+                        mRoot.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    }
+                }
+            }
+        });
+
+
+    }
+
+    private void scrollToActiveBubble(){
+        int index = 0;
+        if(mSlideshowBubble.isActive()){
+            index = mRoot.indexOfChild(mSlideshowBubble.getView());
+        }else if(mLocationBubble.isActive()){
+            index = mRoot.indexOfChild(mLocationBubble.getView());
+        }else if(mTimeOfDayBubble.isActive()){
+            index = mRoot.indexOfChild(mTimeOfDayBubble.getView());
+        }
+        scrollToChild(index, false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 
     @Override
@@ -112,6 +169,29 @@ public class MainActivity extends ActionBarActivity {
         return true;
     }
 
+    private void scrollToChild(int childIndex, boolean animate){
+        if(mScrollView != null){
+            View child = mRoot.getChildAt(childIndex);
+            int sh = mScrollView.getHeight() - mScrollView.getPaddingBottom() - mScrollView.getPaddingTop();
+            int desiredScroll = child.getTop() + (child.getHeight() - sh) / 2;
+            if(animate){
+                mScrollView.smoothScrollTo(0, desiredScroll);
+            }else{
+                mScrollView.scrollTo(0, desiredScroll);
+            }
+        }else if(mHorizScrollView != null){
+            View child = mRoot.getChildAt(childIndex);
+            int sw = mHorizScrollView.getWidth() - mHorizScrollView.getPaddingRight() - mHorizScrollView.getPaddingLeft();
+            int desiredScroll = child.getLeft() + (child.getWidth() - sw) / 2;
+            if(animate){
+                mHorizScrollView.smoothScrollTo(desiredScroll, 0);
+            }else{
+                mHorizScrollView.scrollTo(desiredScroll, 0);
+            }
+        }
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -127,6 +207,7 @@ public class MainActivity extends ActionBarActivity {
     private void onBubbleClick(int id) {
         switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
+                scrollToChild(mRoot.indexOfChild(mSlideshowBubble.getView()), true);
                 if (mSlideshowBubble.isExpanded()) {
                     onSettingsClick(id);
                 } else {
@@ -136,6 +217,7 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
+                scrollToChild(mRoot.indexOfChild(mLocationBubble.getView()), true);
                 if (mLocationBubble.isExpanded()) {
                     onSettingsClick(id);
                 } else {
@@ -145,12 +227,13 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
             case ServiceUtils.SERVICE_TIMEOFDAY:
+                scrollToChild(mRoot.indexOfChild(mTimeOfDayBubble.getView()), true);
                 if (mTimeOfDayBubble.isExpanded()) {
                     onSettingsClick(id);
                 } else {
                     mSlideshowBubble.deactivate();
                     mLocationBubble.deactivate();
-                    //ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_TIMEOFDAY);
+                    ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_TIMEOFDAY);
                 }
                 break;
         }
@@ -168,9 +251,13 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(intent);
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                mSlideshowBubble.deactivate();
                 intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
                         ServiceUtils.SERVICE_GEOFENCE);
+                startActivity(intent);
+                break;
+            case ServiceUtils.SERVICE_TIMEOFDAY:
+                intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
+                        ServiceUtils.SERVICE_TIMEOFDAY);
                 startActivity(intent);
                 break;
         }
@@ -190,9 +277,10 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
             case ServiceUtils.SERVICE_TIMEOFDAY:
-                /*if (!GeofenceDatabase.hasDefaultWallpaper()) {
-                    onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
-                }*/
+                TodDatabase todDatabase = new TodDatabase(this);
+                if(todDatabase.getWallpaperCount() == 0){
+                    onSettingsClick(ServiceUtils.SERVICE_TIMEOFDAY);
+                }
                 break;
         }
     }
@@ -205,6 +293,10 @@ public class MainActivity extends ActionBarActivity {
         private final static float MIN_ALPHA = 0.4f;
 
         private int mID;
+
+        public View getView() {
+            return mView;
+        }
 
         private View mView;
         private CircleView mCircle;
@@ -310,32 +402,11 @@ public class MainActivity extends ActionBarActivity {
                 });
 
                 mAnimatorSet.start();
-                Rect hitRect = new Rect();
-                mView.getHitRect(hitRect);
-                Rect scrollRect = new Rect();
-                if (mScrollView != null) {
-                    mScrollView.getDrawingRect(scrollRect);
-                    Logger.logRectSides("IXV", "hitRect", hitRect);
-                    Logger.logRectSides("IXV", "scrollRect", scrollRect);
-                    if (!scrollRect.contains(hitRect)) {
-                        mScrollView.smoothScrollTo(mView.getLeft(), mView.getTop());
-                    }
-                } else if (mHorizScrollView != null) {
-                    mHorizScrollView.getDrawingRect(scrollRect);
-                    if (scrollRect.contains(hitRect)) {
-                        mHorizScrollView.smoothScrollTo(mView.getLeft(), mView.getTop());
-                    }
-                }
             } else {
                 mTextName.setAlpha(1.0f);
                 mCircle.setAlpha(1.0f);
                 mCircle.setRadiusPerc(MAX_RADIUS);
                 mExpanded = true;
-                if (mScrollView != null) {
-                    mScrollView.scrollTo(mView.getLeft(), mView.getTop() - mView.getPaddingTop());
-                } else if (mHorizScrollView != null) {
-                    mHorizScrollView.scrollTo(mView.getLeft(), mView.getTop());
-                }
             }
 
         }

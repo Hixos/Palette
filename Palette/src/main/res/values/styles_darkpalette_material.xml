@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.DarkPalette.Material" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@color/palette_primary_opaque</item>
         <item name="colorPrimaryDark">@color/palette_primary_opaque</item>
         <item name="colorPrimary">@color/palette_primary_opaque</item>
         <item name="android:actionBarStyle">@style/ActionBar.DarkPalette.Material</item>
@@ -27,7 +28,9 @@
         <item name="actionBarStyle">@style/ActionBar.DarkPalette.Material.UltraTranslucent</item>
     </style>
 
-    <style name="Theme.DarkPalette.Material.Dialog" parent="Theme.AppCompat.Dialog"/>
+    <style name="Theme.DarkPalette.Material.Dialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@color/palette_primary_opaque</item>
+    </style>
 
     <style name="Theme.DarkPalette.Material.Dialog.NoActionBar" parent="Theme.DarkPalette.Material.Dialog">
         <item name="windowActionBar">false</item>
@@ -73,4 +76,6 @@
     <style name="MaterialSpinner" parent="Widget.AppCompat.Spinner">
         <item name="android:popupBackground">@drawable/spinner_material_popup_background</item>
     </style>
+
+
 </resources>
