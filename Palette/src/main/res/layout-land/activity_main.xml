@@ -1,36 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:id="@+id/root"
-    android:background="@color/palette_primary_opaque">
+    android:layout_height="match_parent">
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:background="@color/palette_primary_opaque"
+        android:clipToPadding="false"
+        android:fitsSystemWindows="true"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+
+        <LinearLayout
+            android:id="@+id/root"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <include
+                android:id="@+id/bubble_slideshow"
+                layout="@layout/service_bubble"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="4dp" />
+
+            <include
+                android:id="@+id/bubble_geofence"
+                layout="@layout/service_bubble"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="4dp" />
+
+            <include
+                android:id="@+id/bubble_timeofday"
+                layout="@layout/service_bubble"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <include layout="@layout/service_bubble"
-            android:id="@+id/bubble_slideshow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-        <include layout="@layout/service_bubble"
-            android:id="@+id/bubble_geofence"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_gravity="center" />
-    </FrameLayout>
-</LinearLayout>
+        android:id="@+id/statusbar_background"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_horizontal|top"
+        android:background="@color/palette_primary"
+        android:visibility="gone" />
+</FrameLayout>

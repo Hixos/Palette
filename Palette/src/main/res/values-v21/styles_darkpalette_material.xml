@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="MaterialSpinner" parent="Widget.AppCompat.Spinner"/>
+
+    <style name="MaterialSpinner" parent="Widget.AppCompat.Spinner" />
+
+    <style name="Theme.DarkPalette.Material.Translucent" parent="Theme.DarkPalette.Material">
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
+    </style>
 </resources>

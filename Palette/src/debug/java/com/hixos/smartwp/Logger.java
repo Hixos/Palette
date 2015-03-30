@@ -3,7 +3,6 @@ package com.hixos.smartwp;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
@@ -14,9 +13,8 @@ import java.io.IOException;
  * Created by Luca on 13/01/14.
  */
 public final class Logger {
-    private static final String LOGTAG = "LogUtils";
     public static final String LOG_FILE = "log.txt";
-
+    private static final String LOGTAG = "LogUtils";
 
     public static void w(String logtag, String message){
         Log.w(logtag, message);
@@ -37,6 +35,10 @@ public final class Logger {
     public static void logRect(String logtag, String text, Rect r){
         float ratio = r.height() == 0 ? 0 : (float)r.width() / (float)r.height();
         w(logtag, String.format("%s(Left: %d, Top: %d, Width: %d, Height: %d, Ratio %f)", text, r.left, r.top, r.width(), r.height(), ratio));
+    }
+
+    public static void logRectSides(String logtag, String text, Rect r) {
+        w(logtag, String.format("%s(Left: %d, Top: %d, Right: %d, Bottom: %d)", text, r.left, r.top, r.right, r.bottom));
     }
 
     public static void logRect(String logtag, String text, RectF r){

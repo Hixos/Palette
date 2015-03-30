@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -110,13 +111,6 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geofence_picker);
 
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
-            View statusBackground = findViewById(R.id.statusbar_background);
-            statusBackground.setVisibility(View.VISIBLE);
-            statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
-        }
-
-
         mOtherGeofences = new ArrayList<>();
         if (!checkPlayServices()) {
             setResult(Activity.RESULT_CANCELED);
@@ -215,14 +209,17 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         int top, bottom = 0;
         top = MiscUtils.UI.getActionBarHeight(this);
 
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
+        if (MiscUtils.UI.hasTranslucentStatus(this) && Build.VERSION.SDK_INT < 21) {
             View statusBackground = findViewById(R.id.statusbar_background);
             statusBackground.setVisibility(View.VISIBLE);
             statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
+        }
+
+        if (MiscUtils.UI.addStatusBarPadding(this)) {
             top += MiscUtils.UI.getStatusBarHeight(this);
         }
 
-        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
+        if (MiscUtils.UI.hasTranslucentNavigation(this)) {
             bottom += MiscUtils.UI.getNavBarHeight(this);
         }
 

@@ -66,14 +66,13 @@ public class CropperActivity extends ActionBarActivity implements BitmapIO.OnIma
         int top, bottom = 0;
         top = MiscUtils.UI.getActionBarHeight(this);
 
-        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
-
+        if (MiscUtils.UI.addStatusBarPadding(this)) {
+            top += MiscUtils.UI.getStatusBarHeight(this);
+        }
+        if (MiscUtils.UI.hasTranslucentNavigation(this)) {
             bottom += MiscUtils.UI.getNavBarHeight(this);
         }
 
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
-            top += MiscUtils.UI.getStatusBarHeight(this);
-        }
         FrameLayout root = (FrameLayout) findViewById(R.id.root);
         root.setPadding(root.getPaddingLeft(),
                 root.getPaddingTop() + top,

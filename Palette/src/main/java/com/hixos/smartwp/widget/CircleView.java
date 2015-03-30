@@ -230,15 +230,20 @@ public class CircleView extends View {
                     return true;
                 }
             case MotionEvent.ACTION_UP:
-                mPressing = false;
-                refreshDrawableState();
-                if (inside && mClickListener != null) {
+                if (inside && mClickListener != null && mPressing) {
                     mClickListener.onClick(this);
                     playSoundEffect(SoundEffectConstants.CLICK);
                 }
+                mPressing = false;
+                refreshDrawableState();
+                return true;
+
+            case MotionEvent.ACTION_CANCEL:
+                mPressing = false;
+                refreshDrawableState();
                 return true;
         }
-        return super.onTouchEvent(event);
+        return false;
     }
 
     protected void updateForegroundBounds() {

@@ -10,6 +10,7 @@ import com.hixos.smartwp.wallpaper.LiveWallpaperService;
 public class ServiceUtils {
     public final static int SERVICE_SLIDESHOW = 1;
     public final static int SERVICE_GEOFENCE = 2;
+    public final static int SERVICE_TIMEOFDAY = 3;
 
     public static void setActiveService(Context context, int service) {
         Preferences.setInt(context, R.string.preference_active_service, service);

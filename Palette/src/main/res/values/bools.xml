@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <bool name="has_translucent_navbar">false</bool>
-    <bool name="has_translucent_statusbar">false</bool>
-
     <bool name="is_tablet">false</bool>
 
     <bool name="auto_crop_default_val">false</bool>

@@ -5,8 +5,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -14,7 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.LinearLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.hixos.smartwp.services.ServiceUtils;
@@ -26,11 +31,14 @@ import com.hixos.smartwp.widget.CircleView;
 
 public class MainActivity extends ActionBarActivity {
 
-    private ServiceBubble mBubbleSlideshow;
-    private ServiceBubble mBubbleGeofence;
+    private ServiceBubble mSlideshowBubble;
+    private ServiceBubble mLocationBubble;
+    private ServiceBubble mTimeOfDayBubble;
 
     private int mInitialActiveService;
 
+    private ScrollView mScrollView;
+    private HorizontalScrollView mHorizScrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,36 +46,33 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawable(null);
 
-        LinearLayout root = (LinearLayout) findViewById(R.id.root);
-
-        int top, bottom = 0;
-        top = MiscUtils.UI.getActionBarHeight(this);
-
-        if (getResources().getBoolean(R.bool.has_translucent_navbar)) {
-
-            bottom += MiscUtils.UI.getNavBarHeight(this);
+        if (MiscUtils.UI.hasTranslucentStatus(this) && Build.VERSION.SDK_INT < 21) {
+            View statusBackground = findViewById(R.id.statusbar_background);
+            statusBackground.setVisibility(View.VISIBLE);
+            statusBackground.getLayoutParams().height = MiscUtils.UI.getStatusBarHeight(this);
         }
 
-        if (getResources().getBoolean(R.bool.has_translucent_statusbar)) {
-            top += MiscUtils.UI.getStatusBarHeight(this);
-        }
+        mSlideshowBubble = new ServiceBubble(findViewById(R.id.bubble_slideshow), ServiceUtils.SERVICE_SLIDESHOW);
+        mLocationBubble = new ServiceBubble(findViewById(R.id.bubble_geofence), ServiceUtils.SERVICE_GEOFENCE);
+        mTimeOfDayBubble = new ServiceBubble(findViewById(R.id.bubble_timeofday), ServiceUtils.SERVICE_TIMEOFDAY);
 
-        root.setPadding(root.getPaddingLeft(),
-                root.getPaddingTop() + top,
-                root.getPaddingRight(),
-                root.getPaddingBottom() + bottom);
+        mScrollView = (ScrollView) findViewById(R.id.scrollView);
+        mHorizScrollView = (HorizontalScrollView) findViewById(R.id.horizontalScrollView);
 
-        mBubbleSlideshow = new ServiceBubble(findViewById(R.id.bubble_slideshow), ServiceUtils.SERVICE_SLIDESHOW);
-        mBubbleGeofence = new ServiceBubble(findViewById(R.id.bubble_geofence), ServiceUtils.SERVICE_GEOFENCE);
-
-        mBubbleSlideshow
+        mSlideshowBubble
                 .setColor(getResources().getColor(R.color.accent_blue))
                 .setText(getString(R.string.name_slideshow))
                 .setInnerDrawable(getResources().getDrawable(R.drawable.ic_slideshow_dark))
                 .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_blue));
 
-        mBubbleGeofence
+        mLocationBubble
                 .setColor(getResources().getColor(R.color.accent_orange))
+                .setText(getString(R.string.name_geofence))
+                .setInnerDrawable(getResources().getDrawable(R.drawable.ic_geofence_dark))
+                .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_orange));
+
+        mTimeOfDayBubble
+                .setColor(getResources().getColor(R.color.accent_green))
                 .setText(getString(R.string.name_geofence))
                 .setInnerDrawable(getResources().getDrawable(R.drawable.ic_geofence_dark))
                 .setForeground(getResources().getDrawable(R.drawable.bubble_foreground_orange));
@@ -76,10 +81,13 @@ public class MainActivity extends ActionBarActivity {
 
         switch (mInitialActiveService) {
             case ServiceUtils.SERVICE_SLIDESHOW:
-                mBubbleSlideshow.activate(false);
+                mSlideshowBubble.activate(false);
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                mBubbleGeofence.activate(false);
+                mLocationBubble.activate(false);
+                break;
+            case ServiceUtils.SERVICE_TIMEOFDAY:
+                mTimeOfDayBubble.activate(false);
                 break;
         }
     }
@@ -119,19 +127,30 @@ public class MainActivity extends ActionBarActivity {
     private void onBubbleClick(int id) {
         switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
-                if (mBubbleSlideshow.isExpanded()) {
+                if (mSlideshowBubble.isExpanded()) {
                     onSettingsClick(id);
                 } else {
-                    mBubbleGeofence.deactivate();
+                    mLocationBubble.deactivate();
+                    mTimeOfDayBubble.deactivate();
                     ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_SLIDESHOW);
                 }
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                if (mBubbleGeofence.isExpanded()) {
+                if (mLocationBubble.isExpanded()) {
                     onSettingsClick(id);
                 } else {
-                    mBubbleSlideshow.deactivate();
+                    mSlideshowBubble.deactivate();
+                    mTimeOfDayBubble.deactivate();
                     ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_GEOFENCE);
+                }
+                break;
+            case ServiceUtils.SERVICE_TIMEOFDAY:
+                if (mTimeOfDayBubble.isExpanded()) {
+                    onSettingsClick(id);
+                } else {
+                    mSlideshowBubble.deactivate();
+                    mLocationBubble.deactivate();
+                    //ServiceUtils.setActiveService(this, ServiceUtils.SERVICE_TIMEOFDAY);
                 }
                 break;
         }
@@ -149,7 +168,7 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(intent);
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                mBubbleSlideshow.deactivate();
+                mSlideshowBubble.deactivate();
                 intent.putExtra(ServicesActivity.EXTRA_SERVIVE,
                         ServiceUtils.SERVICE_GEOFENCE);
                 startActivity(intent);
@@ -170,6 +189,11 @@ public class MainActivity extends ActionBarActivity {
                     onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
                 }
                 break;
+            case ServiceUtils.SERVICE_TIMEOFDAY:
+                /*if (!GeofenceDatabase.hasDefaultWallpaper()) {
+                    onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
+                }*/
+                break;
         }
     }
 
@@ -182,6 +206,7 @@ public class MainActivity extends ActionBarActivity {
 
         private int mID;
 
+        private View mView;
         private CircleView mCircle;
         private TextView mTextName;
         private boolean mActive = false;
@@ -189,10 +214,22 @@ public class MainActivity extends ActionBarActivity {
         private AnimatorSet mAnimatorSet;
 
         public ServiceBubble(View bubbleView, int id) {
+            mView = bubbleView;
             mCircle = (CircleView) bubbleView.findViewById(R.id.circleView);
             mTextName = (TextView) bubbleView.findViewById(R.id.textview_name);
+            setDimensions(bubbleView);
             mID = id;
             init();
+        }
+
+        private void setDimensions(View bubbleView) {
+            int orientation = getResources().getConfiguration().orientation;
+            Point displaySize = MiscUtils.UI.getDisplaySize(MainActivity.this);
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                bubbleView.getLayoutParams().height = (int) Math.round(displaySize.y / 3f);
+            } else {
+                bubbleView.getLayoutParams().width = (int) Math.round(displaySize.x / 2.6f);
+            }
         }
 
         public boolean isActive() {
@@ -273,11 +310,32 @@ public class MainActivity extends ActionBarActivity {
                 });
 
                 mAnimatorSet.start();
+                Rect hitRect = new Rect();
+                mView.getHitRect(hitRect);
+                Rect scrollRect = new Rect();
+                if (mScrollView != null) {
+                    mScrollView.getDrawingRect(scrollRect);
+                    Logger.logRectSides("IXV", "hitRect", hitRect);
+                    Logger.logRectSides("IXV", "scrollRect", scrollRect);
+                    if (!scrollRect.contains(hitRect)) {
+                        mScrollView.smoothScrollTo(mView.getLeft(), mView.getTop());
+                    }
+                } else if (mHorizScrollView != null) {
+                    mHorizScrollView.getDrawingRect(scrollRect);
+                    if (scrollRect.contains(hitRect)) {
+                        mHorizScrollView.smoothScrollTo(mView.getLeft(), mView.getTop());
+                    }
+                }
             } else {
                 mTextName.setAlpha(1.0f);
                 mCircle.setAlpha(1.0f);
                 mCircle.setRadiusPerc(MAX_RADIUS);
                 mExpanded = true;
+                if (mScrollView != null) {
+                    mScrollView.scrollTo(mView.getLeft(), mView.getTop() - mView.getPaddingTop());
+                } else if (mHorizScrollView != null) {
+                    mHorizScrollView.scrollTo(mView.getLeft(), mView.getTop());
+                }
             }
 
         }
