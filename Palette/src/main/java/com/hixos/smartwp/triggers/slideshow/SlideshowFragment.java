@@ -3,6 +3,7 @@ package com.hixos.smartwp.triggers.slideshow;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -30,6 +31,8 @@ import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.triggers.WallpaperPickerFragment;
+import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;
@@ -41,7 +44,6 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
     Handler handler = new Handler();
     private SlideshowDatabase mDatabase;
-    private SlideshowEditor mEditor;
     private UndoBarController mUndoBarController;
     private long mUndobarShownTimestamp = -1;
     private View mEmptyState;
@@ -49,6 +51,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     private boolean mEmptyStateAnimated = false;
     private AnimatedGridView mGridView;
     private boolean mSetWallpaperActivityVisible = false;
+
+    private SlideshowPickerFragment mPickerFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,7 +62,13 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         mDatabase = new SlideshowDatabase(getActivity());
         mDatabase.setOnElementRemovedListener(this);
         mDatabase.clearDeletedWallpapers();
-        mEditor = new SlideshowEditor();
+
+        mPickerFragment = new SlideshowPickerFragment();
+        mPickerFragment.setDatabase(mDatabase);
+
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+        fragmentManager.beginTransaction().remove(fragmentManager.findFragmentByTag("wallpaper_picker"));
+        fragmentManager.beginTransaction().add(mPickerFragment, "wallpaper_picker").commit();
     }
 
     private void initEmptyState(View view) {
@@ -205,10 +215,27 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_new_wallpaper:
-                mEditor.beginPickWallpaper(mDatabase.getNewUid());
+                mPickerFragment.pickWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
+                    @Override
+                    public void onWallpaperPicked(String uid) {
+                        //Todo: show success confirmation
+                        hideEmptyState();
+                    }
+
+                    @Override
+                    public void onWallpaperPickFailed(String uid, int reason) {
+                        FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
+                        //Todo: Show error toast
+                    }
+                }, mDatabase.getNewUid());
                 break;
             case R.id.action_pick_interval:
-                mEditor.pickInterval();
+                mPickerFragment.pickInterval(new SlideshowPickerFragment.OnIntervalPickedCallback() {
+                    @Override
+                    public void onIntervalPicked(long newInterval) {
+                        //Todo: show success confirmation
+                    }
+                });
                 break;
             case R.id.action_settings:
                 break;
@@ -238,8 +265,6 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                 }
                 mSetWallpaperActivityVisible = false;
                 break;
-            default:
-                mEditor.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -289,150 +314,6 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         if (mUndobarShownTimestamp > 0) {
             int elapsed = ((int) (System.currentTimeMillis() - mUndobarShownTimestamp));
             showUndobar(elapsed);
-        }
-    }
-
-    private class SlideshowEditor implements BitmapIO.OnImageCroppedCallback {
-        private static final int REQUEST_PICK_WALLPAPER = 0;
-        private static final int REQUEST_PICK_CROP_WALLPAPER = 1;
-        private static final int REQUEST_PICK_INTERVAL = 2;
-
-        public boolean isPicking = false;
-
-        private String mCurrentUid;
-        private int mAutoCropRequest;
-
-        private void onActivityResult(int requestCode, int resultCode, Intent data) {
-            switch (requestCode) {
-                case REQUEST_PICK_WALLPAPER:
-                    if (resultCode == Activity.RESULT_OK)
-                        continuePickWallpaper(data);
-                    else
-                        isPicking = false;
-                    break;
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    if (resultCode == Activity.RESULT_OK)
-                        finishPickWallpaper();
-                    else
-                        isPicking = false;
-                    break;
-                case REQUEST_PICK_INTERVAL:
-                    if (resultCode == Activity.RESULT_OK)
-                        finishPickInterval(data);
-                    else
-                        isPicking = false;
-            }
-        }
-
-        /**
-         * Displays interval picker activity
-         */
-        private void pickInterval() {
-            isPicking = true;
-            Intent i = new Intent(getActivity(), IntervalPickerActivty.class);
-            i.putExtra(IntervalPickerActivty.EXTRA_INTERVAL, mDatabase.getIntervalMs());
-            startActivityForResult(i, REQUEST_PICK_INTERVAL);
-        }
-
-        /**
-         * Updates the interval in the database
-         *
-         * @param data
-         */
-        private void finishPickInterval(Intent data) {
-            isPicking = false;
-            if (data == null) {
-                return;
-            }
-            mDatabase.setIntervalMs(data.getLongExtra(IntervalPickerActivty.RESULT_INTERVAL, 10 * 60 * 1000));
-            SlideshowService.broadcastIntervalChanged(getActivity());
-        }
-
-        /**
-         * Begins the procedure to pick a new wallpaper
-         * Shows the gallery picker
-         *
-         * @param uid
-         */
-        private void beginPickWallpaper(String uid) {
-            if (isPicking) return;
-
-            isPicking = true;
-            mCurrentUid = uid;
-
-            Intent i = MiscUtils.Activity.galleryPickerIntent();
-            startActivityForResult(i, REQUEST_PICK_WALLPAPER);
-        }
-
-        /**
-         * First part of the procedure to pick a new wallpaper
-         * Determines how to crop the wallpaper
-         *
-         * @param data intent passed in onActivityResult
-         */
-        private void continuePickWallpaper(Intent data) {
-            if (data == null || data.getData() == null) {
-                Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
-                isPicking = false;
-                return;
-            }
-            Uri image = data.getData();
-
-            if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
-                    getResources().getBoolean(R.bool.auto_crop_default_val))) {
-                //Manual cropping
-                Intent i = new Intent(getActivity(), CropperActivity.class);
-                i.putExtra(CropperActivity.EXTRA_IMAGE, image);
-                i.putExtra(CropperActivity.EXTRA_OUTPUT,
-                        ImageManager.getInstance().getPictureUri(mCurrentUid));
-                startActivityForResult(i, REQUEST_PICK_CROP_WALLPAPER);
-            } else {
-                //Automatic cropping
-                DialogFragment f = new ProgressDialogFragment();
-                f.show(getFragmentManager(), "crop_progress");
-                mAutoCropRequest = REQUEST_PICK_CROP_WALLPAPER;
-                WallpaperCropper.autoCropWallpaper(getActivity(), image,
-                        ImageManager.getInstance().getPictureUri(mCurrentUid),
-                        this);
-            }
-        }
-
-        /**
-         * Last part of the wallpaper picking procedure
-         * Stores the wallpaper in the database
-         */
-        private void finishPickWallpaper() {
-            mDatabase.createWallpaper(mCurrentUid);
-            isPicking = false;
-            hideEmptyState();
-            checkLiveWallpaper();
-        }
-
-        @Override
-        public void onImageCropped(Uri wallpaper) {
-            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
-            if (f != null) {
-                f.dismiss();
-            }
-            switch (mAutoCropRequest) {
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    finishPickWallpaper();
-                    break;
-            }
-        }
-
-        @Override
-        public void onImageCropFailed() {
-            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
-            if (f != null) {
-                f.dismiss();
-            }
-            switch (mAutoCropRequest) {
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    setAdapter();
-                    break;
-            }
-            isPicking = false;
         }
     }
 }

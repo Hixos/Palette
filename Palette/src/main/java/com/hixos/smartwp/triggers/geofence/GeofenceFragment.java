@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -42,6 +43,8 @@ import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.triggers.WallpaperPickerFragment;
+import com.hixos.smartwp.triggers.slideshow.SlideshowPickerFragment;
 import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;
@@ -67,7 +70,7 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     private UndoBarController mUndoBarController;
     private AnimatedGridView mGridView;
     private long mUndobarShownTimestamp = -1;
-    private GeofenceEditor mEditor;
+    private GeofencePickerFragment mPickerFragment;
     private View mEmptyState;
     private ArrowView mArrowView;
     private boolean mEmptyStateAnimated = false;
@@ -87,7 +90,18 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
         mDatabase.clearDeletedGeofences();
         mDatabase.setOnElementRemovedListener(this);
         mDatabase.clearDeletedGeofencesAsync();
-        mEditor = new GeofenceEditor();
+
+        mPickerFragment = new GeofencePickerFragment();
+        mPickerFragment.setDatabase(mDatabase);
+
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+        fragmentManager.beginTransaction().remove(fragmentManager.findFragmentByTag("wallpaper_picker"));
+        fragmentManager.beginTransaction().add(mPickerFragment, "wallpaper_picker").commit();
+
+        if (!getActivity().getIntent().getBooleanExtra(
+                ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
+            checkLiveWallpaper();
+        }
     }
 
     @Override
@@ -214,10 +228,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleClient.connect();
-        if (!getActivity().getIntent().getBooleanExtra(
-                ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
-            checkLiveWallpaper();
-        }
     }
 
     @Override
@@ -317,7 +327,23 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_new_wallpaper:
-                mEditor.pickGeowallpaper();
+                mPickerFragment.pickWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
+                    @Override
+                    public void onWallpaperPicked(String uid) {
+                        hideEmptyState();
+                        showErrorFrames();
+                        List<String> uidList = new ArrayList<>();
+                        uidList.add(uid);
+
+                        GeofenceService.broadcastAddGeofence(getActivity(), uidList);
+                    }
+
+                    @Override
+                    public void onWallpaperPickFailed(String uid, int reason) {
+                        FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
+                        //TODO: Show message
+                    }
+                }, mDatabase.getNewUid());
                 break;
             case R.id.action_settings:
                 break;
@@ -345,8 +371,6 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
                     Toast.makeText(getActivity(), R.string.error_location_not_found, Toast.LENGTH_LONG).show();
                 }
                 break;
-            default:
-                mEditor.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -449,12 +473,28 @@ public class GeofenceFragment extends Fragment implements UndoBarController.Undo
 
     @Override
     public void onDefaultWallpaperEmptyStateClick(View view) {
-        mEditor.pickDefaultWallpaper();
+        changeDefaultWallpaper();
     }
 
     @Override
     public void changeDefaultWallpaper() {
-        mEditor.pickDefaultWallpaper();
+        mPickerFragment.pickDefaultWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
+            @Override
+            public void onWallpaperPicked(String uid) {
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
+                }
+                mGridView.getAdapter().notifyDataSetChanged();
+                GeofenceService.broadcastReloadWallpaper(getActivity());
+                checkLiveWallpaper();
+            }
+
+            @Override
+            public void onWallpaperPickFailed(String uid, int reason) {
+
+            }
+        });
     }
 
     private class GeofenceEditor implements BitmapIO.OnImageCroppedCallback {

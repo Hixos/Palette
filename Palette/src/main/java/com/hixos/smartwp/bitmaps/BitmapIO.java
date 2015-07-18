@@ -395,7 +395,7 @@ public class BitmapIO {
     }
 
     public interface OnImageCroppedCallback {
-        public void onImageCropped(Uri croppedImage);
+        public void onImageCropped(Uri imageUri);
 
         public void onImageCropFailed();
     }
