@@ -1,19 +1,15 @@
 package com.hixos.smartwp.triggers.timeofday;
 
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.v7.graphics.Palette;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,52 +18,42 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hixos.smartwp.CropperActivity;
-import com.hixos.smartwp.Logger;
+import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SetWallpaperActivity;
-import com.hixos.smartwp.bitmaps.BitmapIO;
-import com.hixos.smartwp.bitmaps.BitmapUtils;
 import com.hixos.smartwp.bitmaps.ImageManager;
-import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
+import com.hixos.smartwp.triggers.WallpaperPickerFragment;
 import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.utils.FileUtils;
-import com.hixos.smartwp.utils.Hour24;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;
 import com.hixos.smartwp.widget.ArrowView;
-import com.hixos.smartwp.widget.ProgressDialogFragment;
 import com.hixos.smartwp.widget.UndoBarController;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Luca on 11/02/2015.
  */
 public class TodFragment extends Fragment implements UndoBarController.UndoListener,
-        TodDatabase.OnElementRemovedListener, DefaultWallpaperTile.DefaultWallpaperTileListener{
+        DefaultWallpaperTile.DefaultWallpaperTileListener{
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
+    TodDatabaseAdapter mAdapter;
     private boolean mSetWallpaperActivityVisible = false;
-
     private Handler handler = new Handler();
-
-    private TodDatabase mDatabase;
+    private TimeOfDayDB mDatabase;
     private UndoBarController mUndoBarController;
     private long mUndobarShownTimestamp = -1;
     private View mEmptyState;
     private ArrowView mArrowView;
     private boolean mEmptyStateAnimated = false;
     private AnimatedGridView mGridView;
-    private TimeOfDayEditor mEditor = new TimeOfDayEditor();
+    private TimeOfDayPickerFragment mPickerFragment;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -79,8 +65,6 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
                 }
                 mSetWallpaperActivityVisible = false;
                 break;
-            default:
-                mEditor.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -89,9 +73,19 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        mDatabase = new TodDatabase(getActivity());
-        mDatabase.setOnElementRemovedListener(this);
-        mDatabase.clearDeletedWallpapers();
+        mDatabase = new TimeOfDayDB(getActivity());
+        mDatabase.confirmDeletion();
+
+        mPickerFragment = new TimeOfDayPickerFragment();
+        mPickerFragment.setDatabase(mDatabase);
+
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+        fragmentManager.beginTransaction().remove(fragmentManager.findFragmentByTag("wallpaper_picker"));
+        fragmentManager.beginTransaction().add(mPickerFragment, "wallpaper_picker").commit();
+
+        if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
+            checkLiveWallpaper();
+        }
     }
 
     @Nullable
@@ -135,10 +129,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     public void onResume() {
         super.onResume();
         getActivity().setTitle(R.string.timeofday_name);
-        if (!getActivity().getIntent().getBooleanExtra(ServicesActivity.EXTRA_DISABLE_LWP_CHECK, false)) {
-            checkLiveWallpaper();
-        }
-        mEditor.onResume();
+
     }
 
     @Override
@@ -148,7 +139,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void initEmptyState(View view) {
-       if (mDatabase.getWallpaperCount() != 0 || TodDatabase.hasDefaultWallpaper()) {
+       if (mDatabase.getWallpaperCount() != 0 || TimeOfDayDB.hasDefaultWallpaper()) {
             mArrowView = null;
             mEmptyState = null;
             return;
@@ -210,9 +201,19 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void setAdapter() {
-        TodAdapter adapter = new TodAdapter(getActivity(), mDatabase, this);
-        mGridView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        mAdapter = new TodDatabaseAdapter(getActivity(), mDatabase, this);
+        mAdapter.addOnWallpaperDeletedListener(new AnimatedListAdapter.OnWallpaperDeletedListener() {
+            @Override
+            public void onWallpaperDeleted(String uid) {
+                showUndobar();
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(uid);
+                }
+            }
+        });
+        mGridView.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -229,8 +230,24 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_new_wallpaper:
-                if(!mDatabase.isFull()){
-                    mEditor.beginPickWallpaper(mDatabase.getNewUid());
+                if(mDatabase.canAddMoreWallpapers()){
+                    mPickerFragment.pickWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
+                        @Override
+                        public void onWallpaperPicked(String uid) {
+                            hideEmptyState();
+                            checkLiveWallpaper();
+                            mAdapter.reloadDatabase();
+                        }
+
+                        @Override
+                        public void onWallpaperPickFailed(String uid, int reason) {
+                            FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
+                            if(reason != WallpaperPickerFragment.REASON_CANCELED) {
+                                Toast.makeText(getActivity(), R.string.error_picture_pick_fail,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }, mDatabase.getNewUid());
                 }else {
                     Toast.makeText(getActivity(),
                             getResources().getString(R.string.toast_tod_no_space_left),
@@ -252,16 +269,16 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     public void onUndo(long uid) {
         mUndobarShownTimestamp = -1;
         if (mDatabase != null) {
-
-            mDatabase.restoreWallpapersAsync();
+            mDatabase.undoDeletion();
         }
+        mAdapter.reloadDatabase();
     }
 
     @Override
     public void onHide(long uid) {
         mUndobarShownTimestamp = -1;
         if (mDatabase != null) {
-            mDatabase.clearDeletedWallpapersAsync();
+            mDatabase.confirmDeletion();
         }
     }
 
@@ -284,22 +301,9 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         }
     }
 
-    @Override
-    public void onElementRemoved(String uid) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                showUndobar();
-            }
-        });
-        LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-        if (cache != null) {
-            cache.remove(uid);
-        }
-    }
     private void checkLiveWallpaper() {
         if (!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
-                && mDatabase.getWallpaperCount() > 0
+                && mDatabase.getWallpaperCount() > 0 && TimeOfDayDB.hasDefaultWallpaper()
                 && !mSetWallpaperActivityVisible) {
             startActivityForResult(new Intent(getActivity(), SetWallpaperActivity.class),
                     REQUEST_SET_LIVE_WALLPAPER);
@@ -309,217 +313,28 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
 
     @Override
     public void onDefaultWallpaperEmptyStateClick(View view) {
-        mEditor.pickDefaultWallpaper();
+        changeDefaultWallpaper();
     }
 
     @Override
     public void changeDefaultWallpaper() {
-        mEditor.pickDefaultWallpaper();
-    }
-
-    private class TimeOfDayEditor implements BitmapIO.OnImageCroppedCallback,
-            TodPickerDialog.TodPickerDialogListener {
-        private static final int REQUEST_PICK_WALLPAPER = 0;
-        private static final int REQUEST_PICK_CROP_WALLPAPER = 1;
-        public boolean isPicking = false;
-
-        private String mCurrentUid;
-        private int mAutoCropRequest;
-        private int mMutedColor, mVibrantColor;
-
-        private void onResume(){
-            TodPickerDialog dialog = (TodPickerDialog)getFragmentManager()
-                    .findFragmentByTag("todpicker");
-            if(dialog != null){
-                dialog.setListener(TimeOfDayEditor.this);
-            }
-        }
-
-        private void onActivityResult(int requestCode, int resultCode, final Intent data) {
-            switch (requestCode) {
-                case REQUEST_PICK_WALLPAPER:
-                    if (resultCode == Activity.RESULT_OK){
-                        continuePickWallpaper(data);
-                    }else{
-                        isPicking = false;
-                    }
-                    break;
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    if (resultCode == Activity.RESULT_OK) {
-                        if(mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)){
-                            finishPickDefaultWallpaper();
-                        }else{
-                            pickTimeOfDay();
-                        }
-
-                    }else {
-                        isPicking = false;
-                    }
-                    break;
-            }
-        }
-
-        private void pickDefaultWallpaper(){
-            if (isPicking)
-                return;
-            isPicking = true;
-            Intent i = MiscUtils.Activity.galleryPickerIntent();
-            startActivityForResult(i, REQUEST_PICK_WALLPAPER);
-            mCurrentUid = TodDatabase.DEFAULT_WALLPAPER_UID;
-        }
-
-        private void finishPickDefaultWallpaper(){
-            LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-            if (cache != null) {
-                cache.remove(TodDatabase.DEFAULT_WALLPAPER_UID);
-            }
-            ((BaseAdapter) mGridView.getAdapter()).notifyDataSetChanged();
-            checkLiveWallpaper();
-            isPicking = false;
-        }
-
-        /**
-         * Begins the procedure to pick a new wallpaper
-         * Shows the gallery picker
-         *
-         * @param uid
-         */
-        private void beginPickWallpaper(String uid) {
-            if (isPicking) return;
-
-            isPicking = true;
-            mCurrentUid = uid;
-
-            Intent i = MiscUtils.Activity.galleryPickerIntent();
-            startActivityForResult(i, REQUEST_PICK_WALLPAPER);
-        }
-
-        /**
-         * First part of the procedure to pick a new wallpaper
-         * Determines how to crop the wallpaper
-         *
-         * @param data intent passed in onActivityResult
-         */
-        private void continuePickWallpaper(Intent data) {
-            if (data == null || data.getData() == null) {
-                Toast.makeText(getActivity(), getString(R.string.error_picture_pick_fail), Toast.LENGTH_LONG).show();
-                isPicking = false;
-                return;
-            }
-            Uri image = data.getData();
-            if (mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)) {
-                TodDatabase.deleteDefaultWallpaper();
-            }
-            if (!Preferences.getBoolean(getActivity(), R.string.preference_auto_crop,
-                    getResources().getBoolean(R.bool.auto_crop_default_val))) {
-                //Manual cropping
-                Intent i = new Intent(getActivity(), CropperActivity.class);
-                i.putExtra(CropperActivity.EXTRA_IMAGE, image);
-                i.putExtra(CropperActivity.EXTRA_OUTPUT,
-                        ImageManager.getInstance().getPictureUri(mCurrentUid));
-                startActivityForResult(i, REQUEST_PICK_CROP_WALLPAPER);
-            } else {
-                //Automatic cropping
-                DialogFragment f = new ProgressDialogFragment();
-                f.show(getFragmentManager(), "crop_progress");
-                mAutoCropRequest = REQUEST_PICK_CROP_WALLPAPER;
-                WallpaperCropper.autoCropWallpaper(getActivity(), image,
-                        ImageManager.getInstance().getPictureUri(mCurrentUid), this);
-            }
-        }
-
-        private void pickTimeOfDay(){
-            BitmapUtils.generatePaletteAsync(getActivity(), mCurrentUid,
-                    new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    int defaultColor = Color.BLACK;
-                    int vibrantColor = palette.getVibrantColor(defaultColor);
-                    if(vibrantColor == defaultColor){
-                        vibrantColor = palette.getDarkVibrantColor(defaultColor);
-                        if(vibrantColor == defaultColor){
-                            vibrantColor = palette.getMutedColor(defaultColor);
-                        }
-                    }
-                    int mutedColor = palette.getMutedColor(defaultColor);
-                    if(mutedColor == defaultColor){
-                        mutedColor = palette.getDarkVibrantColor(defaultColor);
-                        if(mutedColor == defaultColor){
-                            mutedColor = palette.getDarkMutedColor(defaultColor);
-                            mutedColor = Color.argb(200, Color.red(mutedColor),
-                                    Color.green(mutedColor), Color.blue(mutedColor));
-                        }else{
-                            mutedColor = Color.argb(85, Color.red(mutedColor),
-                                    Color.green(mutedColor), Color.blue(mutedColor));
-                        }
-                    }else{
-                        mutedColor = Color.argb(127, Color.red(mutedColor),
-                                Color.green(mutedColor), Color.blue(mutedColor));
-                    }
-                    mMutedColor = mutedColor;
-                    mVibrantColor = vibrantColor;
-
-                    ArrayList<TimeOfDayWallpaper> wallpapers = mDatabase.getOrderedWallpapers();
-
-                    DialogFragment dialog = TodPickerDialog.getInstance(wallpapers, vibrantColor,
-                            TimeOfDayEditor.this);
-                    dialog.show(getFragmentManager(), "todpicker");
-
+        mPickerFragment.pickDefaultWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
+            @Override
+            public void onWallpaperPicked(String uid) {
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(TimeOfDayDB.DEFAULT_WALLPAPER_UID);
                 }
-            });
-        }
-
-        /**
-         * Last part of the wallpaper picking procedure
-         * Stores the wallpaper in the database
-         */
-        private void finishPickWallpaper(Hour24 startHour, Hour24 endHour) {
-            mDatabase.createWallpaper(mCurrentUid, startHour, endHour, mMutedColor, mVibrantColor);
-            isPicking = false;
-            hideEmptyState();
-            checkLiveWallpaper();
-        }
-
-        @Override
-        public void onImageCropped(Uri wallpaper) {
-            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
-            if (f != null) {
-                f.dismiss();
+                FileUtils.deleteFile(ImageManager.getInstance().getThumbnailUri(uid));
+                mAdapter.notifyDataSetChanged();
+                TimeOfDayService.broadcastReloadWallpaper(getActivity());
+                checkLiveWallpaper();
             }
-            switch (mAutoCropRequest) {
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    if(mCurrentUid.equals(TodDatabase.DEFAULT_WALLPAPER_UID)){
-                        finishPickDefaultWallpaper();
-                    }else{
-                        pickTimeOfDay();
-                    }
-                    break;
-            }
-        }
 
-        @Override
-        public void onImageCropFailed() {
-            DialogFragment f = (DialogFragment) getFragmentManager().findFragmentByTag("crop_progress");
-            if (f != null) {
-                f.dismiss();
-            }
-            switch (mAutoCropRequest) {
-                case REQUEST_PICK_CROP_WALLPAPER:
-                    setAdapter();
-                    break;
-            }
-            isPicking = false;
-        }
+            @Override
+            public void onWallpaperPickFailed(String uid, int reason) {
 
-        @Override
-        public void onTimePicked(Hour24 startHour, Hour24 endHour) {
-            finishPickWallpaper(startHour, endHour);
-        }
-
-        @Override
-        public void onCancel() {
-            isPicking = false;
-            FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(mCurrentUid));
-        }
+            }
+        });
     }
 }

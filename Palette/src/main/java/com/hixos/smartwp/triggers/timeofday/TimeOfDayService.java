@@ -63,19 +63,6 @@ public class TimeOfDayService {
         cancelAlarm(context);
     }
 
-    private void stop(Context context) {
-        if (mStopped) return;
-
-        mStopped = true;
-
-        context.unregisterReceiver(mReceiver);
-        context.unregisterReceiver(mReloadReceiver);
-    }
-
-    private boolean isStopped() {
-        return mStopped;
-    }
-
     private static void startAlarm(Context context) {
         Intent intent = new Intent(ACTION_TIMEOFDAY_SERVICE);
 
@@ -106,7 +93,7 @@ public class TimeOfDayService {
 
     public static Uri getBestWallpaperUri(Context context) {
         Calendar calendar = Calendar.getInstance();
-        TodDatabase database = new TodDatabase(context);
+        TimeOfDayDB database = new TimeOfDayDB(context);
         TimeOfDayWallpaper current = database.getCurrentWallpaper(calendar);
         if (current != null) {
             Logger.w(LOGTAG, "Wallpaper is not null");
@@ -114,7 +101,7 @@ public class TimeOfDayService {
             if (FileUtils.fileExistance(uri)) return uri;
             else Logger.e(LOGTAG, "Wallpaper file not found");
         }else{
-            Uri def = ImageManager.getInstance().getPictureUri(TodDatabase.DEFAULT_WALLPAPER_UID);
+            Uri def = ImageManager.getInstance().getPictureUri(TimeOfDayDB.DEFAULT_WALLPAPER_UID);
             if(FileUtils.fileExistance(def)) {
                 Logger.w(LOGTAG, "Returning default wallpaper");
                 return def;
@@ -125,10 +112,23 @@ public class TimeOfDayService {
                 + R.raw.wallpaper);
     }
 
+    private void stop(Context context) {
+        if (mStopped) return;
+
+        mStopped = true;
+
+        context.unregisterReceiver(mReceiver);
+        context.unregisterReceiver(mReloadReceiver);
+    }
+
+    private boolean isStopped() {
+        return mStopped;
+    }
+
     private void updateWallpaper(Context context){
         Logger.w(LOGTAG, "Updating wallpaper");
         Calendar calendar = Calendar.getInstance();
-        TodDatabase database = new TodDatabase(context);
+        TimeOfDayDB database = new TimeOfDayDB(context);
         TimeOfDayWallpaper current = database.getCurrentWallpaper(calendar);
         Calendar next;
         if(current != null){
@@ -156,6 +156,27 @@ public class TimeOfDayService {
         }
     }
 
+    private boolean setWallpaper(Context context, TimeOfDayWallpaper wallpaper) {
+        if (wallpaper != null) {
+            mCallback.onWallpaperChanged(
+                    ImageManager.getInstance().getPictureUri(wallpaper.getUid()));
+            return true;
+        }else{
+            Uri def = ImageManager.getInstance().getPictureUri(TimeOfDayDB.DEFAULT_WALLPAPER_UID);
+            if(FileUtils.fileExistance(def)){
+                Logger.w(LOGTAG, "Setting default wallpaper");
+                mCallback.onWallpaperChanged(def, true);
+            }else {
+                Uri bck = Uri.parse("android.resource://" + context.getPackageName() + "/"
+                        + R.raw.wallpaper);
+                Logger.e(LOGTAG + ".receive", "Wallpaper not found, using default");
+                //TODO: show notification
+                mCallback.onWallpaperChanged(bck, true);
+            }
+        }
+        return false;
+    }
+
     private class TimeOfDayServiceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -170,26 +191,5 @@ public class TimeOfDayService {
             Logger.w(LOGTAG, "Reload received");
             updateWallpaper(context);
         }
-    }
-
-    private boolean setWallpaper(Context context, TimeOfDayWallpaper wallpaper) {
-        if (wallpaper != null) {
-            mCallback.onWallpaperChanged(
-                    ImageManager.getInstance().getPictureUri(wallpaper.getUid()));
-            return true;
-        }else{
-            Uri def = ImageManager.getInstance().getPictureUri(TodDatabase.DEFAULT_WALLPAPER_UID);
-            if(FileUtils.fileExistance(def)){
-                Logger.w(LOGTAG, "Setting default wallpaper");
-                mCallback.onWallpaperChanged(def, true);
-            }else {
-                Uri bck = Uri.parse("android.resource://" + context.getPackageName() + "/"
-                        + R.raw.wallpaper);
-                Logger.e(LOGTAG + ".receive", "Wallpaper not found, using default");
-                //TODO: show notification
-                mCallback.onWallpaperChanged(bck, true);
-            }
-        }
-        return false;
     }
 }

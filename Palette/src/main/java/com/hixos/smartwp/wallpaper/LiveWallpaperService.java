@@ -23,8 +23,6 @@ import com.hixos.smartwp.triggers.timeofday.TimeOfDayService;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 
-import java.sql.Time;
-
 import glwallpaperservice.GLWallpaperService;
 
 public class LiveWallpaperService extends GLWallpaperService {
@@ -45,7 +43,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     public interface Callbacks {
-        public void requestRender();
+        void requestRender();
     }
 
     private class WallpaperEngine extends GLEngine implements OnWallpaperChangedCallback {
@@ -87,6 +85,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (!isPreview()) {
                 switch (activeService) {
                     case ServiceUtils.SERVICE_SLIDESHOW:
+                        Logger.d("Starting listener...");
                         SlideshowService.startListener(this, LiveWallpaperService.this);
                         break;
                     case ServiceUtils.SERVICE_GEOFENCE:
@@ -100,6 +99,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             switch (activeService) {
                 case ServiceUtils.SERVICE_SLIDESHOW:
+                    Logger.d("ONE");
                     setWallpaper(SlideshowService.getBestWallpaperUri(LiveWallpaperService.this), true);
                     break;
                 case ServiceUtils.SERVICE_GEOFENCE:

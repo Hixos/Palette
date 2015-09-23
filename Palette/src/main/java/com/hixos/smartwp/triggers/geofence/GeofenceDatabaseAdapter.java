@@ -1,6 +1,7 @@
 package com.hixos.smartwp.triggers.geofence;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -12,21 +13,21 @@ import com.hixos.smartwp.widget.AsyncImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements GeofenceDatabase.DatabaseObserver {
+public class GeofenceDatabaseAdapter extends AnimatedListAdapter {
     private final static int VIEW_TYPE_DEFAULT = 0;
     private final static int VIEW_TYPE_GEOFENCE = 1;
-    private GeofenceDatabase mDatabase;
-    private List<GeofenceData> mData;
+    private GeofenceDB mDatabase;
+    private List<GeofenceWallpaper> mData;
     private DefaultWallpaperTile.DefaultWallpaperTileListener mListener;
     private Context mContext;
 
-    public GeofenceDatabaseAdapter(Context context, GeofenceDatabase database,
+    public GeofenceDatabaseAdapter(Context context, GeofenceDB database,
                                    DefaultWallpaperTile.DefaultWallpaperTileListener listener){
         this.mContext = context;
 
         mDatabase = database;
         mListener = listener;
-        mDatabase.setDatabaseObserver(this);
+       // mDatabase.setDatabaseObserver(this);
 
         mData = new ArrayList<>();
         reloadData();
@@ -34,7 +35,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
     @Override
     public int getCount() {
-        if (mData.size() > 0 || GeofenceDatabase.hasDefaultWallpaper()) {
+        if (mData.size() > 0 || GeofenceDB.hasDefaultWallpaper()) {
             return mData.size() + 1;
         } else {
             return 0;
@@ -42,7 +43,7 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     }
 
     @Override
-    public GeofenceData getItem(int i) {
+    public GeofenceWallpaper getItem(int i) {
         if (i < 1) return null;
 
         return mData.get(i - 1);
@@ -96,23 +97,46 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
 
         mData.remove(position - 1);
         String uid = getItemUid(position);
-        mDatabase.adapterDeleteGeofence(uid);
+        deleteWallpaper(uid);
     }
 
     @Override
     public void remove(String id) {
-        for (GeofenceData data : mData) {
+        for (GeofenceWallpaper data : mData) {
             if (data.getUid().equals(id)) {
                 mData.remove(data);
                 break;
             }
         }
-        mDatabase.adapterDeleteGeofence(id);
+        deleteWallpaper(id);
     }
 
-    @Override
+    private void deleteWallpaper(final String uid){
+        AsyncTask<String, Void, Boolean> deleteTask = new AsyncTask<String, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(String... params) {
+                GeofenceWallpaper active = mDatabase.getActiveWallpaper();
+                boolean reload = active != null && uid.equals(active.getUid());
+                mDatabase.deleteWallpaper(uid);
+                return reload;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+                if(aBoolean){
+                    GeofenceService.broadcastReloadWallpaper(mContext);
+                }
+                notifyWallpaperDeleted(uid);
+            }
+        };
+
+        deleteTask.execute(uid);
+    }
+
+    /*@Override
     public void onElementRemoved(String uid) {
-        for (GeofenceData data : mData) {
+        for (GeofenceWallpaper data : mData) {
             if (data.getUid().equals(uid)) {
                 mData.remove(data);
                 break;
@@ -122,23 +146,23 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
     }
 
     @Override
-    public void onElementCreated(GeofenceData element) {
+    public void onElementCreated(GeofenceWallpaper element) {
         reloadData();
     }
 
     @Override
     public void onDataSetChanged() {
         reloadData();
-    }
+    }*/
 
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         switch (getItemViewType(i)) {
             case VIEW_TYPE_DEFAULT: {
                 View v = DefaultWallpaperTile
-                        .inflate(mContext, !GeofenceDatabase.hasDefaultWallpaper(), mListener);
-                if(GeofenceDatabase.hasDefaultWallpaper()){
-                    DefaultWallpaperTile.setThumbnail(v, GeofenceDatabase.DEFAULT_WALLPAPER_UID);
+                        .inflate(mContext, !GeofenceDB.hasDefaultWallpaper(), mListener);
+                if(GeofenceDB.hasDefaultWallpaper()){
+                    DefaultWallpaperTile.setThumbnail(v, GeofenceDB.DEFAULT_WALLPAPER_UID);
                 }
                 return v;
             }
@@ -171,26 +195,34 @@ public class GeofenceDatabaseAdapter extends AnimatedListAdapter implements Geof
                     snapshot = holder.Snapshot;
                 }
                 thumbnail.setImageUID(uid);
-                snapshot.setImageUID(GeofenceDatabase.getSnapshotUid(uid));
+                snapshot.setImageUID(GeofenceDB.getSnapshotUid(uid));
                 return v;
             }
         }
     }
 
     public void reloadData() {
-        mData.clear();
-        mDatabase.getGeofencesByDistanceAsync(new GeofenceDatabase.OnWallpapersLoadedListener() {
+        AsyncTask<Void, Void, List<GeofenceWallpaper>> reloadTask
+                = new AsyncTask<Void, Void, List<GeofenceWallpaper>>() {
             @Override
-            public void onWallpapersLoaded(List<GeofenceData> wallpapers) {
-                mData.addAll(wallpapers);
+            protected List<GeofenceWallpaper> doInBackground(Void... params) {
+                return mDatabase.getWallpapersByDistance();
+            }
+
+            @Override
+            protected void onPostExecute(List<GeofenceWallpaper> Wallpapers) {
+                mData.clear();
+                mData.addAll(Wallpapers);
                 notifyDataSetChanged();
             }
-        });
+        };
+
+        reloadTask.execute();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return (mData.size() > 0 || GeofenceDatabase.hasDefaultWallpaper())
+        return (mData.size() > 0 || GeofenceDB.hasDefaultWallpaper())
                 && position == 0 ? VIEW_TYPE_DEFAULT : VIEW_TYPE_GEOFENCE;
     }
 

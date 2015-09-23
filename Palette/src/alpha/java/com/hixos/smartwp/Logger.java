@@ -36,6 +36,10 @@ public final class Logger {
         Log.w(logtag, message);
     }
 
+    public static void d(String message, Object... args){
+        w("DEBUG", message, args);
+    }
+
     public static void logRect(String logtag, String text, Rect r){
         float ratio = r.height() == 0 ? 0 : (float)r.width() / (float)r.height();
         w(logtag, String.format("%s(Left: %d, Top: %d, Width: %d, Height: %d, Ratio %f)", text, r.left, r.top, r.width(), r.height(), ratio));

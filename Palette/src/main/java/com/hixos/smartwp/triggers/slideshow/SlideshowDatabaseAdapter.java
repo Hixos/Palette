@@ -1,6 +1,7 @@
 package com.hixos.smartwp.triggers.slideshow;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -11,24 +12,23 @@ import com.hixos.smartwp.widget.AsyncImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements SlideshowDatabase.DatabaseObserver {
-
+public class SlideshowDatabaseAdapter extends AnimatedListAdapter{
     int mLastMovedPosition = -1;
-    private SlideshowDatabase mDatabase;
-    private List<SlideshowData> mData;
-    private List<String> mBeforeDragIDs;
+    private SlideshowDB mDatabase;
+    private List<SlideshowWallpaper> mData;
+   // private List<String> mBeforeDragIDs;
     private Context mContext;
+    private String newPosition;
 
-    public SlideshowDatabaseAdapter(SlideshowDatabase mDatabase,
+    public SlideshowDatabaseAdapter(SlideshowDB mDatabase,
                                     Context context) {
         this.mDatabase = mDatabase;
         this.mContext = context;
 
-        mDatabase.setDatabaseObserver(this);
-
         mData = new ArrayList<>();
-        mBeforeDragIDs = new ArrayList<>();
-        reloadData();
+        reloadDatabase();
+
+      //  mBeforeDragIDs = new ArrayList<>();
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
     }
 
     @Override
-    public SlideshowData getItem(int i) {
+    public SlideshowWallpaper getItem(int i) {
         return mData.get(i);
     }
 
@@ -68,21 +68,22 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
 
     @Override
     public void dragStarted(String itemId) {
-        mBeforeDragIDs.clear();
-        for (SlideshowData d : mData) {
+       /* mBeforeDragIDs.clear();
+        for (SlideshowWallpaper d : mData) {
             mBeforeDragIDs.add(d.getUid());
-        }
+        }*/
     }
 
     @Override
     public void drag(String itemId, String beforeId) {
+        newPosition = beforeId;
         int oldPosition = getItemPosition(itemId);
         int newPosition = getItemPosition(beforeId);
 
         if (oldPosition >= 0 && newPosition >= 0) {
             mLastMovedPosition = newPosition;
 
-            SlideshowData item = mData.get(oldPosition);
+            SlideshowWallpaper item = mData.get(oldPosition);
             mData.remove(oldPosition);
             mData.add(newPosition, item);
         }
@@ -91,7 +92,7 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
     @Override
     public void dragEndend(String itemID) {
         if (mLastMovedPosition != -1)
-            mDatabase.updateOrderAsync(mData, false);
+            mDatabase.moveBefore(itemID, newPosition);
 
         mLastMovedPosition = -1;
     }
@@ -100,23 +101,45 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
     public void removeAt(int position) {
         mData.remove(position);
         String uid = getItemUid(position);
-        mDatabase.adapterDeleteWallpaper(uid);
+        deleteWallpaper(uid);
     }
 
     @Override
     public void remove(String id) {
-        for (SlideshowData data : mData) {
+        for (SlideshowWallpaper data : mData) {
             if (data.getUid().equals(id)) {
                 mData.remove(data);
                 break;
             }
         }
-        mDatabase.adapterDeleteWallpaper(id);
+        deleteWallpaper(id);
     }
 
-    @Override
+    private void deleteWallpaper(final String uid){
+        AsyncTask<String, Void, Boolean> deleteTask = new AsyncTask<String, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(String... params) {
+                boolean reload = uid.equals(mDatabase.getCurrentWallpaperUid());
+                mDatabase.deleteWallpaper(uid);
+                return reload;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+                if(aBoolean){
+                    SlideshowService.broadcastReloadWallpaper(mContext);
+                }
+                notifyWallpaperDeleted(uid);
+            }
+        };
+
+        deleteTask.execute(uid);
+    }
+
+    /*@Override
     public void onElementRemoved(String uid) {
-        for (SlideshowData data : mData) {
+        for (SlideshowWallpaper data : mData) {
             if (data.getUid().equals(uid)) {
                 mData.remove(data);
                 break;
@@ -124,27 +147,24 @@ public class SlideshowDatabaseAdapter extends AnimatedListAdapter implements Sli
         }
         notifyDataSetChanged();
     }
+*/
 
-    @Override
-    public void onElementCreated(SlideshowData element) {
-        reloadData();
-    }
-
-    @Override
-    public void onDataSetChanged() {
-        reloadData();
-    }
-
-    public void reloadData() {
-        mData.clear();
-
-        mDatabase.getOrderedWallpapersAsync(new SlideshowDatabase.OnWallpapersLoadedListener() {
+    public void reloadDatabase() {
+        AsyncTask<Void, Void, List<SlideshowWallpaper>> reloadTask = new AsyncTask<Void, Void, List<SlideshowWallpaper>>() {
             @Override
-            public void onWallpapersLoaded(List<SlideshowData> wallpapers) {
-                mData = wallpapers;
+            protected List<SlideshowWallpaper> doInBackground(Void... params) {
+                return mDatabase.getOrderedWallpaperList();
+            }
+
+            @Override
+            protected void onPostExecute(List<SlideshowWallpaper> slideshowWallpapers) {
+                mData.clear();
+                mData.addAll(slideshowWallpapers);
                 notifyDataSetChanged();
             }
-        });
+        };
+
+       reloadTask.execute();
     }
 
     @Override

@@ -118,10 +118,10 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         }
 
         mOtherGeofences = new ArrayList<>();
-        mColor = getIntent().getIntExtra(EXTRA_COLOR, getResources().getColor(R.color.geofence_default_color));
+        mColor = getIntent().getIntExtra(EXTRA_COLOR, GeofencePickerFragment.getRandomAccentColor(this));
 
         createActionbar();
-        initMap(savedInstanceState, (GeofenceData) getIntent().getParcelableExtra(EXTRA_TARGET_GEOFENCE));
+        initMap(savedInstanceState, (GeofenceWallpaper) getIntent().getParcelableExtra(EXTRA_TARGET_GEOFENCE));
 
         if (savedInstanceState != null) {
             mTargetGeofenceUid = savedInstanceState.getString("target_uid");
@@ -198,7 +198,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         findViewById(R.id.button_done).setOnClickListener(this);
     }
 
-    private void initMap(Bundle savedInstanceState, GeofenceData target) {
+    private void initMap(Bundle savedInstanceState, GeofenceWallpaper target) {
         if (mMap == null) {
             mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map_frame)).getMap();
         }
@@ -253,7 +253,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
             mMap.setLocationSource(mLocationSource);
         }
 
-        mMap.setMapType(Preferences.getInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_SATELLITE));
+        mMap.setMapType(Preferences.getInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_HYBRID));
         CircleOptions opt = new CircleOptions()
                 .center(getCenter())
                 .radius(getRadius())
@@ -330,7 +330,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
 
                 if (item.isChecked()) {
                     Preferences.setInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_SATELLITE);
-                    mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                    mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 } else {
                     Preferences.setInt(this, R.string.preference_map_type, GoogleMap.MAP_TYPE_NORMAL);
                     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -340,7 +340,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         return super.onOptionsItemSelected(item);
     }
 
-    private void gotoGeofence(GeofenceData target) {
+    private void gotoGeofence(GeofenceWallpaper target) {
         //LatLngBounds bounds = new LatLngBounds(ne, sw);
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(target.getLatLng(), target.getZoomLevel());
         mMap.animateCamera(cu);
@@ -429,7 +429,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         }
 
         for (Parcelable p : geofences) {
-            GeofenceData g = (GeofenceData) p;
+            GeofenceWallpaper g = (GeofenceWallpaper) p;
 
             if (!g.getUid().equals(mTargetGeofenceUid)) {
                 drawGeofence(g, g.getColor());
@@ -437,7 +437,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         }
     }
 
-    private void drawGeofence(GeofenceData data, int color) {
+    private void drawGeofence(GeofenceWallpaper data, int color) {
         CircleOptions opt = new CircleOptions()
                 .center(data.getLatLng())
                 .radius(data.getRadius())
@@ -646,7 +646,7 @@ public class GeofencePickerActivity extends ActionBarActivity implements View.On
         @Override
         protected Boolean doInBackground(Bitmap... bitmaps) {
             boolean success = ImageManager.getInstance().saveBitmap(bitmaps[0],
-                    GeofenceDatabase.getSnapshotUid(uid));
+                    GeofenceDB.getSnapshotUid(uid));
             ImageManager.RecycleBin recycleBin = ImageManager.getInstance().getRecycleBin();
             if (recycleBin != null) {
                 recycleBin.put(bitmaps[0]);

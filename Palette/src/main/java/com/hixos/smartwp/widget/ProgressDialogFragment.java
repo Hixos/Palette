@@ -1,11 +1,15 @@
 package com.hixos.smartwp.widget;
 
+import android.animation.Animator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 
 import com.hixos.smartwp.R;
@@ -22,20 +26,9 @@ public class ProgressDialogFragment extends DialogFragment {
         setCancelable(false);
     }
 
+    @Nullable
     @Override
-    public void onResume() {
-        super.onResume();
-        Window window = getDialog().getWindow();
-        int size = getResources().getDimensionPixelSize(R.dimen.dialog_crop_progress);
-        window.setLayout(size, size);
-        window.setGravity(Gravity.CENTER);
-    }
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.dialog_crop_progress, null));
-        return builder.create();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.dialog_crop_progress, container, true);
     }
 }
