@@ -1,20 +1,15 @@
 package com.hixos.smartwp.triggers.timeofday;
 
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.v7.graphics.Palette;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,47 +18,35 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hixos.smartwp.CropperActivity;
-import com.hixos.smartwp.Logger;
+import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SetWallpaperActivity;
-import com.hixos.smartwp.bitmaps.BitmapIO;
-import com.hixos.smartwp.bitmaps.BitmapUtils;
 import com.hixos.smartwp.bitmaps.ImageManager;
-import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.WallpaperPickerFragment;
-import com.hixos.smartwp.triggers.slideshow.SlideshowPickerFragment;
 import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.utils.FileUtils;
-import com.hixos.smartwp.utils.Hour24;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;
 import com.hixos.smartwp.widget.ArrowView;
-import com.hixos.smartwp.widget.ProgressDialogFragment;
 import com.hixos.smartwp.widget.UndoBarController;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Luca on 11/02/2015.
  */
 public class TodFragment extends Fragment implements UndoBarController.UndoListener,
-        TodDatabase.OnElementRemovedListener, DefaultWallpaperTile.DefaultWallpaperTileListener{
+        DefaultWallpaperTile.DefaultWallpaperTileListener{
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
+    TodDatabaseAdapter mAdapter;
     private boolean mSetWallpaperActivityVisible = false;
-
     private Handler handler = new Handler();
-
-    private TodDatabase mDatabase;
+    private TimeOfDayDB mDatabase;
     private UndoBarController mUndoBarController;
     private long mUndobarShownTimestamp = -1;
     private View mEmptyState;
@@ -90,9 +73,8 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        mDatabase = new TodDatabase(getActivity());
-        mDatabase.setOnElementRemovedListener(this);
-        mDatabase.clearDeletedWallpapers();
+        mDatabase = new TimeOfDayDB(getActivity());
+        mDatabase.confirmDeletion();
 
         mPickerFragment = new TimeOfDayPickerFragment();
         mPickerFragment.setDatabase(mDatabase);
@@ -157,7 +139,7 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void initEmptyState(View view) {
-       if (mDatabase.getWallpaperCount() != 0 || TodDatabase.hasDefaultWallpaper()) {
+       if (mDatabase.getWallpaperCount() != 0 || TimeOfDayDB.hasDefaultWallpaper()) {
             mArrowView = null;
             mEmptyState = null;
             return;
@@ -219,9 +201,19 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     }
 
     private void setAdapter() {
-        TodAdapter adapter = new TodAdapter(getActivity(), mDatabase, this);
-        mGridView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        mAdapter = new TodDatabaseAdapter(getActivity(), mDatabase, this);
+        mAdapter.addOnWallpaperDeletedListener(new AnimatedListAdapter.OnWallpaperDeletedListener() {
+            @Override
+            public void onWallpaperDeleted(String uid) {
+                showUndobar();
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(uid);
+                }
+            }
+        });
+        mGridView.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -238,18 +230,22 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_new_wallpaper:
-                if(!mDatabase.isFull()){
+                if(mDatabase.canAddMoreWallpapers()){
                     mPickerFragment.pickWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
                         @Override
                         public void onWallpaperPicked(String uid) {
                             hideEmptyState();
                             checkLiveWallpaper();
+                            mAdapter.reloadDatabase();
                         }
 
                         @Override
                         public void onWallpaperPickFailed(String uid, int reason) {
                             FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
-                            //Todo: Show Error toast
+                            if(reason != WallpaperPickerFragment.REASON_CANCELED) {
+                                Toast.makeText(getActivity(), R.string.error_picture_pick_fail,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
                     }, mDatabase.getNewUid());
                 }else {
@@ -273,16 +269,16 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
     public void onUndo(long uid) {
         mUndobarShownTimestamp = -1;
         if (mDatabase != null) {
-
-            mDatabase.restoreWallpapersAsync();
+            mDatabase.undoDeletion();
         }
+        mAdapter.reloadDatabase();
     }
 
     @Override
     public void onHide(long uid) {
         mUndobarShownTimestamp = -1;
         if (mDatabase != null) {
-            mDatabase.clearDeletedWallpapersAsync();
+            mDatabase.confirmDeletion();
         }
     }
 
@@ -305,22 +301,9 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         }
     }
 
-    @Override
-    public void onElementRemoved(String uid) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                showUndobar();
-            }
-        });
-        LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
-        if (cache != null) {
-            cache.remove(uid);
-        }
-    }
     private void checkLiveWallpaper() {
         if (!MiscUtils.Activity.isLiveWallpaperActive(getActivity())
-                && mDatabase.getWallpaperCount() > 0 && TodDatabase.hasDefaultWallpaper()
+                && mDatabase.getWallpaperCount() > 0 && TimeOfDayDB.hasDefaultWallpaper()
                 && !mSetWallpaperActivityVisible) {
             startActivityForResult(new Intent(getActivity(), SetWallpaperActivity.class),
                     REQUEST_SET_LIVE_WALLPAPER);
@@ -338,7 +321,13 @@ public class TodFragment extends Fragment implements UndoBarController.UndoListe
         mPickerFragment.pickDefaultWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
             @Override
             public void onWallpaperPicked(String uid) {
-                mGridView.getAdapter().notifyDataSetChanged();
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(TimeOfDayDB.DEFAULT_WALLPAPER_UID);
+                }
+                FileUtils.deleteFile(ImageManager.getInstance().getThumbnailUri(uid));
+                mAdapter.notifyDataSetChanged();
+                TimeOfDayService.broadcastReloadWallpaper(getActivity());
                 checkLiveWallpaper();
             }
 

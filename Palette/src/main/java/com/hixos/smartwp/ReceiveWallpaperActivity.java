@@ -10,15 +10,14 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServiceUtils;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDB;
 import com.hixos.smartwp.triggers.geofence.GeofencePickerActivity;
 import com.hixos.smartwp.triggers.geofence.GeofenceService;
-import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDB;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.ProgressDialogFragment;
 
@@ -116,16 +115,16 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
 
     private class SlideshowWpCreator implements BitmapIO.OnImageCroppedCallback {
         private Context mContext;
-        private SlideshowDatabase mSlideshowDatabase;
+        private SlideshowDB mSlideshowDB;
         private String mCurrentUid;
 
         public SlideshowWpCreator() {
             mContext = ReceiveWallpaperActivity.this;
-            mSlideshowDatabase = new SlideshowDatabase(mContext);
+            mSlideshowDB = new SlideshowDB(mContext);
         }
 
         public void cropWallpaper(Uri imageUri) {
-            mCurrentUid = mSlideshowDatabase.getNewUid();
+            mCurrentUid = mSlideshowDB.getNewUid();
 
             if (!Preferences.getBoolean(mContext, R.string.preference_auto_crop,
                     getResources().getBoolean(R.bool.auto_crop_default_val))) {
@@ -160,7 +159,7 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
 
         @Override
         public void onImageCropped(Uri croppedImage) {
-            mSlideshowDatabase.createWallpaper(mCurrentUid);
+            mSlideshowDB.addWallpaper(mCurrentUid);
             finish(true);
         }
 
@@ -172,12 +171,12 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
 
     private class GeofenceWpCreator implements BitmapIO.OnImageCroppedCallback {
         private Context mContext;
-        private GeofenceDatabase mGeofenceDatabase;
+        private GeofenceDB mGeofenceDatabase;
         private String mCurrentUid;
 
         public GeofenceWpCreator() {
             mContext = ReceiveWallpaperActivity.this;
-            mGeofenceDatabase = new GeofenceDatabase(mContext);
+            mGeofenceDatabase = new GeofenceDB(mContext);
         }
 
         public void cropWallpaper(Uri imageUri) {
@@ -204,9 +203,9 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
         private void pickLocation() {
             Intent i = new Intent(mContext, GeofencePickerActivity.class);
             i.putExtra(GeofencePickerActivity.EXTRA_UID, mCurrentUid);
-            i.putExtra(GeofencePickerActivity.EXTRA_COLOR, mGeofenceDatabase.getLeastUsedColor());
-            i.putParcelableArrayListExtra(GeofencePickerActivity.EXTRA_GEOFENCES,
-                    mGeofenceDatabase.getGeofencesByDistance());
+           // i.putExtra(GeofencePickerActivity.EXTRA_COLOR, mGeofenceDatabase.getLeastUsedColor());
+          /*  i.putParcelableArrayListExtra(GeofencePickerActivity.EXTRA_GEOFENCES,
+                    mGeofenceDatabase.getGeofencesByDistance());*/
             startActivityForResult(i, REQUEST_PICK_GEOFENCE);
         }
 
@@ -229,8 +228,8 @@ public class ReceiveWallpaperActivity extends ActionBarActivity implements View.
                         float distance = data.getFloatExtra(GeofencePickerActivity.RESULT_DISTANCE, -1);
                         float zoom = data.getFloatExtra(GeofencePickerActivity.RESULT_ZOOM, 17);
 
-                        mGeofenceDatabase.createGeowallpaper(mCurrentUid, new LatLng(latitude, longitude), radius,
-                                mGeofenceDatabase.getLeastUsedColor(), distance, zoom);
+                     /*   mGeofenceDatabase.createGeowallpaper(mCurrentUid, new LatLng(latitude, longitude), radius,
+                                mGeofenceDatabase.getLeastUsedColor(), distance, zoom);*/
                         List<String> uid = new ArrayList<>();
                         uid.add(mCurrentUid);
 

@@ -3,19 +3,14 @@ package com.hixos.smartwp.triggers.slideshow;
 import android.app.Activity;
 import android.content.Intent;
 
+import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.triggers.WallpaperPickerFragment;
-import com.hixos.smartwp.utils.MiscUtils;
 
 /**
  * Created by Luca on 02/04/2015.
  */
 public class SlideshowPickerFragment extends WallpaperPickerFragment {
     protected static final int REQUEST_PICK_INTERVAL = 2;
-
-    public interface OnIntervalPickedCallback {
-        public void onIntervalPicked(long newInterval);
-    }
-
     protected OnIntervalPickedCallback intervalCallback;
 
     @Override
@@ -33,20 +28,23 @@ public class SlideshowPickerFragment extends WallpaperPickerFragment {
 
     @Override
     protected void onImagePicked() {
-        getDatabase().createWallpaper(uid);
+        getDatabase().addWallpaper(uid);
         success();
     }
 
     @Override
-    protected SlideshowDatabase getDatabase(){
-        return (SlideshowDatabase)super.getDatabase();
+    protected SlideshowDB getDatabase(){
+        return (SlideshowDB)super.getDatabase();
     }
 
     /**
      * Displays interval picker activity
      */
     public void pickInterval(OnIntervalPickedCallback callback) {
-        if(isPicking) return; //TODO: log error
+        if(isPicking) {
+            Logger.e("SlideshowPicker", "isPicking is already true!");
+            return;
+        }
 
         intervalCallback = callback;
         isPicking = true;
@@ -69,5 +67,9 @@ public class SlideshowPickerFragment extends WallpaperPickerFragment {
         SlideshowService.broadcastIntervalChanged(getActivity());
         intervalCallback.onIntervalPicked(newInterval);
         reset();
+    }
+
+    public interface OnIntervalPickedCallback {
+        void onIntervalPicked(long newInterval);
     }
 }

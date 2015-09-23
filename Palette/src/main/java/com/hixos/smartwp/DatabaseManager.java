@@ -1,21 +1,20 @@
 package com.hixos.smartwp;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.hixos.smartwp.triggers.Wallpaper;
+
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class DatabaseManager {
-    private static AtomicInteger sOpenCounter;
     private static DatabaseHelper sDbHelper;
     private static SQLiteDatabase sDatabase;
 
     private Context mContext;
 
-    static {
-        sOpenCounter = new AtomicInteger();
-    }
 
     public DatabaseManager(Context context) {
         mContext = context.getApplicationContext();
@@ -28,6 +27,47 @@ public abstract class DatabaseManager {
         }
     }
 
+    protected static Cursor queryWallpaper(SQLiteDatabase database, String table, String id,
+                                  String[] columns, String where){
+        return queryWallpaper(database, table, id, columns, where, null, 0);
+    }
+
+    protected static Cursor queryWallpaper(SQLiteDatabase database, String table, String id,
+                                           String[] columns, String where, String orderBy){
+        return queryWallpaper(database, table, id, columns, where, orderBy, 0);
+    }
+
+    /**
+     * String tag for the database
+     *
+     * @return tag
+     */
+    //public abstract String getTag();
+
+    protected static Cursor queryWallpaper(SQLiteDatabase database, String table, String id,
+                                           String[] columns, String where, String orderBy, int limit){
+        String sql = "SELECT ";
+        for(int i = 0; i < columns.length; i++){
+            sql += columns[i] + (i == columns.length - 1 ? "" : ", ");
+        }
+        sql += " FROM ";
+        sql += Wallpaper.TABLE_WALLPAPERS + ", " + table;
+        sql += " WHERE ";
+        sql += Wallpaper.TABLE_WALLPAPERS + "." + Wallpaper.COLUMN_UID + " = " + table + "." + id;
+        if(where != null){
+            sql += " AND " + where;
+        }
+        if(orderBy != null){
+            sql += " ORDER BY " + orderBy;
+        }
+
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
+        Logger.d(sql);
+        return database.rawQuery(sql, null);
+    }
+
     public Context getContext() {
         return mContext;
     }
@@ -38,32 +78,11 @@ public abstract class DatabaseManager {
      * @return App's database
      */
     public synchronized SQLiteDatabase openDatabase() {
-        int c = sOpenCounter.incrementAndGet();
-        if (c < 1) {
-            Logger.e("Database", "Invalid counter value");
-            sOpenCounter.set(1);
-        }
-        if (c <= 1) {
+        if (sDatabase == null) {
             sDatabase = sDbHelper.getWritableDatabase();
         }
         return sDatabase;
     }
-
-    /**
-     * Closes the database and releases all the resources
-     */
-    protected synchronized void closeDatabase() {
-        if (sOpenCounter.decrementAndGet() == 0) {
-            sDatabase.close();
-        }
-    }
-
-    /**
-     * String tag for the database
-     *
-     * @return tag
-     */
-    public abstract String getTag();
 
     /**
      * Default method to get a unique id
@@ -72,5 +91,14 @@ public abstract class DatabaseManager {
      */
     public String getNewUid() {
         return UUID.randomUUID().toString();
+    }
+
+    protected boolean addUid(String uid, boolean confirm){
+        SQLiteDatabase database = openDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Wallpaper.COLUMN_UID, uid);
+        values.put(Wallpaper.COLUMN_DELETED, confirm);
+        return database.insert(Wallpaper.TABLE_WALLPAPERS, null, values) != -1;
+
     }
 }

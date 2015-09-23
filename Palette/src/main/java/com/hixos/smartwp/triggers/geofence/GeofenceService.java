@@ -112,6 +112,18 @@ public class GeofenceService {
         }
     }
 
+    public static void broadcastAddGeofence2(Context context, List<GeofenceWallpaper> wallpapers) {
+        if (wallpapers.size() == 0) return;
+
+        Intent intent = new Intent(ACTION_ADD_GEOFENCE);
+        String[] requestUids = new String[wallpapers.size()];
+        for (int i = 0; i < wallpapers.size(); i++) {
+            requestUids[i] = wallpapers.get(i).getUid();
+        }
+        intent.putExtra(EXTRA_UIDS, requestUids);
+        context.sendBroadcast(intent);
+    }
+
     public static void broadcastAddGeofence(Context context, List<String> uids) {
         if (uids.size() == 0) return;
 
@@ -171,7 +183,7 @@ public class GeofenceService {
 
     public static Uri getBestWallpaperUri(Context context) {
         Uri uri = ImageManager.getInstance()
-                .getPictureUri(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
+                .getPictureUri(GeofenceDB.DEFAULT_WALLPAPER_UID);
 
         if (FileUtils.fileExistance(uri)) return uri;
         return Uri.parse("android.resource://" + context.getPackageName() + "/"
@@ -257,8 +269,8 @@ public class GeofenceService {
         mContext.unregisterReceiver(mProviderReceiver);
         mContext.unregisterReceiver(mWifiReceiver);
 
-        GeofenceDatabase database = new GeofenceDatabase(mContext);
-        database.clearActiveGeofences();
+        GeofenceDB database = new GeofenceDB(mContext);
+        database.deactivateAllWallpapers();
 
         mManager.removeAllGeofences();
         mManager.disconnect();
@@ -269,28 +281,22 @@ public class GeofenceService {
     }
 
     private void setWallpaper(Context context) {
-        GeofenceDatabase database = new GeofenceDatabase(context);
+        GeofenceDB database = new GeofenceDB(context);
 
-        List<GeofenceData> datas = database.getActiveGeowallpapers();
+        List<GeofenceWallpaper> datas = database.getActiveWallpapers();
 
         if (datas.size() > 0) {
             do {
-                int min = 0;
-                for (int i = 1; i < datas.size(); i++) {
-                    if (datas.get(i).getRadius() < datas.get(min).getRadius()) {
-                        min = i;
-                    }
-                }
-                Uri wpUri = ImageManager.getInstance().getPictureUri(datas.get(min).getUid());
+                Uri wpUri = ImageManager.getInstance().getPictureUri(datas.get(0).getUid());
                 if (FileUtils.fileExistance(wpUri)) {
                     setWallpaper(wpUri);
                     return;
                 }
-                datas.remove(min);
+                datas.remove(0);
             } while (datas.size() > 0);
 
             Uri defaultUri = ImageManager.getInstance()
-                    .getPictureUri(GeofenceDatabase.DEFAULT_WALLPAPER_UID);
+                    .getPictureUri(GeofenceDB.DEFAULT_WALLPAPER_UID);
             if (FileUtils.fileExistance(defaultUri)) {
                 setWallpaper(defaultUri);
             } else {
@@ -407,10 +413,10 @@ public class GeofenceService {
                     Logger.fileW(mContext, LOGTAG, "Adding all");
                     PendingIntent transition = getTransitionPendingIntent();
                     List<Geofence> geofences = new ArrayList<>();
-                    GeofenceDatabase database = new GeofenceDatabase(mContext);
-                    List<GeofenceData> datas = database.getGeofencesByDistance();
-                    if (datas.size() > 0) {
-                        for (GeofenceData data : datas) {
+                    GeofenceDB database = new GeofenceDB(mContext);
+                    List<GeofenceWallpaper> wallpapers = database.getWallpapersByDistance();
+                    if (wallpapers.size() > 0) {
+                        for (GeofenceWallpaper data : wallpapers) {
                             geofences.add(data.toGeofence());
                         }
                         GeofencingRequest geoRequest = new GeofencingRequest.Builder()
@@ -451,12 +457,12 @@ public class GeofenceService {
                     Logger.fileW(mContext, LOGTAG, "Adding one");
                     PendingIntent transition = getTransitionPendingIntent();
                     List<Geofence> geofences = new ArrayList<>();
-                    GeofenceDatabase database = new GeofenceDatabase(mContext);
+                    GeofenceDB database = new GeofenceDB(mContext);
 
                     for (String uid : geofenceUids) {
-                        GeofenceData data = database.getWallpaper(uid);
-                        if (data != null) {
-                            geofences.add(data.toGeofence());
+                        GeofenceWallpaper wallpaper = database.getWallpaper(uid);
+                        if (wallpaper != null) {
+                            geofences.add(wallpaper.toGeofence());
                         }
                     }
                     GeofencingRequest geoRequest = new GeofencingRequest.Builder()
@@ -505,7 +511,7 @@ public class GeofenceService {
     private class GeofenceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            GeofenceDatabase database = new GeofenceDatabase(context);
+            GeofenceDB database = new GeofenceDB(context);
             GeofencingEvent geoEvent = GeofencingEvent.fromIntent(intent);
             Logger.fileW(context, LOGTAG, "Wallpaper received");
             if (geoEvent.hasError()) {
@@ -513,7 +519,7 @@ public class GeofenceService {
                 Logger.e("ReceiveTransitionsIntentService",
                         "Location Services error: " +
                                 Integer.toString(errorCode));
-                database.clearActiveGeofences();
+                database.deactivateAllWallpapers();
                 setWallpaper(context);
             } else {
                 int transitionType = geoEvent.getGeofenceTransition();
@@ -521,11 +527,11 @@ public class GeofenceService {
 
                 if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
                     for (Geofence geofence : triggerList) {
-                        database.addActiveGeowallpaper(geofence.getRequestId());
+                        database.activateWallpaper(geofence.getRequestId());
                     }
                 } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                     for (Geofence geofence : triggerList) {
-                        database.removeActiveGeowallpaper(geofence.getRequestId());
+                        database.deactivateWallpaper(geofence.getRequestId());
                     }
                 }
                 setWallpaper(context);

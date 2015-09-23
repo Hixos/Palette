@@ -1,13 +1,11 @@
 package com.hixos.smartwp.triggers.slideshow;
 
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,12 +22,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hixos.smartwp.CropperActivity;
 import com.hixos.smartwp.R;
 import com.hixos.smartwp.SetWallpaperActivity;
-import com.hixos.smartwp.bitmaps.BitmapIO;
 import com.hixos.smartwp.bitmaps.ImageManager;
-import com.hixos.smartwp.bitmaps.WallpaperCropper;
 import com.hixos.smartwp.triggers.ServicesActivity;
 import com.hixos.smartwp.triggers.WallpaperPickerFragment;
 import com.hixos.smartwp.utils.FileUtils;
@@ -37,13 +32,14 @@ import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.utils.Preferences;
 import com.hixos.smartwp.widget.AnimatedGridView;
 import com.hixos.smartwp.widget.ArrowView;
-import com.hixos.smartwp.widget.ProgressDialogFragment;
 import com.hixos.smartwp.widget.UndoBarController;
 
-public class SlideshowFragment extends Fragment implements UndoBarController.UndoListener, SlideshowDatabase.OnElementRemovedListener {
+public class SlideshowFragment extends Fragment implements UndoBarController.UndoListener{
     private final static int REQUEST_SET_LIVE_WALLPAPER = 33;
     Handler handler = new Handler();
-    private SlideshowDatabase mDatabase;
+    private SlideshowDB mDatabase;
+    private SlideshowDatabaseAdapter mAdapter;
+
     private UndoBarController mUndoBarController;
     private long mUndobarShownTimestamp = -1;
     private View mEmptyState;
@@ -59,9 +55,8 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        mDatabase = new SlideshowDatabase(getActivity());
-        mDatabase.setOnElementRemovedListener(this);
-        mDatabase.clearDeletedWallpapers();
+        mDatabase = new SlideshowDB(getActivity());
+        mDatabase.confirmDeletion();
 
         mPickerFragment = new SlideshowPickerFragment();
         mPickerFragment.setDatabase(mDatabase);
@@ -189,9 +184,18 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     }
 
     public void setAdapter() {
-        SlideshowDatabaseAdapter adapter = new SlideshowDatabaseAdapter(mDatabase, getActivity());
-        mGridView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        mAdapter = new SlideshowDatabaseAdapter(mDatabase, getActivity());
+        mAdapter.addOnWallpaperDeletedListener(new SlideshowDatabaseAdapter.OnWallpaperDeletedListener() {
+            @Override
+            public void onWallpaperDeleted(String uid) {
+                showUndobar();
+                LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
+                if (cache != null) {
+                    cache.remove(uid);
+                }
+            }
+        });
+        mGridView.setAdapter(mAdapter);
     }
 
     @Override
@@ -218,14 +222,17 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                 mPickerFragment.pickWallpaper(new WallpaperPickerFragment.OnWallpaperPickedCallback() {
                     @Override
                     public void onWallpaperPicked(String uid) {
-                        //Todo: show success confirmation
                         hideEmptyState();
+                        mAdapter.reloadDatabase();
                     }
 
                     @Override
                     public void onWallpaperPickFailed(String uid, int reason) {
                         FileUtils.deleteFile(ImageManager.getInstance().getPictureUri(uid));
-                        //Todo: Show error toast
+                        if(reason != WallpaperPickerFragment.REASON_CANCELED) {
+                            Toast.makeText(getActivity(), R.string.error_picture_pick_fail,
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 }, mDatabase.getNewUid());
                 break;
@@ -233,7 +240,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
                 mPickerFragment.pickInterval(new SlideshowPickerFragment.OnIntervalPickedCallback() {
                     @Override
                     public void onIntervalPicked(long newInterval) {
-                        //Todo: show success confirmation
+
                     }
                 });
                 break;
@@ -242,8 +249,9 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
             case R.id.action_shuffle: {
                 boolean checked = item.isChecked();
                 item.setChecked(!checked);
-                mDatabase.setShuffleEnabled(!checked);
-                mDatabase.setCurrentWallpaper(0);
+                mDatabase.setShuffle(!checked);
+                mGridView.setDraggable(checked);
+                mAdapter.reloadDatabase();
                 break;
             }
             case R.id.action_auto_crop:
@@ -271,20 +279,21 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
     @Override
     public void onUndo(long token) {
         if (mDatabase != null) {
-            mDatabase.restoreWallpapersAsync();
+            mDatabase.undoDeletion();
         }
         mUndobarShownTimestamp = -1;
+        mAdapter.reloadDatabase();
     }
 
     @Override
     public void onHide(long token) {
         mUndobarShownTimestamp = -1;
         if (mDatabase != null) {
-            mDatabase.clearDeletedWallpapersAsync();
+            mDatabase.confirmDeletion();
         }
     }
 
-    @Override
+    /*@Override
     public void onElementRemoved(String uid) {
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -296,7 +305,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
         if (cache != null) {
             cache.remove(uid);
         }
-    }
+    }*/
 
     private void showUndobar() {
         showUndobar(0);
@@ -304,7 +313,7 @@ public class SlideshowFragment extends Fragment implements UndoBarController.Und
 
     private void showUndobar(int elapsed) {
         mUndobarShownTimestamp = System.currentTimeMillis();
-        int quantity = mDatabase.getDeletedWallpaperCount();
+        int quantity = mDatabase.getDeletedWallpapersCount();
 
         String message = getResources().getQuantityString(R.plurals.wallpaper_deleted, quantity, quantity);
         mUndoBarController.showUndoBar(message, 0, elapsed);

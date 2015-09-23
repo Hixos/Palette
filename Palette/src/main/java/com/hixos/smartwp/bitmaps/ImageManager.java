@@ -13,8 +13,8 @@ import android.util.TypedValue;
 
 import com.hixos.smartwp.Logger;
 import com.hixos.smartwp.R;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
-import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDB;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDB;
 import com.hixos.smartwp.utils.ExternalStorageAccessException;
 import com.hixos.smartwp.utils.FileUtils;
 import com.hixos.smartwp.utils.MiscUtils;
@@ -120,16 +120,16 @@ public class ImageManager {
         Point point = MiscUtils.UI.getDisplaySize(mContext);
         TypedValue typedvalue = new TypedValue();
         float scale;
-        if (uid.startsWith(SlideshowDatabase.SLIDESHOW_ID_PREFIX)) {
+        if (uid.startsWith(SlideshowDB.SLIDESHOW_ID_PREFIX)) {
             mContext.getResources().getValue(R.dimen.thumbnail_slideshow_factor, typedvalue, true);
             scale = typedvalue.getFloat();
-        } else if (uid.equals(GeofenceDatabase.DEFAULT_WALLPAPER_UID)) {
+        } else if (uid.equals(GeofenceDB.DEFAULT_WALLPAPER_UID)) {
             mContext.getResources().getValue(R.dimen.thumbnail_geofence_default_factor, typedvalue, true);
             scale = typedvalue.getFloat();
-        } else if (uid.startsWith(GeofenceDatabase.GEOFENCE_ID_PREFIX)) {
+        } else if (uid.startsWith(GeofenceDB.GEOFENCE_ID_PREFIX)) {
             mContext.getResources().getValue(R.dimen.thumbnail_geofence_factor, typedvalue, true);
             scale = typedvalue.getFloat();
-        } else if (uid.startsWith(GeofenceDatabase.SNAPSHOT_ID_PREFIX)) {
+        } else if (uid.startsWith(GeofenceDB.GEOFENCE_SNAPSHOT_ID_PREFIX)) {
             mContext.getResources().getValue(R.dimen.thumbnail_snapshot_factor, typedvalue, true);
             scale = typedvalue.getFloat();
         } else {
@@ -238,8 +238,8 @@ public class ImageManager {
         return false;
     }
 
-    public static interface OnImageLoadedListener {
-        public abstract void onImageLoaded(Bitmap bitmap, String s);
+    public interface OnImageLoadedListener {
+        void onImageLoaded(Bitmap bitmap, String s);
     }
 
     public static class RecycleBin {

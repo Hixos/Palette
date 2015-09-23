@@ -25,9 +25,9 @@ import android.widget.TextView;
 
 import com.hixos.smartwp.triggers.ServiceUtils;
 import com.hixos.smartwp.triggers.ServicesActivity;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
-import com.hixos.smartwp.triggers.slideshow.SlideshowDatabase;
-import com.hixos.smartwp.triggers.timeofday.TodDatabase;
+import com.hixos.smartwp.triggers.geofence.GeofenceDB;
+import com.hixos.smartwp.triggers.slideshow.SlideshowDB;
+import com.hixos.smartwp.triggers.timeofday.TimeOfDayDB;
 import com.hixos.smartwp.utils.MiscUtils;
 import com.hixos.smartwp.widget.CircleView;
 
@@ -266,19 +266,18 @@ public class MainActivity extends ActionBarActivity {
     private void onBubbleExpanded(int id) {
         switch (id) {
             case ServiceUtils.SERVICE_SLIDESHOW:
-                SlideshowDatabase sdatabase = new SlideshowDatabase(this);
+                SlideshowDB sdatabase = new SlideshowDB(this);
                 if (sdatabase.getWallpaperCount() == 0) {
                     onSettingsClick(ServiceUtils.SERVICE_SLIDESHOW);
                 }
                 break;
             case ServiceUtils.SERVICE_GEOFENCE:
-                if (!GeofenceDatabase.hasDefaultWallpaper()) {
+                if (!GeofenceDB.hasDefaultWallpaper()) {
                     onSettingsClick(ServiceUtils.SERVICE_GEOFENCE);
                 }
                 break;
             case ServiceUtils.SERVICE_TIMEOFDAY:
-                TodDatabase todDatabase = new TodDatabase(this);
-                if(todDatabase.getWallpaperCount() == 0){
+                if (!TimeOfDayDB.hasDefaultWallpaper()) {
                     onSettingsClick(ServiceUtils.SERVICE_TIMEOFDAY);
                 }
                 break;
@@ -293,18 +292,12 @@ public class MainActivity extends ActionBarActivity {
         private final static float MIN_ALPHA = 0.4f;
 
         private int mID;
-
-        public View getView() {
-            return mView;
-        }
-
         private View mView;
         private CircleView mCircle;
         private TextView mTextName;
         private boolean mActive = false;
         private boolean mExpanded = false;
         private AnimatorSet mAnimatorSet;
-
         public ServiceBubble(View bubbleView, int id) {
             mView = bubbleView;
             mCircle = (CircleView) bubbleView.findViewById(R.id.circleView);
@@ -314,13 +307,17 @@ public class MainActivity extends ActionBarActivity {
             init();
         }
 
+        public View getView() {
+            return mView;
+        }
+
         private void setDimensions(View bubbleView) {
             int orientation = getResources().getConfiguration().orientation;
             Point displaySize = MiscUtils.UI.getDisplaySize(MainActivity.this);
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                bubbleView.getLayoutParams().height = (int) Math.round(displaySize.y / 3f);
+                bubbleView.getLayoutParams().height = Math.round(displaySize.y / 3f);
             } else {
-                bubbleView.getLayoutParams().width = (int) Math.round(displaySize.x / 2.6f);
+                bubbleView.getLayoutParams().width = Math.round(displaySize.x / 2.6f);
             }
         }
 

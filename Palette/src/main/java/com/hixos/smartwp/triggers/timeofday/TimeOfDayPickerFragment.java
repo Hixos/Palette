@@ -1,21 +1,18 @@
 package com.hixos.smartwp.triggers.timeofday;
 
-import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.graphics.Palette;
 import android.util.LruCache;
-import android.widget.BaseAdapter;
 
 import com.hixos.smartwp.bitmaps.BitmapUtils;
 import com.hixos.smartwp.bitmaps.ImageManager;
 import com.hixos.smartwp.triggers.WallpaperPickerFragment;
 import com.hixos.smartwp.utils.Hour24;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Luca on 07/05/2015.
@@ -24,17 +21,9 @@ public class TimeOfDayPickerFragment extends WallpaperPickerFragment {
     private int mVibrantColor, mMutedColor;
     private boolean mPickingDefault = false;
 
-    public interface OnColorPickedCallback {
-        void onColorPicked(int vibrantColor, int mutedColor);
-    }
-    public interface OnTimeOfDayPickedCallback {
-        void onTimeOfDayPicked(String uid, Hour24 startHour, Hour24 endHour);
-        void onTimeOfDayPickCanceled(String uid);
-    }
-
     @Override
-    protected TodDatabase getDatabase(){
-        return (TodDatabase)super.getDatabase();
+    protected TimeOfDayDB getDatabase(){
+        return (TimeOfDayDB)super.getDatabase();
     }
 
     protected void pickColors(String uid, final OnColorPickedCallback callback){
@@ -71,20 +60,18 @@ public class TimeOfDayPickerFragment extends WallpaperPickerFragment {
     }
 
     protected void pickTimeOfDay(final String uid, int color, final OnTimeOfDayPickedCallback callback) {
-        ArrayList<TimeOfDayWallpaper> wallpapers = getDatabase().getOrderedWallpapers();
+        List<TimeOfDayWallpaper> wallpapers = getDatabase().getWallpapersByStartHour();
 
         DialogFragment dialog = TodPickerDialog.getInstance(wallpapers, color,
                 new TodPickerDialog.TodPickerDialogListener() {
                     @Override
                     public void onTimePicked(Hour24 startHour, Hour24 endHour) {
                         callback.onTimeOfDayPicked(uid, startHour, endHour);
-                        reset();
                     }
 
                     @Override
                     public void onCancel() {
                         callback.onTimeOfDayPickCanceled(uid);
-                        reset();
                     }
                 });
         dialog.show(getFragmentManager(), "todpicker");
@@ -116,11 +103,11 @@ public class TimeOfDayPickerFragment extends WallpaperPickerFragment {
             pickTimeOfDay(uid, mVibrantColor, new OnTimeOfDayPickedCallback() {
                 @Override
                 public void onTimeOfDayPicked(String uid, Hour24 startHour, Hour24 endHour) {
-                    if (getDatabase().createWallpaper(uid, startHour,
+                    if (getDatabase().addWallpaper(uid, startHour,
                             endHour, mMutedColor, mVibrantColor) != null) {
                         success();
                     } else {
-                        fail(REASON_UNKNOWN); //Todo: Better reason
+                        fail(REASON_UNKNOWN);
                     }
                 }
 
@@ -132,7 +119,7 @@ public class TimeOfDayPickerFragment extends WallpaperPickerFragment {
         }else{
             LruCache<String, Bitmap> cache = ImageManager.getInstance().getCache();
             if (cache != null) {
-                cache.remove(TodDatabase.DEFAULT_WALLPAPER_UID);
+                cache.remove(TimeOfDayDB.DEFAULT_WALLPAPER_UID);
             }
             success();
         }
@@ -140,7 +127,16 @@ public class TimeOfDayPickerFragment extends WallpaperPickerFragment {
 
     public void pickDefaultWallpaper(OnWallpaperPickedCallback callback){
         mPickingDefault = true;
-        pickWallpaper(callback, TodDatabase.DEFAULT_WALLPAPER_UID);
+        pickWallpaper(callback, TimeOfDayDB.DEFAULT_WALLPAPER_UID);
+    }
+
+    public interface OnColorPickedCallback {
+        void onColorPicked(int vibrantColor, int mutedColor);
+    }
+
+    public interface OnTimeOfDayPickedCallback {
+        void onTimeOfDayPicked(String uid, Hour24 startHour, Hour24 endHour);
+        void onTimeOfDayPickCanceled(String uid);
     }
 
 }

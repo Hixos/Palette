@@ -288,7 +288,7 @@ public class BitmapIO {
             matrix.postScale(scaleX, scaleY);
             matrix.postRotate(rotation);
             out = Bitmap.createBitmap(decodedImage, decodedCropRect.left, decodedCropRect.top,
-                    decodedCropRect.width(), decodedCropRect.height(), matrix, true); //TODO: Check if rotation OK
+                    decodedCropRect.width(), decodedCropRect.height(), matrix, true);
 
             if (out.getWidth() != outWidth || out.getHeight() != outHeight) {
                 Logger.e(LOGTAG, "Bitmap dimensions: Required w: " + outWidth + " out: " + out.getWidth()
@@ -395,8 +395,8 @@ public class BitmapIO {
     }
 
     public interface OnImageCroppedCallback {
-        public void onImageCropped(Uri imageUri);
+        void onImageCropped(Uri imageUri);
 
-        public void onImageCropFailed();
+        void onImageCropFailed();
     }
 }

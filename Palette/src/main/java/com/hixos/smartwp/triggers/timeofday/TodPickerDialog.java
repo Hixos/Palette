@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,6 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AnticipateOvershootInterpolator;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hixos.smartwp.R;
@@ -23,30 +23,24 @@ import com.hixos.smartwp.widget.TimeDisplay;
 import com.hixos.smartwp.widget.TodPickerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Luca on 22/03/2015.
  */
 public class TodPickerDialog extends DialogFragment implements View.OnClickListener,
         TodPickerView.OnTimeChangedListener{
-    public interface TodPickerDialogListener {
-        public void onTimePicked(Hour24 startHour, Hour24 endHour);
-        public void onCancel();
-    }
-
     private CheckableFrameLayout mAmButton, mPmButton;
     private TodPickerView mStartPicker, mEndPicker;
     private TimeDisplay mStartTimeDisplay, mEndTimeDisplay;
     private TextView mMainButtonText;
     private TextView mTitleText;
-
     private TodPickerDialogListener mListener;
-
     private boolean mPickingStart = true;
     private int mColor;
-    private ArrayList<TimeOfDayWallpaper> mCurrentWallpapers;
+    private List<TimeOfDayWallpaper> mCurrentWallpapers;
 
-    public static TodPickerDialog getInstance(ArrayList<TimeOfDayWallpaper> currentWallpapers,
+    public static TodPickerDialog getInstance(List<TimeOfDayWallpaper> currentWallpapers,
                                               int color, TodPickerDialogListener listener){
         TodPickerDialog dialog = new TodPickerDialog();
         dialog.mColor = color;
@@ -80,7 +74,7 @@ public class TodPickerDialog extends DialogFragment implements View.OnClickListe
         outState.putInt("color", mColor);
         outState.putBoolean("quadrantAM", mAmButton.isChecked());
         outState.putBoolean("pickingStart", mPickingStart);
-        outState.putParcelableArrayList("wallpapers", mCurrentWallpapers);
+        outState.putParcelableArrayList("wallpapers", new ArrayList<Parcelable>(mCurrentWallpapers));
     }
 
     @Nullable
@@ -395,7 +389,6 @@ public class TodPickerDialog extends DialogFragment implements View.OnClickListe
                 R.drawable.ic_action_navigation_check, 0,0,0);
     }
 
-
     @Override
     public void onTimeChanged(TodPickerView picker, Hour24 time) {
         if(picker == mStartPicker){
@@ -403,5 +396,11 @@ public class TodPickerDialog extends DialogFragment implements View.OnClickListe
         }else{
             mEndTimeDisplay.setTime(time);
         }
+    }
+
+
+    public interface TodPickerDialogListener {
+        void onTimePicked(Hour24 startHour, Hour24 endHour);
+        void onCancel();
     }
 }

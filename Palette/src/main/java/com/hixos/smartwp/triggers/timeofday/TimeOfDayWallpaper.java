@@ -4,22 +4,18 @@ import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.hixos.smartwp.triggers.Wallpaper;
 import com.hixos.smartwp.utils.Hour24;
 
-/**
- * Created by Luca on 19/02/2015.
- */
-public class TimeOfDayWallpaper implements Parcelable {
-    public final static String[] DATA_COLUMNS = {
-            TodDatabase.COLUMN_DATA_ID,
-            TodDatabase.COLUMN_DATA_START_HOUR,
-            TodDatabase.COLUMN_DATA_END_HOUR,
-            TodDatabase.COLUMN_DATA_COLOR_MUTED,
-            TodDatabase.COLUMN_DATA_COLOR_VIBRANT,
-            TodDatabase.COLUMN_DATA_DELETED};
+import java.security.InvalidParameterException;
 
-    public static final Creator<TimeOfDayWallpaper> CREATOR
-            = new Creator<TimeOfDayWallpaper>() {
+/**
+ * Created by Hixos on 16/09/2015.
+ */
+
+public class TimeOfDayWallpaper extends Wallpaper implements Parcelable{
+    public final static String TABLE_NAME = "[timeofday]";
+    public static final Creator<Wallpaper> CREATOR = new Creator<Wallpaper>() {
         public TimeOfDayWallpaper createFromParcel(Parcel in) {
             return new TimeOfDayWallpaper(in);
         }
@@ -28,78 +24,54 @@ public class TimeOfDayWallpaper implements Parcelable {
             return new TimeOfDayWallpaper[size];
         }
     };
-
-    private final String mUid;
+    private final static String COL_UID = "tod_uid";
+    public final static String COLUMN_UID = "[" + COL_UID + "]";
+    private final static String COL_START_HOUR = "start_hour";
+    public final static String COLUMN_START_HOUR = "[" + COL_START_HOUR + "]";
+    private final static String COL_END_HOUR = "end_hour";
+    public final static String COLUMN_END_HOUR = "[" + COL_END_HOUR  + "]";
+    private final static String COL_COLOR_MUTED = "color_muted";
+    public final static String COLUMN_COLOR_MUTED = "[" + COL_COLOR_MUTED  + "]";
+    private final static String COL_COLOR_VIBRANT = "color_vibrant";
+    public final static String COLUMN_COLOR_VIBRANT = "[" + COL_COLOR_VIBRANT  + "]";
     private Hour24 mStartHour;
     private Hour24 mEndHour;
     private int mMutedColor, mVibrantColor;
-    private boolean mDeleted;
 
-    public String getUid() {
-        return mUid;
+    public TimeOfDayWallpaper(Parcel in) {
+        super(in);
+    }
+    public TimeOfDayWallpaper(Cursor cursor) {
+        super(cursor);
+        int colStartHour = cursor.getColumnIndex(COL_START_HOUR);
+        int colEndHour = cursor.getColumnIndex(COL_END_HOUR);
+        int colMutedColor = cursor.getColumnIndex(COL_COLOR_MUTED);
+        int colVibrantColor = cursor.getColumnIndex(COL_COLOR_VIBRANT);
+
+        if(colStartHour < 0 || colEndHour < 0 || colMutedColor < 0 || colVibrantColor < 0){
+            throw new InvalidParameterException("Required columns not found");
+        }
+
+        mStartHour = new Hour24(cursor.getInt(colStartHour));
+        mEndHour = new Hour24(cursor.getInt(colEndHour));
+        mMutedColor = cursor.getInt(colMutedColor);
+        mVibrantColor = cursor.getInt(colVibrantColor);
     }
 
     public Hour24 getStartHour() {
         return mStartHour;
     }
 
-    public void setStartHour(Hour24 startHour) {
-        this.mStartHour = new Hour24(startHour);
-    }
-
     public Hour24 getEndHour() {
         return mEndHour;
-    }
-
-    public void setEndHour(Hour24 endHour) {
-        this.mEndHour = new Hour24(endHour);
     }
 
     public int getMutedColor() {
         return mMutedColor;
     }
 
-    public void setMutedColor(int color) {
-        this.mMutedColor = color;
-    }
-
     public int getVibrantColor() {
         return mVibrantColor;
-    }
-
-    public void setVibrantColor(int color) {
-        this.mVibrantColor = color;
-    }
-
-    public boolean isDeleted() {
-        return mDeleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.mDeleted = deleted;
-    }
-
-    public TimeOfDayWallpaper(String uid){
-        mUid = uid;
-    }
-
-    public TimeOfDayWallpaper(Parcel in) {
-        mUid = in.readString();
-        mStartHour = new Hour24(in.readInt());
-        mEndHour = new Hour24(in.readInt() );
-        mMutedColor = in.readInt();
-        mVibrantColor = in.readInt();
-        mDeleted = in.readByte() == 1;
-    }
-
-    public static TimeOfDayWallpaper fromCursor(Cursor cursor){
-        TimeOfDayWallpaper data = new TimeOfDayWallpaper(cursor.getString(0));
-        data.mStartHour = new Hour24(cursor.getInt(1));
-        data.mEndHour = new Hour24(cursor.getInt(2));
-        data.mMutedColor = cursor.getInt(3);
-        data.mVibrantColor = cursor.getInt(4);
-        data.mDeleted = cursor.getInt(5) == 1;
-        return data;
     }
 
     @Override
@@ -108,12 +80,22 @@ public class TimeOfDayWallpaper implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mUid);
-        dest.writeInt(mStartHour.getMinutes());
-        dest.writeInt(mEndHour.getMinutes());
-        dest.writeInt(mMutedColor);
-        dest.writeInt(mVibrantColor);
-        dest.writeInt(mDeleted ? 1 : 0);
+    public void writeToParcel(Parcel out, int i) {
+        super.writeToParcel(out, i);
+
+        out.writeInt(mStartHour.getMinutes());
+        out.writeInt(mEndHour.getMinutes());
+        out.writeInt(mMutedColor);
+        out.writeInt(mVibrantColor);
+    }
+
+    @Override
+    protected void readFromParcel(Parcel in) {
+        super.readFromParcel(in);
+
+        mStartHour = new Hour24(in.readInt());
+        mEndHour = new Hour24(in.readInt());
+        mMutedColor = in.readInt();
+        mVibrantColor = in.readInt();
     }
 }

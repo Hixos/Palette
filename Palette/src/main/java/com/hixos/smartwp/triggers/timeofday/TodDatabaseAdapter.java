@@ -1,13 +1,13 @@
 package com.hixos.smartwp.triggers.timeofday;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.hixos.smartwp.AnimatedListAdapter;
 import com.hixos.smartwp.R;
-import com.hixos.smartwp.triggers.geofence.GeofenceDatabase;
 import com.hixos.smartwp.utils.DefaultWallpaperTile;
 import com.hixos.smartwp.widget.AsyncImageView;
 import com.hixos.smartwp.widget.TimeDisplay;
@@ -18,24 +18,23 @@ import java.util.List;
 /**
  * Created by Luca on 24/02/2015.
  */
-public class TodAdapter extends AnimatedListAdapter implements TodDatabase.DatabaseObserver {
+public class TodDatabaseAdapter extends AnimatedListAdapter{
     private final static int VIEW_TYPE_DEFAULT = 0;
     private final static int VIEW_TYPE_TOD = 1;
 
-    private TodDatabase mDatabase;
+    private TimeOfDayDB mDatabase;
     private List<TimeOfDayWallpaper> mWallpapers;
     private DefaultWallpaperTile.DefaultWallpaperTileListener mListener;
     private Context mContext;
 
-    public TodAdapter(Context context, TodDatabase database,
-                      DefaultWallpaperTile.DefaultWallpaperTileListener listener) {
+    public TodDatabaseAdapter(Context context, TimeOfDayDB database,
+                              DefaultWallpaperTile.DefaultWallpaperTileListener listener) {
         this.mDatabase = database;
         this.mContext = context;
         mListener = listener;
 
         mWallpapers = new ArrayList<>();
-        mDatabase.setDatabaseObserver(this);
-        reloadWallpapers();
+        reloadDatabase();
     }
 
     @Override
@@ -68,7 +67,7 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
 
         mWallpapers.remove(position - 1);
         String uid = getItemUid(position);
-        mDatabase.adapterDeleteWallpaper(uid);
+        deleteWallpaper(uid);
     }
 
     @Override
@@ -79,7 +78,26 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
                 break;
             }
         }
-        mDatabase.adapterDeleteWallpaper(id);
+        deleteWallpaper(id);
+    }
+
+    private void deleteWallpaper(final String uid){
+        AsyncTask<String, Void, Void> deleteTask = new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... params) {
+                mDatabase.deleteWallpaper(uid);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                TimeOfDayService.broadcastReloadWallpaper(mContext);
+                notifyWallpaperDeleted(uid);
+            }
+        };
+
+        deleteTask.execute(uid);
     }
 
     @Override
@@ -93,7 +111,7 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
 
     @Override
     public int getCount() {
-        if (mWallpapers.size() > 0 || TodDatabase.hasDefaultWallpaper()) {
+        if (mWallpapers.size() > 0 || TimeOfDayDB.hasDefaultWallpaper()) {
             return mWallpapers.size() + 1;
         } else {
             return 0;
@@ -120,9 +138,9 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
         switch (getItemViewType(position)) {
             case VIEW_TYPE_DEFAULT: {
                 View v = DefaultWallpaperTile
-                        .inflate(mContext, !TodDatabase.hasDefaultWallpaper(), mListener);
-                if(TodDatabase.hasDefaultWallpaper()){
-                    DefaultWallpaperTile.setThumbnail(v, TodDatabase.DEFAULT_WALLPAPER_UID);
+                        .inflate(mContext, !TimeOfDayDB.hasDefaultWallpaper(), mListener);
+                if(TimeOfDayDB.hasDefaultWallpaper()){
+                    DefaultWallpaperTile.setThumbnail(v, TimeOfDayDB.DEFAULT_WALLPAPER_UID);
                 }
                 return v;
             }
@@ -171,36 +189,29 @@ public class TodAdapter extends AnimatedListAdapter implements TodDatabase.Datab
         }
     }
 
-    private void reloadWallpapers(){
-        mWallpapers.clear();
-        mWallpapers.addAll(mDatabase.getOrderedWallpapers()); //TODO: Async
-        notifyDataSetChanged();
-    }
+    public void reloadDatabase(){
 
-    @Override
-    public void onElementRemoved(String uid) {
-        for (TimeOfDayWallpaper data : mWallpapers) {
-            if (data.getUid().equals(uid)) {
-                mWallpapers.remove(data);
-                break;
+        AsyncTask<Void, Void, List<TimeOfDayWallpaper>> reloadTask
+                = new AsyncTask<Void, Void, List<TimeOfDayWallpaper>>() {
+            @Override
+            protected List<TimeOfDayWallpaper> doInBackground(Void... params) {
+                return mDatabase.getWallpapersByStartHour();
             }
-        }
-        notifyDataSetChanged();
-    }
 
-    @Override
-    public void onElementCreated(TimeOfDayWallpaper element) {
-        reloadWallpapers();
-    }
+            @Override
+            protected void onPostExecute(List<TimeOfDayWallpaper> wallpapers) {
+                mWallpapers.clear();
+                mWallpapers.addAll(wallpapers);
+                notifyDataSetChanged();
+            }
+        };
 
-    @Override
-    public void onDataSetChanged() {
-        reloadWallpapers();
+        reloadTask.execute();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return (mWallpapers.size() > 0 || TodDatabase.hasDefaultWallpaper())
+        return (mWallpapers.size() > 0 || TimeOfDayDB.hasDefaultWallpaper())
                 && position == 0 ? VIEW_TYPE_DEFAULT : VIEW_TYPE_TOD;
     }
 

@@ -87,7 +87,7 @@ public class AnimatedGridView extends GridView {
     private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
             new AdapterView.OnItemLongClickListener() {
                 public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position, long id) {
-                    return !(mSwiping || mAnimating) && startDrag(position);
+                    return mDraggable && !(mSwiping || mAnimating) && startDrag(position);
                 }
             };
     private String mSwipeCellId;
@@ -126,8 +126,7 @@ public class AnimatedGridView extends GridView {
 
     private void init(Context context) {
         // mListeners = new ArrayList<GridViewActionListener>();
-        if (mDraggable)
-            setOnItemLongClickListener(mOnItemLongClickListener);
+        setOnItemLongClickListener(mOnItemLongClickListener);
 
         setOnScrollListener(mScrollListener);
 
@@ -141,6 +140,10 @@ public class AnimatedGridView extends GridView {
         ViewConfiguration vc = ViewConfiguration.get(context);
         mSlop = vc.getScaledTouchSlop();
         mMinFlingVelocity = vc.getScaledMinimumFlingVelocity() * 6;
+    }
+
+    public void setDraggable(boolean draggable){
+        mDraggable = draggable;
     }
 
     public AnimatedListAdapter getAdapter() {

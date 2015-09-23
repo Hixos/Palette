@@ -16,7 +16,7 @@
     <string name="action_crop_mode">Crop mode</string>
 
     <!-- ERRORS -->
-    <string name="error_picture_pick_fail">I\'m sorry, I can\'t load the selected picture :(</string>
+    <string name="error_picture_pick_fail">There was a problem loading the selected picture</string>
     <string name="title_activity_cropper">Crop picture</string>
     <string name="hello_world" translatable="false">Hello world!</string>
 

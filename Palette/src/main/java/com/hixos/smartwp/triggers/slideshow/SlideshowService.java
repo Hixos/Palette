@@ -21,7 +21,6 @@ public class SlideshowService {
     private final static String ACTION_CHANGE_INTERVAL = "com.hixos.smartwp.slideshow.ACTION_CHANGE_INTERVAL";
     private final static String ACTION_RELOAD_WALLPAPER = "com.hixos.smartwp.slideshow.ACTION_RELOAD_WALLPAPER";
 
-
     private static SlideshowService sIstance;
 
     private final OnWallpaperChangedCallback mCallback;
@@ -52,8 +51,9 @@ public class SlideshowService {
             sIstance.stop(context);
         }
         sIstance = new SlideshowService(callback, context);
-
         startAlarm(context);
+
+        Logger.d("Listener is Go");
     }
 
     public static void stopListener(Context context) {
@@ -71,7 +71,7 @@ public class SlideshowService {
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        SlideshowDatabase database = new SlideshowDatabase(context);
+        SlideshowDB database = new SlideshowDB(context);
         long interval = database.getIntervalMs();
         interval = Math.max(60000, interval);
         manager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + interval,
@@ -101,10 +101,14 @@ public class SlideshowService {
     }
 
     public static Uri getBestWallpaperUri(Context context) {
-        SlideshowDatabase database = new SlideshowDatabase(context);
-        SlideshowData current = database.getCurrentWallpaper();
-        if (current != null) {
-            Uri uri = ImageManager.getInstance().getPictureUri(current.getUid());
+        SlideshowDB database = new SlideshowDB(context);
+        String uid =  database.getCurrentWallpaperUid();
+        if(uid == null){
+            uid = database.nextWallpaper();
+        }
+        Logger.d("getBestWp: Uid: %s", uid);
+        if (uid != null) {
+            Uri uri = ImageManager.getInstance().getPictureUri(uid);
             if (FileUtils.fileExistance(uri)) return uri;
         }
         Logger.w(LOGTAG + ".getBest", "Wallpaper not found, returning default");
@@ -144,13 +148,16 @@ public class SlideshowService {
     private class SlideshowServiceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            SlideshowDatabase database = new SlideshowDatabase(context);
-            SlideshowData next = database.nextWallpaper();
+            Logger.d("Received next wallpaper intent");
+            SlideshowDB database = new SlideshowDB(context);
+            String next = database.nextWallpaper();
             boolean success = false;
             if (next != null) {
                 success = setWallpaper(ImageManager.getInstance()
-                        .getPictureUri(next.getUid()));
+                        .getPictureUri(next));
+                Logger.d("Next wallpaper set (%s) Success:%b", next, success);
             }
+
             if (!success) {
                 Uri wallpaper = Uri.parse("android.resource://" + context.getPackageName() + "/"
                         + R.raw.wallpaper);
